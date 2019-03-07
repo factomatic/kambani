@@ -1,0 +1,11 @@
+<app-navbar *ngIf="vaultService.vaultExists()"></app-navbar>
+<ngx-spinner
+  bdColor = "rgba(255,255,255,0.8)"
+  size = "default"
+  color = "#f30606"
+  type = "ball-atom">
+  <p style="font-size: 20px; color: black">Loading...</p>
+</ngx-spinner>
+<div class="outlet">
+  <router-outlet></router-outlet>
+</div>

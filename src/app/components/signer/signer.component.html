@@ -1,0 +1,20 @@
+<div class="container-fluid" *ngIf="contentPretified">
+  <div class="form-group" *ngIf="contentPretified">
+    <p class="mb-3">Received from: {{from}}</p>
+    <label for="exampleTextarea">Data to sign</label>
+    <textarea class="form-control" id="exampleTextarea" rows="3" readonly="true">{{contentPretified}}</textarea>
+  </div>
+  <div *ngIf="publicKeys.length > 0">
+    <select class="form-control" (ngModelChange)="onSelectChange($event)" [ngModel]="selectedPublicKey">
+      <option [value]="publicKey" *ngFor="let publicKey of publicKeys">{{minifyPublicKey(publicKey)}}</option>
+    </select>
+  </div>
+  <div class="center mt-5" *ngIf="!publicKeys || publicKeys.length === 0">
+    <p class="text-warning text-center">You need to import keys in order to sign the data.</p>
+  </div>
+  <div class="row justify-content-center mt-4">
+    <button class="btn btn-success mr-1" routerLink="/vault/import" *ngIf="!publicKeys || publicKeys.length === 0">Import Keys</button>
+    <button class="btn btn-success mr-1" (click)="signData()" *ngIf="publicKeys.length > 0">Sign Data</button>
+    <button class="btn btn-danger ml-1" (click)="cancelSigning()">Cancel</button>
+  </div>
+</div>

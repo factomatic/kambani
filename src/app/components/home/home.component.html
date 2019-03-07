@@ -1,0 +1,12 @@
+<div class="heading">
+  <h1 class="text-info text-center">
+    Available keys
+  </h1>
+</div>
+<div class="list-group mt-3" *ngIf="minifiedPubKeys.length > 0">
+  <a routerLink="/" class="list-group-item list-group-item-action" *ngFor="let key of minifiedPubKeys">{{key}}</a>
+</div>
+<div class="center mt-5" *ngIf="!minifiedPubKeys || minifiedPubKeys.length === 0">
+  <p class="text-warning text-center">You have not imported any keys yet</p>
+  <button class="btn btn-success mt-2" routerLink="/vault/import">Import Keys</button>
+</div>

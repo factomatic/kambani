@@ -1,0 +1,38 @@
+/* You can add global styles to this file, and also import other style files */
+body {
+  width: 350px;
+  height: 600px;
+  font-size: 0.85rem !important;
+}
+
+h1, .h1 {
+  font-size: 1.5rem !important;
+}
+
+h2, .h2 {
+  font-size: 1.3rem !important;
+}
+
+h3, .h3 {
+  font-size: 1rem !important;
+}
+
+#toast-container > div {
+  opacity:1;
+}
+
+#toast-container > .toast-success {
+  background-color: #51A351;
+}
+
+#toast-container > .toast-error {
+  background-color: #BD362F;
+}
+
+.heading{
+  margin: 20px;
+}
+
+.btn:focus {
+  box-shadow: none !important;
+}
