@@ -5,7 +5,7 @@ export default class CustomValidators {
     const password = createFormGroup.controls.password.value;
     const repeatPassword = createFormGroup.controls.confirmPassword.value;
 
-    if (repeatPassword.length <= 0) {
+    if (!repeatPassword) {
       return null;
     }
 

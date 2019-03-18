@@ -1,12 +1,15 @@
 import * as base58 from 'bs58';
+import * as elliptic from 'elliptic';
 import * as encryptor from 'browser-passworder';
 import * as nacl from 'tweetnacl/nacl-fast';
 import { Buffer } from 'buffer/';
 import { defer, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 
+import { ImportKeyModel } from '../../models/ImportKeyModel';
 import { ImportResultModel } from '../../models/ImportResultModel';
 import { KeyPairModel } from '../../models/KeyPairModel';
+import { KeyTypes } from '../../enums/key-types';
 import { VaultService } from '../vault/vault.service';
 
 @Injectable()
@@ -17,16 +20,16 @@ export class KeysService {
   importFromJsonFile(file: string, filePassword: string, vaultPassword: string): Observable<ImportResultModel> {
     return defer(async() => {
       try {
-        const decryptedFileJson = await encryptor.decrypt(filePassword, file);
-        const decryptedFile = JSON.parse(decryptedFileJson);
+        const decryptedFile = JSON.parse(await encryptor.decrypt(filePassword, file));
         const keyPairs: KeyPairModel[] = [];
 
         if (Array.isArray(decryptedFile) && decryptedFile.length > 0) {
-          for (const privateKey of decryptedFile) {
-            const keyPair = nacl.sign.keyPair.fromSecretKey(base58.decode(privateKey));
-            const publicKey = base58.encode(Buffer.from(keyPair.publicKey));
-
-            keyPairs.push(new KeyPairModel(publicKey, privateKey));
+          for (const keyModel of decryptedFile) {
+            if (keyModel.alias && keyModel.type && keyModel.privateKey) {
+              const importKeyModel = new ImportKeyModel(keyModel.alias, keyModel.type, keyModel.privateKey);
+              const keyPairModel = this.getKeyPairModel(importKeyModel);
+              keyPairs.push(keyPairModel);
+            }
           }
 
           return await this.vaultService.importKeys(keyPairs, vaultPassword);
@@ -39,18 +42,34 @@ export class KeysService {
     });
   }
 
-  importFromPrivateKey(privateKey: string, vaultPassword: string): Observable<ImportResultModel> {
+  importFromPrivateKey(alias: string, type: string, privateKey: string, vaultPassword: string): Observable<ImportResultModel> {
     return defer(async () => {
       try {
-        const keyPair = nacl.sign.keyPair.fromSecretKey(base58.decode(privateKey));
-        const publicKey = base58.encode(Buffer.from(keyPair.publicKey));
-
-        const keyPairs = [new KeyPairModel(publicKey, privateKey)];
+        const importKeyModel = new ImportKeyModel(alias, type, privateKey);
+        const keyPairModel = this.getKeyPairModel(importKeyModel);
+        const keyPairs = [keyPairModel];
 
         return await this.vaultService.importKeys(keyPairs, vaultPassword);
       } catch {
         return new ImportResultModel(false, 'Invalid private key');
       }
     });
+  }
+
+  private getKeyPairModel(importKeyModel: ImportKeyModel): KeyPairModel {
+    if (importKeyModel.type === KeyTypes.Ed25519) {
+      const keyPair = nacl.sign.keyPair.fromSecretKey(base58.decode(importKeyModel.privateKey));
+      const publicKey = base58.encode(Buffer.from(keyPair.publicKey));
+
+      return new KeyPairModel(importKeyModel.alias, importKeyModel.type, publicKey, importKeyModel.privateKey);
+    } else if (importKeyModel.type === KeyTypes.Secp256k1) {
+      const ec = elliptic.ec('secp256k1');
+      const key = ec.keyFromPrivate(base58.decode(importKeyModel.privateKey), 'hex');
+
+      const compressedPubPoint = key.getPublic(true, 'hex');
+      const publicKey = base58.encode(Buffer.from(compressedPubPoint, 'hex'));
+
+      return new KeyPairModel(importKeyModel.alias, importKeyModel.type, publicKey, importKeyModel.privateKey);
+    }
   }
 }

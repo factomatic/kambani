@@ -45,7 +45,7 @@
                 formControlName="password"
                 [ngClass]="{ 'is-invalid': password.touched && password.errors }" />
                 <div *ngIf="password.errors" class="invalid-feedback">
-                  <div *ngIf="password.errors.required">Password is required!</div>
+                  <div *ngIf="password['errors'].required">Password is required!</div>
                 </div>
             </div>
           </div>
@@ -53,16 +53,38 @@
         </form>
       </div>
       <div *ngIf="importType == 'privateKey'">
-        <h3 class="title">Enter Your Private Key</h3>
         <form [formGroup]="privateKeyForm" (ngSubmit)="importPrivateKey()">
           <div class="col-sm-10 mb-4">
-            <textarea 
-              class="form-control" 
-              formControlName="privateKey"
-              [ngClass]="{ 'is-invalid': privateKey.touched && privateKey.errors }">
-            </textarea>
-            <div *ngIf="privateKey.errors" class="invalid-feedback">
-              <div *ngIf="privateKey.errors.required">Private key is required!</div>
+            <div class="form-group">
+              <label class="control-label" for="type">Choose key type:</label>
+              <select class="form-control" formControlName="type" id="type">
+                <option value="Ed25519">Ed25519</option>
+                <option value="Secp256k1">Secp256k1</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="alias">Enter key alias:</label>
+              <input 
+                type="text"
+                class="form-control"
+                id="alias"
+                formControlName="alias"
+                [ngClass]="{ 'is-invalid': alias.touched && alias.errors }" />
+              <div *ngIf="alias.errors" class="invalid-feedback">
+                <div *ngIf="alias['errors'].required">Alias is required!</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="privateKey">Enter your private key:</label>
+              <textarea 
+                class="form-control"
+                id="privateKey"
+                formControlName="privateKey"
+                [ngClass]="{ 'is-invalid': privateKey.touched && privateKey.errors }">
+              </textarea>
+              <div *ngIf="privateKey.errors" class="invalid-feedback">
+                <div *ngIf="privateKey['errors'].required">Private key is required!</div>
+              </div>
             </div>
           </div>
           <input type="submit" class="btn btn-sm btn-info" value="Import Key" [disabled]="privateKeyForm.invalid" />
@@ -71,4 +93,3 @@
     </div>
   </div>
 </div>
-
