@@ -11,8 +11,8 @@ import LocalStorageStore from 'obs-store/lib/localStorage';
 import { environment } from 'src/environments/environment';
 import { ImportResultModel } from '../../models/ImportResultModel';
 import { KeyPairModel } from '../../models/KeyPairModel';
-import { KeyTypes } from '../../enums/key-types';
 import { SignatureDataModel } from '../../models/SignatureDataModel';
+import { SignatureType } from '../../enums/signature-type';
 
 @Injectable()
 export class VaultService {
@@ -151,8 +151,8 @@ export class VaultService {
     return false;
   }
 
-  private getSignature(dataToSign: Buffer, keyType: KeyTypes, privateKey: string): string {
-    if (keyType === KeyTypes.Ed25519) {
+  private getSignature(dataToSign: Buffer, type: SignatureType, privateKey: string): string {
+    if (type === SignatureType.EdDSA) {
       const secret = Buffer.from(base58.decode(privateKey));
       const keyPair = nacl.sign.keyPair.fromSecretKey(secret);
 
@@ -160,7 +160,7 @@ export class VaultService {
       const signatureBase64 = naclUtil.encodeBase64(signature);
 
       return signatureBase64;
-    } else if (keyType === KeyTypes.Secp256k1) {
+    } else if (type === SignatureType.ECDSA) {
       const ec = elliptic.ec('secp256k1');
       const key = ec.keyFromPrivate(base58.decode(privateKey), 'hex');
       const signature = key.sign(dataToSign);

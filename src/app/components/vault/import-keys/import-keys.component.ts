@@ -8,7 +8,7 @@ import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { KeysService } from 'src/app/core/services/keys/keys.service';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
-import { KeyTypes } from 'src/app/core/enums/key-types';
+import { SignatureType } from 'src/app/core/enums/signature-type';
 
 @Component({
   selector: 'app-import-keys',
@@ -42,7 +42,7 @@ export class ImportKeysComponent implements OnInit {
 
   createPrivateKeyForm() {
     this.privateKeyForm = this.fb.group({
-      type: [KeyTypes.Ed25519, Validators.required],
+      type: [SignatureType.EdDSA, Validators.required],
       alias: ['', Validators.required],
       privateKey: ['', [Validators.required]]
     });

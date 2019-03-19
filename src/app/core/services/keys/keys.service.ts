@@ -9,7 +9,7 @@ import { Injectable } from '@angular/core';
 import { ImportKeyModel } from '../../models/ImportKeyModel';
 import { ImportResultModel } from '../../models/ImportResultModel';
 import { KeyPairModel } from '../../models/KeyPairModel';
-import { KeyTypes } from '../../enums/key-types';
+import { SignatureType} from '../../enums/signature-type';
 import { VaultService } from '../vault/vault.service';
 
 @Injectable()
@@ -57,12 +57,12 @@ export class KeysService {
   }
 
   private getKeyPairModel(importKeyModel: ImportKeyModel): KeyPairModel {
-    if (importKeyModel.type === KeyTypes.Ed25519) {
+    if (importKeyModel.type === SignatureType.EdDSA) {
       const keyPair = nacl.sign.keyPair.fromSecretKey(base58.decode(importKeyModel.privateKey));
       const publicKey = base58.encode(Buffer.from(keyPair.publicKey));
 
       return new KeyPairModel(importKeyModel.alias, importKeyModel.type, publicKey, importKeyModel.privateKey);
-    } else if (importKeyModel.type === KeyTypes.Secp256k1) {
+    } else if (importKeyModel.type === SignatureType.ECDSA) {
       const ec = elliptic.ec('secp256k1');
       const key = ec.keyFromPrivate(base58.decode(importKeyModel.privateKey), 'hex');
 
