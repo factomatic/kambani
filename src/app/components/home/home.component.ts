@@ -42,7 +42,11 @@ export class HomeComponent implements OnInit {
           this.availableKeys.push({
             alias: 'unknown',
             publicKey: minifyPublicKey(key)
-          });
+const alias = publicKeysAliases[key] ? publicKeysAliases[key] : 'unknown'
+this.availableKeys.push({
+  alias: alias,
+  publicKey: minifyPublicKey(key)
+})
         }
       });
     }
