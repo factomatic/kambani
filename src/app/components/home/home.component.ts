@@ -33,21 +33,10 @@ export class HomeComponent implements OnInit {
       const publicKeysArray = JSON.parse(publicKeys);
       const publicKeysAliases = JSON.parse(this.vaultService.getVaultPublicKeysAliases());
       publicKeysArray.forEach(key => {
-        if (publicKeysAliases[key]) {
-          this.availableKeys.push({
-            alias: publicKeysAliases[key],
-            publicKey: minifyPublicKey(key)
-          });
-        } else {
-          this.availableKeys.push({
-            alias: 'unknown',
-            publicKey: minifyPublicKey(key)
-const alias = publicKeysAliases[key] ? publicKeysAliases[key] : 'unknown'
-this.availableKeys.push({
-  alias: alias,
-  publicKey: minifyPublicKey(key)
-})
-        }
+        this.availableKeys.push({
+          alias: publicKeysAliases[key] ? publicKeysAliases[key] : 'unknown',
+          publicKey: minifyPublicKey(key)
+        });
       });
     }
   }
