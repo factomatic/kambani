@@ -124,7 +124,7 @@ export class VaultService {
         const dataToSign = Buffer.from(data, 'utf8');
         const signature = this.getSignature(dataToSign, keyType, privateKey);
 
-        return new SignatureDataModel(keyType, signature);
+        return new SignatureDataModel(keyType, publicKey, signature);
       } catch {
         return undefined;
       }

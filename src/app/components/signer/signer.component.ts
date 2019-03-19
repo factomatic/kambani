@@ -62,11 +62,7 @@ export class SignerComponent implements OnInit {
             .signData(JSON.stringify(this.content), this.selectedPublicKey, vaultPassword)
             .subscribe((signatureData: SignatureDataModel) => {
               if (signatureData) {
-                chrome.runtime.sendMessage({type: 'sendSignedDataBack', data: {
-                  keyType: signatureData.keyType,
-                  publicKey: this.selectedPublicKey,
-                  signature: signatureData.signature,
-                }});
+                chrome.runtime.sendMessage({type: 'sendSignedDataBack', data: signatureData});
                 this.spinner.hide();
                 this.toastr.success('Signed data successfully');
                 this.router.navigate(['home']);
