@@ -3,6 +3,8 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+
+import { ImportResultModel } from 'src/app/core/models/ImportResultModel';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
@@ -35,8 +37,8 @@ export class RestoreVaultComponent implements OnInit {
     this.spinner.show();
     this.vaultService
       .restoreVault(this.file, this.password.value)
-      .subscribe(result => {
-        if (result) {
+      .subscribe((result: ImportResultModel) => {
+        if (result.success) {
           this.spinner.hide();
           this.toastr.success(result.message);
           this.router.navigate(['home']);

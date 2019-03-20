@@ -16,7 +16,7 @@
               class="form-control"
               id="password"
               formControlName="password"
-              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$^+=!*()@%&]).{8,25}$"
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$^+=!*()@%&]).{8,}$"
               [ngClass]="{ 'is-invalid': password.touched && password.errors }">
               <div *ngIf="password.errors" class="invalid-feedback">
                 <div *ngIf="password.errors.required">Password is required!</div>

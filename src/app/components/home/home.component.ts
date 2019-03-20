@@ -10,8 +10,7 @@ import { minifyPublicKey } from '../../core/utils/helpers';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-  protected minifiedPubKeys = [];
-  private publicKeys = [];
+  protected availableKeys = [];
 
   constructor(
     private vaultService: VaultService,
@@ -31,9 +30,13 @@ export class HomeComponent implements OnInit {
 
     const publicKeys = this.vaultService.getVaultPublicKeys();
     if (publicKeys) {
-      this.publicKeys = JSON.parse(publicKeys);
-      this.publicKeys.forEach(key => {
-        this.minifiedPubKeys.push(minifyPublicKey(key));
+      const publicKeysArray = JSON.parse(publicKeys);
+      const publicKeysAliases = JSON.parse(this.vaultService.getVaultPublicKeysAliases());
+      publicKeysArray.forEach(key => {
+        this.availableKeys.push({
+          alias: publicKeysAliases[key] ? publicKeysAliases[key] : 'unknown',
+          publicKey: minifyPublicKey(key)
+        });
       });
     }
   }

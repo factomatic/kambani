@@ -9,6 +9,7 @@ import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { minifyPublicKey } from '../../core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../dialogs/password/password.dialog.component';
+import { SignatureDataModel } from 'src/app/core/models/SignatureDataModel';
 import { VaultService } from '../../core/services/vault/vault.service';
 
 @Component({
@@ -59,12 +60,9 @@ export class SignerComponent implements OnInit {
 
           this.vaultService
             .signData(JSON.stringify(this.content), this.selectedPublicKey, vaultPassword)
-            .subscribe(signature => {
-              if (signature) {
-                chrome.runtime.sendMessage({type: 'sendSignedDataBack', data: {
-                  signature: signature,
-                  publicKey: this.selectedPublicKey
-                }});
+            .subscribe((signatureData: SignatureDataModel) => {
+              if (signatureData) {
+                chrome.runtime.sendMessage({type: 'sendSignedDataBack', data: signatureData});
                 this.spinner.hide();
                 this.toastr.success('Signed data successfully');
                 this.router.navigate(['home']);
