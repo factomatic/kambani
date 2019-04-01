@@ -7,7 +7,7 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
   styleUrls: ['./vault-backup.component.scss']
 })
 export class VaultBackupComponent implements OnInit {
-  protected publicKeys = [];
+  public publicKeys = [];
 
   constructor(private vaultService: VaultService) { }
 

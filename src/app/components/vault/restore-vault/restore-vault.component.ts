@@ -13,8 +13,8 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
   styleUrls: ['./restore-vault.component.scss']
 })
 export class RestoreVaultComponent implements OnInit {
-  protected backupPasswordForm;
-  protected file: string;
+  public backupPasswordForm;
+  public file: string;
 
   constructor(
     private fb: FormBuilder,

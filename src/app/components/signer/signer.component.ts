@@ -18,12 +18,12 @@ import { VaultService } from '../../core/services/vault/vault.service';
   styleUrls: ['./signer.component.scss']
 })
 export class SignerComponent implements OnInit {
-  protected content: object;
-  protected contentPretified: string;
-  protected from: string;
-  protected selectedPublicKey: string;
-  protected publicKeys = [];
-  protected minifyPublicKey = minifyPublicKey;
+  public content: object;
+  public contentPretified: string;
+  public from: string;
+  public selectedPublicKey: string;
+  public publicKeys = [];
+  public minifyPublicKey = minifyPublicKey;
   private dialogMessage = 'Enter your vault password to sign the data';
 
   constructor(

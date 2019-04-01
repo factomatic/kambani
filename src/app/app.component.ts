@@ -13,7 +13,7 @@ import { VaultService } from './core/services/vault/vault.service';
 export class AppComponent implements OnInit {
 
   constructor(
-    protected vaultService: VaultService,
+    public vaultService: VaultService,
     private router: Router,
     private zone: NgZone) { }
 

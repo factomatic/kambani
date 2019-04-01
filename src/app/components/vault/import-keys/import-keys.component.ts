@@ -16,10 +16,10 @@ import { SignatureType } from 'src/app/core/enums/signature-type';
   styleUrls: ['./import-keys.component.scss']
 })
 export class ImportKeysComponent implements OnInit {
-  protected importType: string;
-  protected jsonFilePasswordForm: FormGroup;
-  protected privateKeyForm: FormGroup;
-  protected file: string;
+  public importType: string;
+  public jsonFilePasswordForm: FormGroup;
+  public privateKeyForm: FormGroup;
+  public file: string;
 
   constructor(
     private fb: FormBuilder,

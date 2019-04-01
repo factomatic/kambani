@@ -10,7 +10,7 @@ import { minifyPublicKey } from '../../core/utils/helpers';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-  protected availableKeys = [];
+  public availableKeys = [];
 
   constructor(
     private vaultService: VaultService,

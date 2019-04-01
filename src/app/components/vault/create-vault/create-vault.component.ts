@@ -12,7 +12,7 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
   styleUrls: ['./create-vault.component.scss']
 })
 export class CreateVaultComponent implements OnInit {
-  protected createVaultForm;
+  public createVaultForm;
 
   constructor(
     private fb: FormBuilder,
