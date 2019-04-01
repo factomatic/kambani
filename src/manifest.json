@@ -16,9 +16,9 @@
     "matches": ["http://localhost/*"]
   },
   "icons": {
-    "16": "assets/logo-small.png",
-    "48": "assets/logo-small.png",
-    "128": "assets/logo-small.png"
+    "16": "assets/web-signer-logo.png",
+    "48": "assets/web-signer-logo.png",
+    "128": "assets/web-signer-logo.png"
   },
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
