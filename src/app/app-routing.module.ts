@@ -10,7 +10,7 @@ const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'home' },
   { path: 'home', component: HomeComponent, canActivate: [VaultGuard] },
   { path: 'signer', component: SignerComponent, canActivate: [VaultGuard] },
-  { path: 'vault', loadChildren: () => VaultModule }
+  { path: 'vault', loadChildren: './components/vault/vault.module#VaultModule' }
 ];
 
 @NgModule({
