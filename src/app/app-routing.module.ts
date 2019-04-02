@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { VaultModule } from './components/vault/vault.module';
 
 import { HomeComponent } from './components/home/home.component';
 import { SignerComponent } from './components/signer/signer.component';
