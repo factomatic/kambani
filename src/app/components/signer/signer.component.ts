@@ -1,11 +1,11 @@
 /// <reference types="chrome" />
 
-import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
+import { KeyViewModel } from 'src/app/core/models/KeyViewModel';
 import { minifyPublicKey } from '../../core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../dialogs/password/password.dialog.component';
@@ -18,34 +18,27 @@ import { VaultService } from '../../core/services/vault/vault.service';
   styleUrls: ['./signer.component.scss']
 })
 export class SignerComponent implements OnInit {
-  public content: object;
+  public pendingRequestsCount: number;
+  public content: string;
   public contentPretified: string;
   public from: string;
   public selectedPublicKey: string;
-  public publicKeys = [];
+  public publicKeys: KeyViewModel[] = [];
   public minifyPublicKey = minifyPublicKey;
   private dialogMessage = 'Enter your vault password to sign the data';
 
   constructor(
     private dialogsService: DialogsService,
-    private route: ActivatedRoute,
-    private router: Router,
     private vaultService: VaultService,
     private toastr: ToastrService,
-    private spinner: NgxSpinnerService) { }
+    private spinner: NgxSpinnerService,
+    private zone: NgZone) { }
 
   ngOnInit() {
-    const data =  JSON.parse(this.route.snapshot.queryParamMap.get('contentToSign'));
-    this.from = data.from;
-    this.content = data.content;
-    this.contentPretified = JSON.stringify(this.content, null, 2);
-
-    const publicKeys = this.vaultService.getVaultPublicKeys();
-    if (publicKeys) {
-      this.publicKeys = JSON.parse(publicKeys);
-    }
-
-    this.selectedPublicKey = this.publicKeys[0];
+    this.getPendingRequestsCount();
+    this.getContentToSign();
+    this.getPublicKeys();
+    this.selectedPublicKey = this.publicKeys[0].publicKey;
   }
 
   onSelectChange(selectedPublicKey) {
@@ -59,13 +52,14 @@ export class SignerComponent implements OnInit {
           this.spinner.show();
 
           this.vaultService
-            .signData(JSON.stringify(this.content), this.selectedPublicKey, vaultPassword)
+            .signData(this.content, this.selectedPublicKey, vaultPassword)
             .subscribe((signatureData: SignatureDataModel) => {
               if (signatureData) {
                 chrome.runtime.sendMessage({type: 'sendSignedDataBack', data: signatureData});
                 this.spinner.hide();
-                this.toastr.success('Signed data successfully');
-                this.router.navigate(['home']);
+                this.toastr.success('Signed data successfully!');
+                this.clearContentData();
+                this.getContentToSign();
               } else {
                 this.spinner.hide();
                 this.toastr.error('Incorrect vault password');
@@ -76,7 +70,59 @@ export class SignerComponent implements OnInit {
   }
 
   cancelSigning() {
+    this.cancelContentToSign();
+    this.getContentToSign();
+  }
+
+  private getPublicKeys() {
+    const publicKeys = this.vaultService.getVaultPublicKeys();
+    if (publicKeys) {
+      const publicKeysArray = JSON.parse(publicKeys);
+      const publicKeysAliases = JSON.parse(this.vaultService.getVaultPublicKeysAliases());
+      publicKeysArray.forEach(publicKey => {
+        this.publicKeys.push(new KeyViewModel(
+          publicKeysAliases[publicKey] ? publicKeysAliases[publicKey] : 'unknown',
+          publicKey
+        ));
+      });
+    }
+  }
+
+  private getContentToSign() {
+    chrome.runtime.sendMessage({type: 'getContentToSign'}, (response) => {
+      this.zone.run(() => {
+        if (response.success) {
+          this.from = response.contentToSign.from;
+          this.content = response.contentToSign.content;
+
+
+          try {
+            const parsedContent = JSON.parse(this.content);
+            this.contentPretified = JSON.stringify(parsedContent, null, 2);
+          } catch {
+            this.contentPretified = this.content;
+          }
+        }
+      });
+    });
+  }
+
+  private getPendingRequestsCount() {
+    chrome.browserAction.getBadgeText({}, (result) => {
+      this.pendingRequestsCount = parseInt(result, 10);
+    });
+  }
+
+  private cancelContentToSign() {
+    this.toastr.info('Signing request cancelled!');
     chrome.runtime.sendMessage({type: 'cancelSigning'});
-    this.router.navigate(['home']);
+    this.clearContentData();
+  }
+
+  private clearContentData() {
+    this.content = undefined;
+    this.contentPretified = undefined;
+    this.from = undefined;
+    this.pendingRequestsCount--;
   }
 }

@@ -1,12 +1,19 @@
-<div class="container-fluid" *ngIf="contentPretified">
+<div class="heading">
+  <h1 class="text-info text-center">
+    Signing Requests
+    <span class="ml-2 badge badge-light">{{pendingRequestsCount}}</span>
+  </h1>
+</div>
+<div class="container-fluid mt-3" *ngIf="contentPretified">
   <div class="form-group" *ngIf="contentPretified">
     <p class="mb-3">Received from: {{from}}</p>
-    <label for="exampleTextarea">Data to sign</label>
+    <label for="exampleTextarea">Data to sign:</label>
     <textarea class="form-control" id="exampleTextarea" rows="3" readonly="true">{{contentPretified}}</textarea>
   </div>
   <div *ngIf="publicKeys.length > 0">
-    <select class="form-control" (ngModelChange)="onSelectChange($event)" [ngModel]="selectedPublicKey">
-      <option [value]="publicKey" *ngFor="let publicKey of publicKeys">{{minifyPublicKey(publicKey)}}</option>
+    <label for="selectKey">Choose key to sign with:</label>
+    <select class="form-control" id="selectKey" (ngModelChange)="onSelectChange($event)" [ngModel]="selectedPublicKey">
+      <option [value]="keyViewModel.publicKey" *ngFor="let keyViewModel of publicKeys">{{keyViewModel.alias}}</option>
     </select>
   </div>
   <div class="center mt-5" *ngIf="!publicKeys || publicKeys.length === 0">
@@ -17,4 +24,7 @@
     <button class="btn btn-success mr-1" (click)="signData()" *ngIf="publicKeys.length > 0">Sign Data</button>
     <button class="btn btn-danger ml-1" (click)="cancelSigning()">Cancel</button>
   </div>
+</div>
+<div class="mt-5" *ngIf="!contentPretified">
+  <p class="text-warning text-center">You do not have any pending requests</p>
 </div>

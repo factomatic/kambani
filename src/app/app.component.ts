@@ -18,12 +18,10 @@ export class AppComponent implements OnInit {
     private zone: NgZone) { }
 
   ngOnInit() {
-    chrome.runtime.sendMessage({type: 'popupInit'}, (response) => {
+    chrome.runtime.sendMessage({type: 'pendingRequests'}, (response) => {
       this.zone.run(() => {
         if (response.success) {
-          this.router.navigate(['signer'], { queryParams: {
-            contentToSign: JSON.stringify(response.contentToSign)
-          }});
+          this.router.navigate(['signer']);
         }
       });
     });

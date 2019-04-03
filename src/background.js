@@ -3,17 +3,37 @@
 (function() {
   let contentsToSign = [];
   let responseCallbacks = [];
+  let currentRequestedContentIndex;
 
   chrome.browserAction.setBadgeText({text: "0"});
 
   chrome.runtime.onMessage.addListener((msg, sender, response) => {
     switch (msg.type) {
-      case 'popupInit':
+      case 'pendingRequests':
         if (contentsToSign.length > 0) {
           response({
             success: true,
-            contentToSign: contentsToSign[contentsToSign.length - 1]
           });
+        } else {
+          response({
+            success: false
+          });
+        }
+        break;
+      case 'getContentToSign':
+        if (contentsToSign.length > 0) {
+          if(currentRequestedContentIndex) {
+            response({
+              success: true,
+              contentToSign: contentsToSign[currentRequestedContentIndex]
+            });
+          } else {
+            currentRequestedContentIndex = contentsToSign.length - 1;
+            response({
+              success: true,
+              contentToSign: contentsToSign[contentsToSign.length - 1]
+            });
+          }
         } else {
           response({
             success: false
@@ -22,7 +42,7 @@
         break;
       case 'cancelSigning':
         if(responseCallbacks.length > 0) {
-          const responseCallback = responseCallbacks.pop();
+          const responseCallback = responseCallbacks[currentRequestedContentIndex];
           responseCallback({
             success: true,
             message: 'Signing canceled'
@@ -33,12 +53,14 @@
             chrome.browserAction.setBadgeText({text: number.toString()});
           });
 
-          contentsToSign.splice(-1);
+          contentsToSign.splice(currentRequestedContentIndex, 1);
+          responseCallbacks.splice(currentRequestedContentIndex, 1);
+          currentRequestedContentIndex = undefined;
         }
         break;
       case 'sendSignedDataBack':
         if(responseCallbacks.length > 0) {
-          const responseCallback = responseCallbacks.pop();
+          const responseCallback = responseCallbacks[currentRequestedContentIndex];
           responseCallback({
             success: true,
             message: msg.data
@@ -49,7 +71,9 @@
             chrome.browserAction.setBadgeText({text: number.toString()});
           });
 
-          contentsToSign.splice(-1);
+          contentsToSign.splice(currentRequestedContentIndex, 1);
+          responseCallbacks.splice(currentRequestedContentIndex, 1);
+          currentRequestedContentIndex = undefined;
         }
         break;
       default:
@@ -76,7 +100,7 @@
           type: "basic",
           title: "Notification message",
           message: "You received data to sign",
-          iconUrl: "assets/logo-small.png"
+          iconUrl: "assets/web-signer-logo.png"
         });
       } else {
         sendResponse({
