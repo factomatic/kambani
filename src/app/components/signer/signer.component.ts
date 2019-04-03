@@ -6,11 +6,12 @@ import { ToastrService } from 'ngx-toastr';
 
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { KeyViewModel } from 'src/app/core/models/KeyViewModel';
-import { minifyPublicKey } from '../../core/utils/helpers';
+import { minifyPublicKey } from 'src/app/core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
-import { PasswordDialogComponent } from '../dialogs/password/password.dialog.component';
+import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
 import { SignatureDataModel } from 'src/app/core/models/SignatureDataModel';
-import { VaultService } from '../../core/services/vault/vault.service';
+import { SigningService } from 'src/app/core/services/signer/signer.service';
+import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
   selector: 'app-signer',
@@ -29,6 +30,7 @@ export class SignerComponent implements OnInit {
 
   constructor(
     private dialogsService: DialogsService,
+    private signingService: SigningService,
     private vaultService: VaultService,
     private toastr: ToastrService,
     private spinner: NgxSpinnerService,
@@ -37,7 +39,7 @@ export class SignerComponent implements OnInit {
   ngOnInit() {
     this.getPendingRequestsCount();
     this.getContentToSign();
-    this.getPublicKeys();
+    // this.getPublicKeys();
     this.selectedPublicKey = this.publicKeys[0].publicKey;
   }
 
@@ -90,20 +92,17 @@ export class SignerComponent implements OnInit {
 
   private getContentToSign() {
     chrome.runtime.sendMessage({type: 'getContentToSign'}, (response) => {
-      this.zone.run(() => {
-        if (response.success) {
-          this.from = response.contentToSign.from;
-          this.content = response.contentToSign.content;
+      if (response.success) {
+        this.from = response.contentToSign.from;
+        this.content = response.contentToSign.content;
 
-
-          try {
-            const parsedContent = JSON.parse(this.content);
-            this.contentPretified = JSON.stringify(parsedContent, null, 2);
-          } catch {
-            this.contentPretified = this.content;
-          }
+        try {
+          const parsedContent = JSON.parse(this.content);
+          this.contentPretified = JSON.stringify(parsedContent, null, 2);
+        } catch {
+          this.contentPretified = this.content;
         }
-      });
+      }
     });
   }
 
@@ -124,5 +123,6 @@ export class SignerComponent implements OnInit {
     this.contentPretified = undefined;
     this.from = undefined;
     this.pendingRequestsCount--;
+    this.signingService.updatePendingRequestsCount(this.pendingRequestsCount);
   }
 }
