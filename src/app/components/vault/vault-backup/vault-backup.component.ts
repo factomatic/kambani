@@ -7,14 +7,14 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
   styleUrls: ['./vault-backup.component.scss']
 })
 export class VaultBackupComponent implements OnInit {
-  public publicKeys = [];
+  public publicKeysAny: boolean;
 
   constructor(private vaultService: VaultService) { }
 
   ngOnInit() {
     const publicKeys = this.vaultService.getVaultPublicKeys();
     if (publicKeys) {
-      this.publicKeys = JSON.parse(publicKeys);
+      this.publicKeysAny = JSON.parse(publicKeys).length > 0;
     }
   }
 
