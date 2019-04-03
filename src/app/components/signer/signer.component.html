@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="container-fluid mt-3" *ngIf="contentPretified">
-  <div class="form-group" *ngIf="contentPretified">
+  <div class="form-group">
     <p class="mb-3">Received from: {{from}}</p>
     <label for="exampleTextarea">Data to sign:</label>
     <textarea class="form-control" id="exampleTextarea" rows="3" readonly="true">{{contentPretified}}</textarea>
@@ -16,15 +16,19 @@
       <option [value]="keyViewModel.publicKey" *ngFor="let keyViewModel of publicKeys">{{keyViewModel.alias}}</option>
     </select>
   </div>
-  <div class="center mt-5" *ngIf="!publicKeys || publicKeys.length === 0">
+  <div class="center mt-5" *ngIf="publicKeys.length === 0">
     <p class="text-warning text-center">You need to import keys in order to sign the data.</p>
   </div>
   <div class="row justify-content-center mt-4">
-    <button class="btn btn-success mr-1" routerLink="/vault/import" *ngIf="!publicKeys || publicKeys.length === 0">Import Keys</button>
+    <button class="btn btn-success mr-1" routerLink="/vault/import" *ngIf="publicKeys.length === 0">Import Keys</button>
     <button class="btn btn-success mr-1" (click)="signData()" *ngIf="publicKeys.length > 0">Sign Data</button>
     <button class="btn btn-danger ml-1" (click)="cancelSigning()">Cancel</button>
   </div>
 </div>
-<div class="mt-5" *ngIf="!contentPretified">
+<div class="mt-5" *ngIf="!contentPretified && publicKeys.length > 0">
   <p class="text-warning text-center">You do not have any pending requests</p>
+</div>
+<div class="center mt-5" *ngIf="!contentPretified && publicKeys.length === 0">
+  <p class="text-warning text-center">You have not imported any keys yet</p>
+  <button class="btn btn-success mt-2" routerLink="/vault/import">Import Keys</button>
 </div>

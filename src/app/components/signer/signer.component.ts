@@ -10,7 +10,7 @@ import { minifyPublicKey } from 'src/app/core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
 import { SignatureDataModel } from 'src/app/core/models/SignatureDataModel';
-import { SigningService } from 'src/app/core/services/signer/signer.service';
+import { SigningService } from 'src/app/core/services/signing/signing.service';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
@@ -39,8 +39,7 @@ export class SignerComponent implements OnInit {
   ngOnInit() {
     this.getPendingRequestsCount();
     this.getContentToSign();
-    // this.getPublicKeys();
-    this.selectedPublicKey = this.publicKeys[0].publicKey;
+    this.getPublicKeys();
   }
 
   onSelectChange(selectedPublicKey) {
@@ -87,22 +86,26 @@ export class SignerComponent implements OnInit {
           publicKey
         ));
       });
+
+      this.selectedPublicKey = this.publicKeys[0].publicKey;
     }
   }
 
   private getContentToSign() {
     chrome.runtime.sendMessage({type: 'getContentToSign'}, (response) => {
-      if (response.success) {
-        this.from = response.contentToSign.from;
-        this.content = response.contentToSign.content;
+      this.zone.run(() => {
+        if (response.success) {
+          this.from = response.contentToSign.from;
+          this.content = response.contentToSign.content;
 
-        try {
-          const parsedContent = JSON.parse(this.content);
-          this.contentPretified = JSON.stringify(parsedContent, null, 2);
-        } catch {
-          this.contentPretified = this.content;
+          try {
+            const parsedContent = JSON.parse(this.content);
+            this.contentPretified = JSON.stringify(parsedContent, null, 2);
+          } catch {
+            this.contentPretified = this.content;
+          }
         }
-      }
+      });
     });
   }
 
