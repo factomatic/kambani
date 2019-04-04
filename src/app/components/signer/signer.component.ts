@@ -4,6 +4,7 @@ import { Component, OnInit, NgZone } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 
+import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { KeyViewModel } from 'src/app/core/models/KeyViewModel';
 import { minifyPublicKey } from 'src/app/core/utils/helpers';
@@ -56,7 +57,7 @@ export class SignerComponent implements OnInit {
             .signData(this.content, this.selectedPublicKey, vaultPassword)
             .subscribe((signatureData: SignatureDataModel) => {
               if (signatureData) {
-                chrome.runtime.sendMessage({type: 'sendSignedDataBack', data: signatureData});
+                chrome.runtime.sendMessage({type: ChromeMessageType.SendSignedDataBack, data: signatureData});
                 this.spinner.hide();
                 this.toastr.success('Signed data successfully!');
                 this.clearContentData();
@@ -92,7 +93,7 @@ export class SignerComponent implements OnInit {
   }
 
   private getContentToSign() {
-    chrome.runtime.sendMessage({type: 'getContentToSign'}, (response) => {
+    chrome.runtime.sendMessage({type: ChromeMessageType.GetContentToSign}, (response) => {
       this.zone.run(() => {
         if (response.success) {
           this.from = response.contentToSign.from;
@@ -117,7 +118,7 @@ export class SignerComponent implements OnInit {
 
   private cancelContentToSign() {
     this.toastr.info('Signing request cancelled!');
-    chrome.runtime.sendMessage({type: 'cancelSigning'});
+    chrome.runtime.sendMessage({type: ChromeMessageType.CancelSigning});
     this.clearContentData();
   }
 

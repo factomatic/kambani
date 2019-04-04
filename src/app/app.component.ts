@@ -3,6 +3,7 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { ChromeMessageType } from './core/enums/chrome-message-type';
 import { VaultService } from './core/services/vault/vault.service';
 
 @Component({
@@ -18,7 +19,7 @@ export class AppComponent implements OnInit {
     private zone: NgZone) { }
 
   ngOnInit() {
-    chrome.runtime.sendMessage({type: 'pendingRequests'}, (response) => {
+    chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequests}, (response) => {
       this.zone.run(() => {
         if (response.success) {
           this.router.navigate(['signer']);

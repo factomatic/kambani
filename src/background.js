@@ -1,5 +1,11 @@
 /// <reference types="chrome" />
 
+const PENDING_REQUESTS = 'pendingRequests';
+const GET_CONTENT_TO_SIGN = 'getContentToSign';
+const CANCEL_SIGNING = 'cancelSigning';
+const SEND_SIGNED_DATA_BACK = 'sendSignedDataBack';
+const INVALID_REQUEST_RESPONSE = 'Invalid request!';
+
 (function() {
   let contentsToSign = [];
   let responseCallbacks = [];
@@ -9,7 +15,7 @@
 
   chrome.runtime.onMessage.addListener((msg, sender, response) => {
     switch (msg.type) {
-      case 'pendingRequests':
+      case PENDING_REQUESTS:
         if (contentsToSign.length > 0) {
           response({
             success: true,
@@ -20,7 +26,7 @@
           });
         }
         break;
-      case 'getContentToSign':
+      case GET_CONTENT_TO_SIGN:
         if (contentsToSign.length > 0) {
           if(currentRequestedContentIndex) {
             response({
@@ -40,7 +46,7 @@
           });
         }
         break;
-      case 'cancelSigning':
+      case CANCEL_SIGNING:
         if(responseCallbacks.length > 0) {
           const responseCallback = responseCallbacks[currentRequestedContentIndex];
           responseCallback({
@@ -58,7 +64,7 @@
           currentRequestedContentIndex = undefined;
         }
         break;
-      case 'sendSignedDataBack':
+      case SEND_SIGNED_DATA_BACK:
         if(responseCallbacks.length > 0) {
           const responseCallback = responseCallbacks[currentRequestedContentIndex];
           responseCallback({
@@ -77,7 +83,7 @@
         }
         break;
       default:
-        response('unknown request');
+        response(INVALID_REQUEST_RESPONSE);
         break;
     }
   });
@@ -105,7 +111,7 @@
       } else {
         sendResponse({
           success: false,
-          error: 'Invalid request'
+          error: INVALID_REQUEST_RESPONSE
         });
       }
   });
