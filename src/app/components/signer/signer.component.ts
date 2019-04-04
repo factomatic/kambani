@@ -21,6 +21,7 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
 })
 export class SignerComponent implements OnInit {
   public pendingRequestsCount: number;
+  public newRequestsReceived: boolean;
   public content: string;
   public contentPretified: string;
   public from: string;
@@ -40,6 +41,7 @@ export class SignerComponent implements OnInit {
   ngOnInit() {
     this.getPendingRequestsCount();
     this.getContentToSign();
+    this.checkNewRequestsReceived();
     this.getPublicKeys();
   }
 
@@ -61,6 +63,7 @@ export class SignerComponent implements OnInit {
                 this.spinner.hide();
                 this.toastr.success('Signed data successfully!');
                 this.clearContentData();
+                this.updatePendingRequestsCount();
                 this.getContentToSign();
               } else {
                 this.spinner.hide();
@@ -73,6 +76,11 @@ export class SignerComponent implements OnInit {
 
   cancelSigning() {
     this.cancelContentToSign();
+    this.getContentToSign();
+  }
+
+  skipSigning() {
+    this.skipContentToSign();
     this.getContentToSign();
   }
 
@@ -116,9 +124,24 @@ export class SignerComponent implements OnInit {
     });
   }
 
+  private checkNewRequestsReceived() {
+    chrome.runtime.sendMessage({type: ChromeMessageType.NewRequestsReceived}, (response) => {
+      this.zone.run(() => {
+        this.newRequestsReceived = response.success ? true : false;
+      });
+    });
+  }
+
   private cancelContentToSign() {
     this.toastr.info('Signing request cancelled!');
     chrome.runtime.sendMessage({type: ChromeMessageType.CancelSigning});
+    this.clearContentData();
+    this.updatePendingRequestsCount();
+  }
+
+  private skipContentToSign() {
+    this.toastr.info('Signing request skipped!');
+    chrome.runtime.sendMessage({type: ChromeMessageType.SkipSigning});
     this.clearContentData();
   }
 
@@ -126,6 +149,10 @@ export class SignerComponent implements OnInit {
     this.content = undefined;
     this.contentPretified = undefined;
     this.from = undefined;
+    this.newRequestsReceived = false;
+  }
+
+  private updatePendingRequestsCount() {
     this.pendingRequestsCount--;
     this.signingService.updatePendingRequestsCount(this.pendingRequestsCount);
   }

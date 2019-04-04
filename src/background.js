@@ -1,15 +1,17 @@
 /// <reference types="chrome" />
 
 const PENDING_REQUESTS = 'pendingRequests';
+const NEW_REQUESTS_RECEIVED = 'newRequestsReceived';
 const GET_CONTENT_TO_SIGN = 'getContentToSign';
 const CANCEL_SIGNING = 'cancelSigning';
+const SKIP_SIGNING = 'skipSigning';
 const SEND_SIGNED_DATA_BACK = 'sendSignedDataBack';
 const INVALID_REQUEST_RESPONSE = 'Invalid request!';
 
 (function() {
   let contentsToSign = [];
   let responseCallbacks = [];
-  let currentRequestedContentIndex;
+  let currentRequestedContentIndex = -1;
 
   chrome.browserAction.setBadgeText({text: "0"});
 
@@ -26,9 +28,21 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
           });
         }
         break;
+      case NEW_REQUESTS_RECEIVED:
+        if (contentsToSign.length > currentRequestedContentIndex + 1) {
+          response({
+            success: true,
+          });
+        } else {
+          response({
+            success: false
+          });
+        }
+        break;
       case GET_CONTENT_TO_SIGN:
+        debugger;
         if (contentsToSign.length > 0) {
-          if(currentRequestedContentIndex) {
+          if(currentRequestedContentIndex > -1) {
             response({
               success: true,
               contentToSign: contentsToSign[currentRequestedContentIndex]
@@ -61,8 +75,11 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
 
           contentsToSign.splice(currentRequestedContentIndex, 1);
           responseCallbacks.splice(currentRequestedContentIndex, 1);
-          currentRequestedContentIndex = undefined;
+          currentRequestedContentIndex = -1;
         }
+        break;
+      case SKIP_SIGNING:
+        currentRequestedContentIndex = -1;
         break;
       case SEND_SIGNED_DATA_BACK:
         if(responseCallbacks.length > 0) {
@@ -79,7 +96,7 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
 
           contentsToSign.splice(currentRequestedContentIndex, 1);
           responseCallbacks.splice(currentRequestedContentIndex, 1);
-          currentRequestedContentIndex = undefined;
+          currentRequestedContentIndex = -1;
         }
         break;
       default:
