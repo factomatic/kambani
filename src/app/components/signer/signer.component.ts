@@ -52,7 +52,7 @@ export class SignerComponent implements OnInit {
         if (vaultPassword) {
           this.spinner.show();
 
-          this.vaultService
+          this.signingService
             .signData(this.content, this.selectedPublicKey, vaultPassword)
             .subscribe((signatureData: SignatureDataModel) => {
               if (signatureData) {
