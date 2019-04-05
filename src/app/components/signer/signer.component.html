@@ -8,7 +8,7 @@
   <div class="form-group">
     <p class="mb-3">Received from: {{from}}</p>
     <label for="exampleTextarea">Data to sign:</label>
-    <textarea class="form-control" id="exampleTextarea" rows="3" readonly="true">{{contentPretified}}</textarea>
+    <pre><code mwlHighlightJs [source]='contentPretified' language="json"></code></pre>
   </div>
   <div *ngIf="publicKeys.length > 0">
     <label for="selectKey">Choose key to sign with:</label>

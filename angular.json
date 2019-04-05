@@ -30,7 +30,8 @@
             "styles": [
               "src/styles.scss",
               "src/assets/bootstrap.min.css",
-              "node_modules/ngx-toastr/toastr.css"
+              "node_modules/ngx-toastr/toastr.css",
+              "node_modules/highlight.js/styles/solarized-dark.css"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
