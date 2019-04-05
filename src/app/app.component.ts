@@ -19,9 +19,9 @@ export class AppComponent implements OnInit {
     private zone: NgZone) { }
 
   ngOnInit() {
-    chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequests}, (response) => {
+    chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (response) => {
       this.zone.run(() => {
-        if (response.success) {
+        if (response.pendingRequestsCount > 0) {
           this.router.navigate(['signer']);
         }
       });

@@ -1,7 +1,6 @@
 /// <reference types="chrome" />
 
-const PENDING_REQUESTS = 'pendingRequests';
-const NEW_REQUESTS_RECEIVED = 'newRequestsReceived';
+const PENDING_REQUESTS_COUNT = 'pendingRequestsCount';
 const GET_CONTENT_TO_SIGN = 'getContentToSign';
 const CANCEL_SIGNING = 'cancelSigning';
 const SKIP_SIGNING = 'skipSigning';
@@ -17,32 +16,15 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
 
   chrome.runtime.onMessage.addListener((msg, sender, response) => {
     switch (msg.type) {
-      case PENDING_REQUESTS:
-        if (contentsToSign.length > 0) {
-          response({
-            success: true,
-          });
-        } else {
-          response({
-            success: false
-          });
-        }
-        break;
-      case NEW_REQUESTS_RECEIVED:
-        if (contentsToSign.length > currentRequestedContentIndex + 1) {
-          response({
-            success: true,
-          });
-        } else {
-          response({
-            success: false
-          });
-        }
+      case PENDING_REQUESTS_COUNT:
+        response({
+          pendingRequestsCount: contentsToSign.length,
+        });
         break;
       case GET_CONTENT_TO_SIGN:
         debugger;
         if (contentsToSign.length > 0) {
-          if(currentRequestedContentIndex > -1) {
+          if(currentRequestedContentIndex > -1 && currentRequestedContentIndex < contentsToSign.length) {
             response({
               success: true,
               contentToSign: contentsToSign[currentRequestedContentIndex]
@@ -75,11 +57,13 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
 
           contentsToSign.splice(currentRequestedContentIndex, 1);
           responseCallbacks.splice(currentRequestedContentIndex, 1);
-          currentRequestedContentIndex = -1;
+          if (contentsToSign.length === 0) {
+            currentRequestedContentIndex = -1;
+          }
         }
         break;
       case SKIP_SIGNING:
-        currentRequestedContentIndex = -1;
+        currentRequestedContentIndex--;
         break;
       case SEND_SIGNED_DATA_BACK:
         if(responseCallbacks.length > 0) {
@@ -96,7 +80,9 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
 
           contentsToSign.splice(currentRequestedContentIndex, 1);
           responseCallbacks.splice(currentRequestedContentIndex, 1);
-          currentRequestedContentIndex = -1;
+          if (contentsToSign.length === 0) {
+            currentRequestedContentIndex = -1;
+          }
         }
         break;
       default:

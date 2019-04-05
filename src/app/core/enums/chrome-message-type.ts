@@ -1,6 +1,5 @@
 export enum ChromeMessageType {
-  PendingRequests = 'pendingRequests',
-  NewRequestsReceived = 'newRequestsReceived',
+  PendingRequestsCount = 'pendingRequestsCount',
   GetContentToSign = 'getContentToSign',
   CancelSigning = 'cancelSigning',
   SkipSigning = 'skipSigning',

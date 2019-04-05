@@ -22,7 +22,7 @@
   <div class="row justify-content-center mt-4">
     <button class="btn btn-success mr-1" routerLink="/vault/import" *ngIf="publicKeys.length === 0">Import Keys</button>
     <button class="btn btn-success mr-1" (click)="signData()" *ngIf="publicKeys.length > 0">Sign Data</button>
-    <button class="btn btn-info ml-1 mr-1" (click)="skipSigning()" *ngIf="newRequestsReceived">Skip</button>
+    <button class="btn btn-info ml-1 mr-1" (click)="skipSigning()" *ngIf="pendingRequestsCount > 1">Skip</button>
     <button class="btn btn-danger ml-1" (click)="cancelSigning()">Cancel</button>
   </div>
 </div>
