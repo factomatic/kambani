@@ -25,7 +25,8 @@
             "assets": [
               "src/assets",
               "src/manifest.json",
-              "src/background.js"
+              "src/background.js",
+              "src/contentScript.js"
             ],
             "styles": [
               "src/styles.scss",

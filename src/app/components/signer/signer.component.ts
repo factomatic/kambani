@@ -129,7 +129,7 @@ export class SignerComponent implements OnInit {
 
   private cancelContentToSign() {
     this.toastr.info('Signing request cancelled!', null, {timeOut: 1000});
-    chrome.runtime.sendMessage({type: ChromeMessageType.CancelSigning});
+    chrome.runtime.sendMessage({type: ChromeMessageType.CancelSigning, data: {content: this.content}});
     this.clearContentData();
   }
 

@@ -3,6 +3,7 @@
   "name":"Web Signer Extension",
   "version": "1.0.0",
   "permissions": [
+    "activeTab",
     "notifications"
   ],
   "browser_action": {
@@ -12,9 +13,15 @@
   "background": {
     "scripts": ["background.js"]
   },
-  "externally_connectable": {
-    "matches": ["http://localhost/*"]
-  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": ["contentScript.js"],
+      "run_at": "document_start"
+    }
+  ],
   "icons": {
     "16": "assets/web-signer-logo.png",
     "48": "assets/web-signer-logo.png",

@@ -28,7 +28,7 @@ export class SigningService {
         const dataToSign = Buffer.from(data, 'utf8');
         const signature = this.getSignature(dataToSign, keyType, privateKey);
 
-        return new SignatureDataModel(keyType, publicKey, signature);
+        return new SignatureDataModel(data, keyType, publicKey, signature);
       } catch {
         return undefined;
       }
