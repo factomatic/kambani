@@ -3,5 +3,8 @@ export enum ChromeMessageType {
   GetContentToSign = 'getContentToSign',
   CancelSigning = 'cancelSigning',
   SkipSigning = 'skipSigning',
-  SendSignedDataBack = 'sendSignedDataBack'
+  SendSignedDataBack = 'sendSignedDataBack',
+  ImportKeysRequest = 'importKeysRequest',
+  CheckImportKeysRequest = 'checkImportKeysRequest',
+  NewTabOpen = 'newTabOpen'
 }

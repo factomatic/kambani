@@ -1,9 +1,12 @@
+/// <reference types="chrome" />
+
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
+import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { KeysService } from 'src/app/core/services/keys/keys.service';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
@@ -32,6 +35,24 @@ export class ImportKeysComponent implements OnInit {
   ngOnInit() {
     this.createJsonFilePasswordForm();
     this.createPrivateKeyForm();
+
+    chrome.runtime.getPlatformInfo(function(info) {
+      if (info.os !== 'win') {
+        chrome.runtime.sendMessage({type: ChromeMessageType.CheckImportKeysRequest}, (checkImportKeysRequestResponse) => {
+          if (checkImportKeysRequestResponse.importKeysRequested) {
+            chrome.runtime.sendMessage({type: ChromeMessageType.NewTabOpen});
+          } else {
+            chrome.runtime.sendMessage({type: ChromeMessageType.ImportKeysRequest}, (response) => {
+              if (response.success) {
+                const popup_url = chrome.runtime.getURL('index.html');
+                chrome.tabs.create({'url': popup_url});
+                // chrome.windows.create({'url': popup_url, focused: true, type: 'popup', left: 200, top: 200, width: 370, height: 700});
+              }
+            });
+          }
+        });
+      }
+    });
   }
 
   createJsonFilePasswordForm() {

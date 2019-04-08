@@ -1,5 +1,8 @@
 /// <reference types="chrome" />
 
+const NEW_TAB_OPEN = 'newTabOpen';
+const IMPORT_KEYS_REQUEST = 'importKeysRequest';
+const CHECK_IMPORT_KEYS_REQUEST = 'checkImportKeysRequest';
 const PENDING_REQUESTS_COUNT = 'pendingRequestsCount';
 const GET_CONTENT_TO_SIGN = 'getContentToSign';
 const CANCEL_SIGNING = 'cancelSigning';
@@ -14,11 +17,24 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
   let contentsToSign = [];
   let responseCallbacks = [];
   let currentRequestedContentIndex = -1;
+  let importKeysRequested = false;
 
   chrome.browserAction.setBadgeText({text: "0"});
 
   chrome.runtime.onMessage.addListener((msg, sender, response) => {
     switch (msg.type) {
+      case IMPORT_KEYS_REQUEST:
+        importKeysRequested = true;
+        response({success: true});
+        break;
+      case NEW_TAB_OPEN:
+        importKeysRequested = false;
+        break;
+      case CHECK_IMPORT_KEYS_REQUEST:
+        response({
+          importKeysRequested: importKeysRequested
+        });
+        break;
       case RECEIVE_CONTENT_TO_SIGN:
         if (msg.content) {
           contentsToSign.push({
@@ -53,7 +69,6 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
         });
         break;
       case GET_CONTENT_TO_SIGN:
-        debugger;
         if (contentsToSign.length > 0) {
           if(currentRequestedContentIndex > -1 && currentRequestedContentIndex < contentsToSign.length) {
             response({

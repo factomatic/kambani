@@ -19,12 +19,20 @@ export class AppComponent implements OnInit {
     private zone: NgZone) { }
 
   ngOnInit() {
-    chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (response) => {
-      this.zone.run(() => {
-        if (response.pendingRequestsCount > 0) {
-          this.router.navigate(['signer']);
-        }
-      });
+    chrome.runtime.sendMessage({type: ChromeMessageType.CheckImportKeysRequest}, (checkImportKeysRequestResponse) => {
+      if (checkImportKeysRequestResponse.importKeysRequested) {
+        this.zone.run(() => {
+          this.router.navigate(['/vault/import']);
+        });
+      } else {
+        chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (pendingRequestsResponse) => {
+          this.zone.run(() => {
+            if (pendingRequestsResponse.pendingRequestsCount > 0) {
+              this.router.navigate(['signer']);
+            }
+          });
+        });
+      }
     });
   }
 }
