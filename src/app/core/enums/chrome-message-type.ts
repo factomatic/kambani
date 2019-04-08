@@ -5,6 +5,7 @@ export enum ChromeMessageType {
   SkipSigning = 'skipSigning',
   SendSignedDataBack = 'sendSignedDataBack',
   ImportKeysRequest = 'importKeysRequest',
-  CheckImportKeysRequest = 'checkImportKeysRequest',
+  RestoreVaultRequest = 'restoreVaultRequest',
+  CheckRequests = 'checkRequests',
   NewTabOpen = 'newTabOpen'
 }

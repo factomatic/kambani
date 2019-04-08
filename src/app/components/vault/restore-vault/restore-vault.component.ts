@@ -1,3 +1,5 @@
+/// <reference types="chrome" />
+
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -6,6 +8,7 @@ import { ToastrService } from 'ngx-toastr';
 
 import { ImportResultModel } from 'src/app/core/models/ImportResultModel';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
+import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 
 @Component({
   selector: 'app-restore-vault',
@@ -24,6 +27,27 @@ export class RestoreVaultComponent implements OnInit {
     private router: Router) { }
 
   ngOnInit() {
+    chrome.tabs.getCurrent(function(tab) {
+      if (tab === undefined) {
+        chrome.runtime.getPlatformInfo(function(info) {
+          if (info.os !== 'win') {
+            chrome.runtime.sendMessage({type: ChromeMessageType.RestoreVaultRequest}, (response) => {
+              if (response.success) {
+                const popup_url = chrome.runtime.getURL('index.html');
+                chrome.tabs.create({'url': popup_url});
+              }
+            });
+          }
+        });
+      } else {
+        chrome.runtime.sendMessage({type: ChromeMessageType.CheckRequests}, (response) => {
+          if (response.restoreVaultRequested) {
+            chrome.runtime.sendMessage({type: ChromeMessageType.NewTabOpen});
+          }
+        });
+      }
+    });
+
     this.backupPasswordForm = this.fb.group({
       password: ['', [Validators.required]]
     });

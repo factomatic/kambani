@@ -40,18 +40,18 @@ export class ImportKeysComponent implements OnInit {
       if (tab === undefined) {
         chrome.runtime.getPlatformInfo(function(info) {
           if (info.os !== 'win') {
-            chrome.runtime.sendMessage({type: ChromeMessageType.CheckImportKeysRequest}, (checkImportKeysRequestResponse) => {
-              if (checkImportKeysRequestResponse.importKeysRequested) {
-                chrome.runtime.sendMessage({type: ChromeMessageType.NewTabOpen});
-              } else {
-                chrome.runtime.sendMessage({type: ChromeMessageType.ImportKeysRequest}, (response) => {
-                  if (response.success) {
-                    const popup_url = chrome.runtime.getURL('index.html');
-                    chrome.tabs.create({'url': popup_url});
-                  }
-                });
+            chrome.runtime.sendMessage({type: ChromeMessageType.ImportKeysRequest}, (response) => {
+              if (response.success) {
+                const popup_url = chrome.runtime.getURL('index.html');
+                chrome.tabs.create({'url': popup_url});
               }
             });
+          }
+        });
+      } else {
+        chrome.runtime.sendMessage({type: ChromeMessageType.CheckRequests}, (response) => {
+          if (response.importKeysRequested) {
+            chrome.runtime.sendMessage({type: ChromeMessageType.NewTabOpen});
           }
         });
       }

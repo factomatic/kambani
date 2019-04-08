@@ -2,7 +2,8 @@
 
 const NEW_TAB_OPEN = 'newTabOpen';
 const IMPORT_KEYS_REQUEST = 'importKeysRequest';
-const CHECK_IMPORT_KEYS_REQUEST = 'checkImportKeysRequest';
+const RESTORE_VAULT_REQUEST = 'restoreVaultRequest';
+const CHECK_REQUESTS = 'checkRequests';
 const PENDING_REQUESTS_COUNT = 'pendingRequestsCount';
 const GET_CONTENT_TO_SIGN = 'getContentToSign';
 const CANCEL_SIGNING = 'cancelSigning';
@@ -18,6 +19,7 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
   let responseCallbacks = [];
   let currentRequestedContentIndex = -1;
   let importKeysRequested = false;
+  let restoreVaultRequested = false;
 
   chrome.browserAction.setBadgeText({text: "0"});
 
@@ -27,13 +29,19 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
         importKeysRequested = true;
         response({success: true});
         break;
+      case RESTORE_VAULT_REQUEST:
+        restoreVaultRequested = true;
+        response({success: true});
+        break;
+      case CHECK_REQUESTS:
+        response({
+          importKeysRequested: importKeysRequested,
+          restoreVaultRequested: restoreVaultRequested
+        });
+        break;
       case NEW_TAB_OPEN:
         importKeysRequested = false;
-        break;
-      case CHECK_IMPORT_KEYS_REQUEST:
-        response({
-          importKeysRequested: importKeysRequested
-        });
+        restoreVaultRequested = false;
         break;
       case RECEIVE_CONTENT_TO_SIGN:
         if (msg.content) {
