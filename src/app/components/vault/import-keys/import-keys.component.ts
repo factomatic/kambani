@@ -36,17 +36,20 @@ export class ImportKeysComponent implements OnInit {
     this.createJsonFilePasswordForm();
     this.createPrivateKeyForm();
 
-    chrome.runtime.getPlatformInfo(function(info) {
-      if (info.os !== 'win') {
-        chrome.runtime.sendMessage({type: ChromeMessageType.CheckImportKeysRequest}, (checkImportKeysRequestResponse) => {
-          if (checkImportKeysRequestResponse.importKeysRequested) {
-            chrome.runtime.sendMessage({type: ChromeMessageType.NewTabOpen});
-          } else {
-            chrome.runtime.sendMessage({type: ChromeMessageType.ImportKeysRequest}, (response) => {
-              if (response.success) {
-                const popup_url = chrome.runtime.getURL('index.html');
-                chrome.tabs.create({'url': popup_url});
-                // chrome.windows.create({'url': popup_url, focused: true, type: 'popup', left: 200, top: 200, width: 370, height: 700});
+    chrome.tabs.getCurrent(function(tab) {
+      if (tab === undefined) {
+        chrome.runtime.getPlatformInfo(function(info) {
+          if (info.os !== 'win') {
+            chrome.runtime.sendMessage({type: ChromeMessageType.CheckImportKeysRequest}, (checkImportKeysRequestResponse) => {
+              if (checkImportKeysRequestResponse.importKeysRequested) {
+                chrome.runtime.sendMessage({type: ChromeMessageType.NewTabOpen});
+              } else {
+                chrome.runtime.sendMessage({type: ChromeMessageType.ImportKeysRequest}, (response) => {
+                  if (response.success) {
+                    const popup_url = chrome.runtime.getURL('index.html');
+                    chrome.tabs.create({'url': popup_url});
+                  }
+                });
               }
             });
           }
