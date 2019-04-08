@@ -75,7 +75,7 @@ export class ImportKeysComponent implements OnInit {
     }
 
     const dialogMessage = 'Enter your vault password to import the keys';
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.Small, dialogMessage)
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
         const filePassword = this.password.value;
         this.jsonFilePasswordForm.reset();
@@ -105,7 +105,7 @@ export class ImportKeysComponent implements OnInit {
     }
 
     const dialogMessage = 'Enter your vault password to import the key';
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.Small, dialogMessage)
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {
           this.spinner.show();

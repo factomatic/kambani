@@ -3,15 +3,15 @@
     Restore Vault
   </h1>
 </div>
-<div class="mt-5">
+<div class="mt-5 col-md-4 offset-md-4">
   <h3 class="title">Select Your Backup File</h3>
   <div class="form-group mt-2">
     <input type="file" id="file" (change)="handleFileInput($event.target.files)">
   </div>
   <form [formGroup]="backupPasswordForm" (ngSubmit)="importVault()">
     <div class="form-group row mb-2">
-      <label for="password" class="col-sm-2 col-form-label">Password: </label>
-      <div class="col-sm-10">
+      <label for="password" class="col-md-2 col-form-label">Password: </label>
+      <div class="col-md-12">
         <input 
           type="password"
           class="form-control"

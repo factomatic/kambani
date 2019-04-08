@@ -48,7 +48,7 @@ export class SignerComponent implements OnInit {
   }
 
   signData() {
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.Small, this.dialogMessage)
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, this.dialogMessage)
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {
           this.spinner.show();
