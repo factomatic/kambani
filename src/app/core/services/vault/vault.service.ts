@@ -107,6 +107,11 @@ export class VaultService {
     }
   }
 
+  closeVault(): void {
+    localStorage.removeItem(environment.storageKey);
+    this.encryptedVault = undefined;
+  }
+
   getVault(): string {
     return this.localStorageStore.getState().vault;
   }
