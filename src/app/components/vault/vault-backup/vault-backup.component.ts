@@ -30,7 +30,7 @@ export class VaultBackupComponent implements OnInit {
 
       downloader.setAttribute('href', fileUrl);
       const date = new Date();
-      downloader.setAttribute('download', `vault-backup-UTC--${date.toISOString()}`);
+      downloader.setAttribute('download', `vault-backup-UTC--${date.toISOString()}.txt`);
       downloader.click();
     }
   }
