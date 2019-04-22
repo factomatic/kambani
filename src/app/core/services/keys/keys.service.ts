@@ -20,7 +20,7 @@ export class KeysService {
   importFromJsonFile(file: string, filePassword: string, vaultPassword: string): Observable<ImportResultModel> {
     return defer(async() => {
       try {
-        const decryptedFile = JSON.parse(await encryptor.decrypt(filePassword, file));
+        const decryptedFile = JSON.parse(await encryptor.decrypt(filePassword, this.extractEncryptedKeys(file)));
         const keyPairs: KeyPairModel[] = [];
 
         if (Array.isArray(decryptedFile) && decryptedFile.length > 0) {
@@ -71,5 +71,16 @@ export class KeysService {
 
       return new KeyPairModel(importKeyModel.alias, importKeyModel.type, publicKey, importKeyModel.privateKey);
     }
+  }
+
+  private extractEncryptedKeys(file: string): string {
+    const parsedFile = JSON.parse(file);
+    const keysFile: any = { };
+
+    keysFile.data = parsedFile.data;
+    keysFile.iv = parsedFile.encryptionAlgo.iv;
+    keysFile.salt = parsedFile.encryptionAlgo.salt;
+
+    return JSON.stringify(keysFile);
   }
 }
