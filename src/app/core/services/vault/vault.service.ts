@@ -52,7 +52,7 @@ export class VaultService {
 
         this.encryptedVault = encryptedVault;
 
-        return new ImportResultModel(true, 'Successful restore');
+        return new ImportResultModel(true, 'Restore was successful');
       } catch {
         return new ImportResultModel(false, 'Invalid vault password or type of vault backup');
       }
@@ -101,7 +101,7 @@ export class VaultService {
         publicKeysAliases: JSON.stringify(publicKeysAliases)
       });
 
-      return new ImportResultModel(true, 'Successful import');
+      return new ImportResultModel(true, 'Import was successful');
     } catch {
       return new ImportResultModel(false, 'Incorrect vault password');
     }

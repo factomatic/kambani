@@ -35,7 +35,7 @@ export class CreateVaultComponent implements OnInit {
     this.vaultService
       .createNewVault(this.password.value)
       .subscribe(() => {
-        this.toastr.success('You have successfully created new vault');
+        this.toastr.success('New vault created');
         this.router.navigate(['home']);
       });
   }
