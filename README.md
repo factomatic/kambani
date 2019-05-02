@@ -1,19 +1,131 @@
-# WebSignerExtension
+# Web signer extension
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.1.4.
+Web signer is a Chrome extension, allowing any website to send a request for digitally signing an arbitrary message in
+the browser. The extension provides the following functionality:
 
-## Development server
+* creation of encrypted vaults for storing private keys, using the AES-GCM encryption algorithm
+* ECDSA digital signatures over the `secp256k1` (a.k.a. Bitcoin) elliptic curve
+* EdDSA digital signatures over the `edwards25519` curve, as specified in [RFC8032](https://tools.ietf.org/html/rfc8032)
+* paper backups for vaults
+* importing of individual (unencrypted) private keys
+* importing of encrypted private keys from a paper DID, as created using the [DID registrar](https://github.com/factomatic/factom-did-ui),
+(or from a file supporting the same format and encryption algorithms)
+* handling of multiple signing requests from different websites
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+All private keys are stored encrypted in-memory and at-rest. Decryption of the private keys is only done when signing an
+incoming message, or when importing them from an encrypted file.
 
 ## Build
+Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Run `ng build --prod` for a production build. The build artifacts will be stored in the `dist/` directory.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+## Development mode
+There are two ways in which the application can be accessed during development and for local tests.
 
-## Further help
+### Standalone Angular app
+Run `ng serve --aot` for a dev server and navigate to `http://localhost:4200/`. This will provide you with a version of
+the web signer as a standalone web application and allows testing of different components, such as importing keys and
+creating and backing up a vault.
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+This mode is not recommeneded for emulating signing of requests.
+
+### Local installation of the extension
+To install the extension locally:
+
+1. Checkout the repository
+1. Run `ng build --prod` from the project root directory
+1. Open a Chrome browser and go to the special URL `chrome://extensions`
+1. Make sure Developer Mode is switched on in the top-right corner
+1. Click on the `Load Unpacked` link in the top-left corner
+1. Choose the `dist/web-signer-extension` folder in the project root directory
+
+The plugin should now be visible in your Chrome browser and be listed on the `chrome://extensions` page
+
+## Integration into existing websites
+Integrating the plugin into an existing website is simple. The first step is to send a signing request to the extension.
+This is done by firing a custom event, detected by the extension and providing the message to sign as a parameter to the
+event:
+
+```javascript
+const dataToSign = JSON.stringify({
+    msg: 'Please sign this message!'
+});
+const event = new CustomEvent('ContentToSign', {data: dataToSign});
+window.dispatchEvent(event);
+```
+
+The `dataToSign` can be arbitrary text and is not restricted to JSON.
+
+Accessing the signed content is done by registering an event handler for another custom event:
+
+```javascript
+window.addEventListener('SigningResult', (event) => {
+    console.log(event.data);
+});
+```
+
+The `event.data` object object has the following properties:
+
+* success: boolean; indicates whether the message was signed, or the signing request was discarded
+* details: object with the following properties
+    * content: string; the message that was signed by the user
+    * signatureType: string; the type of the signature
+    * publicKey: string; the public key in base58 encoding
+    * signature: string; the signature of the content in base64 encoding
+
+For example, `event.data` for a successfully signed message would look like this:
+
+```javascript
+{
+    "success": true,
+    "details": {
+        "content": "Cristiano Ronaldo",
+        "signatureType": "ECDSASecp256k1",
+        "publicKey": "fBFzE9zBsDc2Witjy7CFLRkfZqiUBCoUCihQpT3A3NYt",
+        "signature": "MEUCIAdsf0fQI/97kPSc9wlYlJbBknDbCmLDeQSsq/EXn2uPAiEA3HIt/b0ErhCiXmExISqqp1KCcBS7dLws9wWMh5wD0J4="
+    }
+}
+```
+
+In case of a cancelled signing request , the `event.data` would look like this:
+
+```javascript
+{
+    "success": false,
+    "details": {
+        "content": "Eden Hazard"
+    }
+}
+```
+
+### Example with signature verification
+
+Below is a complete example for verifying the ECDSASecp256k1 or Edd25519 signature generated by the user:
+
+```javascript
+import * as nacl from 'tweetnacl/nacl-fast';
+import * as base58 from 'bs58';
+import * as elliptic from 'elliptic';
+import * as naclUtil from 'tweetnacl-util';
+
+window.addEventListener('SigningResult', (event) => {
+    const result = event.data;
+    if (result.success) {
+        if (result.details.signatureType === 'Ed25519') {
+            const signature = naclUtil.decodeBase64(result.data.signature);
+            const publicKey = base58.decode(result.data.publicKey);
+            const signedMessage = Buffer.from(this.message, 'utf8');
+            const isValid = nacl.sign.detached.verify(signedMessage, signature, publicKey);
+            console.log('Ed25519 signature verified successfully: ' + isValid);
+        } else if (result.details.signatureType === 'ECDSASecp256k1') {
+             const EC = elliptic.ec;
+             const ec = new EC('secp256k1');
+             const key = ec.keyFromPublic(base58.decode(result.data.publicKey), 'hex');
+             const signedMessage = Buffer.from(this.message, 'utf8');
+             const derSignature = naclUtil.decodeBase64(result.data.signature);
+             const isValid = key.verify(signedMessage, derSignature);
+             console.log('ECDSASecp256k1 signature verified successfully: ' + isValid);
+        }
+    }
+});
+```
