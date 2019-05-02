@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { CloseVaultDialogComponent } from '../../dialogs/close-vault/close-vault.dialog.component';
+import { RemoveVaultDialogComponent } from '../../dialogs/remove-vault/remove-vault.dialog.component';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { SigningService } from 'src/app/core/services/signing/signing.service';
@@ -31,11 +31,11 @@ export class NavbarComponent implements OnInit {
     });
   }
 
-  closeVault() {
-    this.dialogsService.open(CloseVaultDialogComponent, ModalSizeTypes.ExtraExtraLarge, null)
+  removeVault() {
+    this.dialogsService.open(RemoveVaultDialogComponent, ModalSizeTypes.ExtraExtraLarge, null)
       .subscribe((response: string) => {
         if (response === 'confirm') {
-          this.vaultService.closeVault();
+          this.vaultService.removeVault();
           this.router.navigate(['/vault/create']);
         }
       });

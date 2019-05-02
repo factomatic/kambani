@@ -2,10 +2,10 @@ import { Component } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  templateUrl: './close-vault.dialog.component.html'
+  templateUrl: './remove-vault.dialog.component.html'
 })
 
-export class CloseVaultDialogComponent {
+export class RemoveVaultDialogComponent {
   constructor(public activeModal: NgbActiveModal) { }
 
   public onConfirm() {
