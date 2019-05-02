@@ -10,9 +10,6 @@ const CANCEL_SIGNING = 'cancelSigning';
 const SKIP_SIGNING = 'skipSigning';
 const SEND_SIGNED_DATA_BACK = 'sendSignedDataBack';
 const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
-const SUCCESS_REQUEST_RESPONSE = 'Signing request signed successfully!'
-const CANCEL_REQUEST_RESPONSE = 'Signing request cancelled!'
-const INVALID_REQUEST_RESPONSE = 'Invalid request!';
 
 (function() {
   let contentsToSign = [];
@@ -66,8 +63,7 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
           return true;
         } else {
           response({
-            success: false,
-            message: INVALID_REQUEST_RESPONSE
+            success: false
           });
         }
         break;
@@ -101,8 +97,7 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
           const responseCallback = responseCallbacks[currentRequestedContentIndex];
           responseCallback({
             success: false,
-            data: msg.data,
-            message: CANCEL_REQUEST_RESPONSE
+            details: msg.data
           });
 
           chrome.browserAction.getBadgeText({}, function(result) {
@@ -125,8 +120,7 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
           const responseCallback = responseCallbacks[currentRequestedContentIndex];
           responseCallback({
             success: true,
-            data: msg.data,
-            message: SUCCESS_REQUEST_RESPONSE
+            details: msg.data
           });
 
           chrome.browserAction.getBadgeText({}, function(result) {

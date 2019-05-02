@@ -24,11 +24,11 @@ export class SigningService {
         const vault = this.vaultService.getVault();
         const decryptedVault = JSON.parse(await encryptor.decrypt(vaultPassword, vault));
         const privateKey = decryptedVault[publicKey].privateKey;
-        const keyType = decryptedVault[publicKey].type;
+        const signatureType = decryptedVault[publicKey].type;
         const dataToSign = Buffer.from(data, 'utf8');
-        const signature = this.getSignature(dataToSign, keyType, privateKey);
+        const signature = this.getSignature(dataToSign, signatureType, privateKey);
 
-        return new SignatureDataModel(data, keyType, publicKey, signature);
+        return new SignatureDataModel(data, signatureType, publicKey, signature);
       } catch {
         return undefined;
       }
