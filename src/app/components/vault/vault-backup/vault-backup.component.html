@@ -8,6 +8,6 @@
   <button class="btn btn-success mt-2" (click)="downloadJSONFile()">Download</button>
 </div>
 <div class="center mt-5" *ngIf="!publicKeysAny">
-  <p class="text-warning text-center">You have to import keys before backing up your vault</p>
+  <p class="text-warning text-center">You have to import at least one key before backing up your vault</p>
   <button class="btn btn-success mt-2" routerLink="/vault/import">Import Keys</button>
 </div>

@@ -59,7 +59,7 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
           chrome.notifications.create({
             type: "basic",
             title: "Notification message",
-            message: "You received data to sign",
+            message: "New signing request received",
             iconUrl: "assets/web-signer-logo.png"
           });
 

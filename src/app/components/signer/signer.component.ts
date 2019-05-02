@@ -59,7 +59,7 @@ export class SignerComponent implements OnInit {
               if (signatureData) {
                 chrome.runtime.sendMessage({type: ChromeMessageType.SendSignedDataBack, data: signatureData});
                 this.spinner.hide();
-                this.toastr.success('Signed data successfully!', null, {timeOut: 1000});
+                this.toastr.success('Data successfully signed!', null, {timeOut: 1000});
                 this.clearContentData();
                 this.getPendingRequestsCount();
                 this.getContentToSign();
