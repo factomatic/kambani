@@ -1,12 +1,12 @@
 <div class="heading">
   <h1 class="text-info text-center">
-    Available keys
+    Available Keys
   </h1>
 </div>
-<div class="list-group mt-3" *ngIf="availableKeys.length > 0">
-  <div class="list-group-item list-group-item-action" *ngFor="let key of availableKeys">
-    <h5 class="text-center font-italic text-info">{{key.alias}}</h5>
-    <p class="text-center">{{key.publicKey}}</p>
+<div class="mt-4 list-group col-md-4 offset-md-4 mt-3" *ngIf="availableKeys.length > 0">
+  <div class="list-group-item list-group-item-action" *ngFor="let keyViewModel of availableKeys">
+    <h5 class="text-center font-italic text-info">{{keyViewModel.alias}}</h5>
+    <p class="text-center">{{keyViewModel.publicKey}}</p>
   </div>
 </div>
 <div class="center mt-5" *ngIf="!availableKeys || availableKeys.length === 0">

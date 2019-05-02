@@ -3,6 +3,7 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { ChromeMessageType } from './core/enums/chrome-message-type';
 import { VaultService } from './core/services/vault/vault.service';
 
 @Component({
@@ -13,19 +14,29 @@ import { VaultService } from './core/services/vault/vault.service';
 export class AppComponent implements OnInit {
 
   constructor(
-    protected vaultService: VaultService,
+    public vaultService: VaultService,
     private router: Router,
     private zone: NgZone) { }
 
   ngOnInit() {
-    chrome.runtime.sendMessage({type: 'popupInit'}, (response) => {
-      this.zone.run(() => {
-        if (response.success) {
-          this.router.navigate(['signer'], { queryParams: {
-            contentToSign: JSON.stringify(response.contentToSign)
-          }});
-        }
-      });
+    chrome.runtime.sendMessage({type: ChromeMessageType.CheckRequests}, (checkRequestsResponse) => {
+      if (checkRequestsResponse.importKeysRequested) {
+        this.zone.run(() => {
+          this.router.navigate(['/vault/import']);
+        });
+      } else if (checkRequestsResponse.restoreVaultRequested) {
+        this.zone.run(() => {
+          this.router.navigate(['/vault/restore']);
+        });
+      } else {
+        chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (pendingRequestsResponse) => {
+          this.zone.run(() => {
+            if (pendingRequestsResponse.pendingRequestsCount > 0) {
+              this.router.navigate(['signer']);
+            }
+          });
+        });
+      }
     });
   }
 }

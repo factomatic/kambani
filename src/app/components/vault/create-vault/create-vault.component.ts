@@ -12,7 +12,7 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
   styleUrls: ['./create-vault.component.scss']
 })
 export class CreateVaultComponent implements OnInit {
-  protected createVaultForm;
+  public createVaultForm;
 
   constructor(
     private fb: FormBuilder,
@@ -35,7 +35,7 @@ export class CreateVaultComponent implements OnInit {
     this.vaultService
       .createNewVault(this.password.value)
       .subscribe(() => {
-        this.toastr.success('You have successfully created new vault');
+        this.toastr.success('New vault created');
         this.router.navigate(['home']);
       });
   }

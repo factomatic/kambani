@@ -1,8 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
 body {
-  width: 350px;
   height: 600px;
   font-size: 0.85rem !important;
+}
+
+@media (max-width: 370px) {
+  body {
+    width: 350px;
+  }
 }
 
 h1, .h1 {
@@ -35,4 +40,16 @@ h3, .h3 {
 
 .btn:focus {
   box-shadow: none !important;
+}
+
+.btn-info {
+  background-color: #4285f4 !important;
+}
+
+.heading{
+  margin-top: 40px;
+}
+
+.center {
+  text-align: center;
 }

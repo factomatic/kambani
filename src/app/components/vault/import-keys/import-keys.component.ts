@@ -1,9 +1,12 @@
+/// <reference types="chrome" />
+
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
+import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { KeysService } from 'src/app/core/services/keys/keys.service';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
@@ -16,10 +19,10 @@ import { SignatureType } from 'src/app/core/enums/signature-type';
   styleUrls: ['./import-keys.component.scss']
 })
 export class ImportKeysComponent implements OnInit {
-  protected importType: string;
-  protected jsonFilePasswordForm: FormGroup;
-  protected privateKeyForm: FormGroup;
-  protected file: string;
+  public importType: string;
+  public jsonFilePasswordForm: FormGroup;
+  public privateKeyForm: FormGroup;
+  public file: string;
 
   constructor(
     private fb: FormBuilder,
@@ -32,6 +35,27 @@ export class ImportKeysComponent implements OnInit {
   ngOnInit() {
     this.createJsonFilePasswordForm();
     this.createPrivateKeyForm();
+
+    chrome.tabs.getCurrent(function(tab) {
+      if (tab === undefined) {
+        chrome.runtime.getPlatformInfo(function(info) {
+          if (info.os !== 'win') {
+            chrome.runtime.sendMessage({type: ChromeMessageType.ImportKeysRequest}, (response) => {
+              if (response.success) {
+                const popup_url = chrome.runtime.getURL('index.html');
+                chrome.tabs.create({'url': popup_url});
+              }
+            });
+          }
+        });
+      } else {
+        chrome.runtime.sendMessage({type: ChromeMessageType.CheckRequests}, (response) => {
+          if (response.importKeysRequested) {
+            chrome.runtime.sendMessage({type: ChromeMessageType.NewTabOpen});
+          }
+        });
+      }
+    });
   }
 
   createJsonFilePasswordForm() {
@@ -54,7 +78,7 @@ export class ImportKeysComponent implements OnInit {
     }
 
     const dialogMessage = 'Enter your vault password to import the keys';
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.Small, dialogMessage)
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
         const filePassword = this.password.value;
         this.jsonFilePasswordForm.reset();
@@ -84,7 +108,7 @@ export class ImportKeysComponent implements OnInit {
     }
 
     const dialogMessage = 'Enter your vault password to import the key';
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.Small, dialogMessage)
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {
           this.spinner.show();

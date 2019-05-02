@@ -10,10 +10,19 @@
           <a class="nav-link" routerLink="/">Home</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" routerLink="/signer">
+            Signing Requests
+            <span class="ml-2 badge badge-light">{{pendingRequestsCount}}</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" routerLink="/import">Import Keys</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/backup">Backup</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" (click)="removeVault()">Remove Vault</a>
         </li>
       </ul>
     </div>
