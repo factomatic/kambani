@@ -112,17 +112,17 @@ window.addEventListener('SigningResult', (event) => {
     const result = event.data;
     if (result.success) {
         if (result.details.signatureType === 'Ed25519') {
-            const signature = naclUtil.decodeBase64(result.data.signature);
-            const publicKey = base58.decode(result.data.publicKey);
+            const signature = naclUtil.decodeBase64(result.details.signature);
+            const publicKey = base58.decode(result.details.publicKey);
             const signedMessage = Buffer.from(this.message, 'utf8');
             const isValid = nacl.sign.detached.verify(signedMessage, signature, publicKey);
             console.log('Ed25519 signature verified successfully: ' + isValid);
         } else if (result.details.signatureType === 'ECDSASecp256k1') {
              const EC = elliptic.ec;
              const ec = new EC('secp256k1');
-             const key = ec.keyFromPublic(base58.decode(result.data.publicKey), 'hex');
+             const key = ec.keyFromPublic(base58.decode(result.details.publicKey), 'hex');
              const signedMessage = Buffer.from(this.message, 'utf8');
-             const derSignature = naclUtil.decodeBase64(result.data.signature);
+             const derSignature = naclUtil.decodeBase64(result.details.signature);
              const isValid = key.verify(signedMessage, derSignature);
              console.log('ECDSASecp256k1 signature verified successfully: ' + isValid);
         }
