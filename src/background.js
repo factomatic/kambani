@@ -97,7 +97,7 @@ const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
           const responseCallback = responseCallbacks[currentRequestedContentIndex];
           responseCallback({
             success: false,
-            details: msg.data
+            ...msg.data
           });
 
           chrome.browserAction.getBadgeText({}, function(result) {
@@ -120,7 +120,7 @@ const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
           const responseCallback = responseCallbacks[currentRequestedContentIndex];
           responseCallback({
             success: true,
-            details: msg.data
+            ...msg.data
           });
 
           chrome.browserAction.getBadgeText({}, function(result) {
