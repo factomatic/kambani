@@ -50,7 +50,7 @@ event:
 const dataToSign = JSON.stringify({
     msg: 'Please sign this message!'
 });
-const event = new CustomEvent('ContentToSign', {data: dataToSign});
+const event = new CustomEvent('ContentToSign', {detail: dataToSign});
 window.dispatchEvent(event);
 ```
 
@@ -60,41 +60,36 @@ Accessing the signed content is done by registering an event handler for another
 
 ```javascript
 window.addEventListener('SigningResult', (event) => {
-    console.log(event.data);
+    console.log(event.detail);
 });
 ```
 
-The `event.data` object object has the following properties:
+The `event.detail` object object has the following properties:
 
 * success: boolean; indicates whether the message was signed, or the signing request was discarded
-* details: object with the following properties
-    * content: string; the message that was signed by the user
-    * signatureType: string; the type of the signature
-    * publicKey: string; the public key in base58 encoding
-    * signature: string; the signature of the content in base64 encoding
+* content: string; the message that was signed by the user
+* signatureType: string; the type of the signature
+* publicKey: string; the public key in base58 encoding
+* signature: string; the signature of the content in base64 encoding
 
-For example, `event.data` for a successfully signed message would look like this:
+For example, `event.detail` for a successfully signed message would look like this:
 
 ```javascript
 {
     "success": true,
-    "details": {
-        "content": "Cristiano Ronaldo",
-        "signatureType": "ECDSASecp256k1",
-        "publicKey": "fBFzE9zBsDc2Witjy7CFLRkfZqiUBCoUCihQpT3A3NYt",
-        "signature": "MEUCIAdsf0fQI/97kPSc9wlYlJbBknDbCmLDeQSsq/EXn2uPAiEA3HIt/b0ErhCiXmExISqqp1KCcBS7dLws9wWMh5wD0J4="
-    }
+    "content": "Cristiano Ronaldo",
+    "signatureType": "ECDSASecp256k1",
+    "publicKey": "fBFzE9zBsDc2Witjy7CFLRkfZqiUBCoUCihQpT3A3NYt",
+    "signature": "MEUCIAdsf0fQI/97kPSc9wlYlJbBknDbCmLDeQSsq/EXn2uPAiEA3HIt/b0ErhCiXmExISqqp1KCcBS7dLws9wWMh5wD0J4="
 }
 ```
 
-In case of a cancelled signing request , the `event.data` would look like this:
+In case of a cancelled signing request , the `event.detail` would look like this:
 
 ```javascript
 {
     "success": false,
-    "details": {
-        "content": "Eden Hazard"
-    }
+    "content": "Eden Hazard"
 }
 ```
 
@@ -109,20 +104,20 @@ import * as elliptic from 'elliptic';
 import * as naclUtil from 'tweetnacl-util';
 
 window.addEventListener('SigningResult', (event) => {
-    const result = event.data;
+    const result = event.detail;
     if (result.success) {
-        if (result.details.signatureType === 'Ed25519') {
-            const signature = naclUtil.decodeBase64(result.details.signature);
-            const publicKey = base58.decode(result.details.publicKey);
+        if (result.signatureType === 'Ed25519') {
+            const signature = naclUtil.decodeBase64(result.signature);
+            const publicKey = base58.decode(result.publicKey);
             const signedMessage = Buffer.from(this.message, 'utf8');
             const isValid = nacl.sign.detached.verify(signedMessage, signature, publicKey);
             console.log('Ed25519 signature verified successfully: ' + isValid);
-        } else if (result.details.signatureType === 'ECDSASecp256k1') {
+        } else if (result.signatureType === 'ECDSASecp256k1') {
              const EC = elliptic.ec;
              const ec = new EC('secp256k1');
-             const key = ec.keyFromPublic(base58.decode(result.details.publicKey), 'hex');
+             const key = ec.keyFromPublic(base58.decode(result.publicKey), 'hex');
              const signedMessage = Buffer.from(this.message, 'utf8');
-             const derSignature = naclUtil.decodeBase64(result.details.signature);
+             const derSignature = naclUtil.decodeBase64(result.signature);
              const isValid = key.verify(signedMessage, derSignature);
              console.log('ECDSASecp256k1 signature verified successfully: ' + isValid);
         }
