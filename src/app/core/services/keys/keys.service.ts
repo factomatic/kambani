@@ -1,6 +1,7 @@
 import * as base58 from 'bs58';
 import * as elliptic from 'elliptic';
 import * as encryptor from 'browser-passworder';
+import * as forge from 'node-forge';
 import * as nacl from 'tweetnacl/nacl-fast';
 import { Buffer } from 'buffer/';
 import { defer, Observable } from 'rxjs';
@@ -70,6 +71,12 @@ export class KeysService {
       const publicKey = base58.encode(Buffer.from(compressedPubPoint, 'hex'));
 
       return new KeyPairModel(importKeyModel.alias, importKeyModel.type, publicKey, importKeyModel.privateKey);
+    } else if (importKeyModel.type === SignatureType.RSA) {
+      const privateKey = forge.pki.privateKeyFromPem(importKeyModel.privateKey);
+      const publicKey = forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);
+      const publicKeyPem = forge.pki.publicKeyToPem(publicKey);
+
+      return new KeyPairModel(importKeyModel.alias, importKeyModel.type, publicKeyPem, importKeyModel.privateKey);
     }
   }
 
