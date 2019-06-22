@@ -7,6 +7,7 @@ import { Buffer } from 'buffer/';
 import { defer, Observable } from 'rxjs';
 import { Injectable, Output, EventEmitter } from '@angular/core';
 
+import { arrayBufferToBase64String, convertPemToBinary } from '../../utils/helpers';
 import { SignatureDataModel } from '../../models/SignatureDataModel';
 import { SignatureType } from '../../enums/signature-type';
 import { VaultService } from '../vault/vault.service';
@@ -26,7 +27,7 @@ export class SigningService {
         const privateKey = decryptedVault[publicKey].privateKey;
         const signatureType = decryptedVault[publicKey].type;
         const dataToSign = Buffer.from(data, 'utf8');
-        const signature = this.getSignature(dataToSign, signatureType, privateKey);
+        const signature = await this.getSignature(dataToSign, signatureType, privateKey);
 
         return new SignatureDataModel(data, signatureType, publicKey, signature);
       } catch {
@@ -40,7 +41,7 @@ export class SigningService {
     this.change.emit(this.pendingRequestsCount);
   }
 
-  private getSignature(dataToSign: Buffer, type: SignatureType, privateKey: string): string {
+  private async getSignature(dataToSign: Buffer, type: SignatureType, privateKey: string): Promise<string> {
     if (type === SignatureType.EdDSA) {
       const secret = Buffer.from(base58.decode(privateKey));
       const keyPair = nacl.sign.keyPair.fromSecretKey(secret);
@@ -56,6 +57,19 @@ export class SigningService {
 
       const derSignature = signature.toDER();
       const signatureBase64 = naclUtil.encodeBase64(derSignature);
+
+      return signatureBase64;
+    } else if (type == SignatureType.RSA) {
+      const signAlgorithm = {
+        name: "RSASSA-PKCS1-v1_5",
+        modulusLength: 4096,
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+        hash: { name: "SHA-256" }
+      };
+
+      const privateCryptoKey = await window.crypto.subtle.importKey("pkcs8", convertPemToBinary(privateKey) as ArrayBuffer, signAlgorithm, true, ["sign"]);
+      const signature = await window.crypto.subtle.sign(signAlgorithm, privateCryptoKey, dataToSign);
+      const signatureBase64 = arrayBufferToBase64String(signature);
 
       return signatureBase64;
     }

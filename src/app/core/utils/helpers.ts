@@ -23,7 +23,47 @@ function modifyPemPrefixAndSuffix(pem: string): string {
   ].join('');
 }
 
+function convertPemToBinary(pem) {
+  var lines = pem.split('\n');
+  var encoded = '';
+  for(var i = 0;i < lines.length;i++) {
+    if (lines[i].trim().length > 0 &&
+        lines[i].indexOf('-BEGIN RSA PRIVATE KEY-') < 0 &&
+        lines[i].indexOf('-BEGIN RSA PUBLIC KEY-') < 0 &&
+        lines[i].indexOf('-END RSA PRIVATE KEY-') < 0 &&
+        lines[i].indexOf('-END RSA PUBLIC KEY-') < 0) {
+      encoded += lines[i].trim();
+    }
+  }
+
+  return base64StringToArrayBuffer(encoded);
+}
+
+function base64StringToArrayBuffer(b64str) {
+  var byteStr = atob(b64str);
+  var bytes = new Uint8Array(byteStr.length);
+  
+  for (var i = 0; i < byteStr.length; i++) {
+    bytes[i] = byteStr.charCodeAt(i);
+  }
+
+  return bytes.buffer;
+}
+
+function arrayBufferToBase64String(arrayBuffer) {
+  var byteArray = new Uint8Array(arrayBuffer);
+  var byteString = '';
+
+  for (var i=0; i<byteArray.byteLength; i++) {
+    byteString += String.fromCharCode(byteArray[i]);
+  }
+
+  return btoa(byteString);
+}
+
 export {
   minifyPublicKey,
-  modifyPemPrefixAndSuffix
+  modifyPemPrefixAndSuffix,
+  convertPemToBinary,
+  arrayBufferToBase64String
 };
