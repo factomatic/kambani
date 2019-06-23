@@ -61,22 +61,18 @@ export class VaultService {
 
   async importKeys(keyPairs: KeyPairModel[], vaultPassword: string): Promise<ImportResultModel> {
     try {
-      const vault = this.localStorageStore.getState().vault;
+      const vault = this.encryptedVault;
 
       let publicKeys = this.localStorageStore.getState().publicKeys;
+      let publicKeysAliases = this.localStorageStore.getState().publicKeysAliases;
       if (!publicKeys) {
         publicKeys = [];
-      } else {
-        publicKeys = JSON.parse(publicKeys);
-      }
-
-      let publicKeysAliases = this.localStorageStore.getState().publicKeysAliases;
-      if (!publicKeysAliases) {
         publicKeysAliases = {};
       } else {
+        publicKeys = JSON.parse(publicKeys);
         publicKeysAliases = JSON.parse(publicKeysAliases);
       }
-
+      
       const decryptedVault = JSON.parse(await encryptor.decrypt(vaultPassword, vault));
 
       for (const keyPair of keyPairs) {
@@ -113,7 +109,7 @@ export class VaultService {
   }
 
   getVault(): string {
-    return this.localStorageStore.getState().vault;
+    return this.encryptedVault;
   }
 
   getVaultPublicKeys(): string {
