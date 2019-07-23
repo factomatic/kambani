@@ -1,49 +1,46 @@
-<div class="heading">
-  <h1 class="text-info text-center">
-    Create New Vault
-  </h1>
-</div>
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-md-4 offset-md-4">
+<div id="create-vault">
+  <div class="auth-side">
+    <div class="form-container">
+      <div class="heading">
+        <h1>
+          Create new Vault
+        </h1>
+      </div>
       <form [formGroup]="createVaultForm" (ngSubmit)="createVault()">
-        <div class="form-group row">
-          <label for="password" class="col-md-2 col-form-label">Password</label>
-          <div class="col-md-12">
-            <input 
+        <div class="form-group">
+          <label for="password">Password</label>
+            <input
               type="password"
               class="form-control"
               id="password"
               formControlName="password"
               pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$^+=!*()@%&]).{8,}$"
               [ngClass]="{ 'is-invalid': password.touched && password.errors }">
-              <div *ngIf="password.errors" class="invalid-feedback">
-                <div *ngIf="password.errors.required">Password is required!</div>
-                <div *ngIf="password.errors.pattern">Password must be at least 8 characters long and must include at least one lower-case letter, one upper-case letter, one digit and one special character!</div>
-              </div>
-          </div>
+            <div *ngIf="password.errors" class="invalid-feedback">
+              <div *ngIf="password.errors.required">Password is required!</div>
+              <div *ngIf="password.errors.pattern">Password must be at least 8 characters long and must include at least one lower-case letter, one upper-case letter, one digit and one special character!</div>
+            </div>
         </div>
-        <div class="form-group row">
-          <label for="confirmPassword" class="col-md-4 col-form-label">Confirm Password</label>
-          <div class="col-md-12">
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
             <input
               type="password"
               formControlName="confirmPassword"
               id="confirmPassword"
-              class="form-control"            
+              class="form-control"
               [ngClass]="{ 'is-invalid': confirmPassword.touched && (confirmPassword.errors || createVaultForm.errors?.passwordsMismatch) }" >
             <div *ngIf="confirmPassword.errors || createVaultForm.errors?.passwordsMismatch" class="invalid-feedback">
               <div *ngIf="confirmPassword.errors?.required">Confirm password is required!</div>
               <div *ngIf="createVaultForm.errors?.passwordsMismatch">Passwords do not match!</div>
             </div>
-          </div>
         </div>
-        <input type="submit" class="btn btn-info" value="Create" [disabled]="createVaultForm.invalid" />
+        <input type="submit" class="btn btn-primary" value="Create" [disabled]="createVaultForm.invalid" />
       </form>
+      <div class="restore mt-5">
+        <p class="text-muted">Restore vault ?</p>
+        <a class="text-warning" routerLink="/vault/restore">Import using vault backup file</a>
+      </div>
     </div>
   </div>
-</div>
-<div class="restore mt-5 col-md-4 offset-md-4">
-  <p class="text-muted">Restore vault ?</p>
-  <a class="text-warning" routerLink="/vault/restore">Import using vault backup file</a>
+  <div class="background-side"></div>
 </div>

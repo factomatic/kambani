@@ -1,99 +1,103 @@
-<div class="heading">
-  <h1 class="text-info text-center">
-    Import Keys
-  </h1>
-</div>
-<div class="container-fluid">
+<div class="container">
   <div class="row">
-    <div class="col-md-4 offset-md-4">
-      <h3 class="m-2">How would you like to import your keys?</h3>
-      <div class="bs-component radio-btns">
-        <form #form="ngForm">
-          <fieldset class="form-group">
-            <div class="radiobtn m-2">
-              <label class="form-check-label">
-                <input type="radio" value="keystore" name="type" [(ngModel)]="importType">
-                Keystore / JSON File
-              </label>
+    <div class="col-xs-12 col-sm-12 col-md-12">
+      <div class="page-content">
+        <h1 class="page-title text-center">
+          Import Keys
+        </h1>
+        <div class="row">
+          <div class="col-md-6 col-xs-12 offset-md-3">
+            <h3 class="m-2">How would you like to import your keys?</h3>
+            <div class="bs-component radio-btns">
+              <form #form="ngForm">
+                <fieldset class="form-group">
+                  <div class="radiobtn m-2">
+                    <label class="form-check-label">
+                      <input type="radio" value="keystore" name="type" [(ngModel)]="importType">
+                      Keystore / JSON File
+                    </label>
+                  </div>
+                  <div class="radiobtn m-2">
+                    <label class="form-check-label">
+                      <input type="radio" value="privateKey" name="type" [(ngModel)]="importType">
+                      Private Key
+                    </label>
+                  </div>
+                </fieldset>
+              </form>
             </div>
-            <div class="radiobtn m-2">
-              <label class="form-check-label">
-                <input type="radio" value="privateKey" name="type" [(ngModel)]="importType">
-                Private Key
-              </label>
-            </div>
-          </fieldset>
-        </form>
-      </div>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-4 offset-md-4">
-      <div *ngIf="importType == 'keystore'">
-        <h3 class="title">Select Your Keys File</h3>
-        <div class="form-group">
-          <input type="file" id="file" (change)="handleFileInput($event.target.files)">
+          </div>
         </div>
-        <form [formGroup]="jsonFilePasswordForm" (ngSubmit)="importJsonFile()" *ngIf="file">
-          <div class="form-group mb-2">
-            <label for="password" class="col-md-2 col-form-label">Password: </label>
-            <div class="col-md-12">
-              <input 
-                type="password"
-                class="form-control"
-                id="password"
-                formControlName="password"
-                [ngClass]="{ 'is-invalid': password.touched && password.errors }" />
-              <div *ngIf="password.errors" class="invalid-feedback">
-                <div *ngIf="password['errors'].required">Password is required!</div>
+        <div class="row">
+          <div class="col-md-6 col-xs-12 offset-md-3">
+            <div *ngIf="importType == 'keystore'">
+              <h3 class="title">Select Your Keys File</h3>
+              <div class="form-group">
+                <input type="file" id="file" (change)="handleFileInput($event.target.files)">
               </div>
+              <form [formGroup]="jsonFilePasswordForm" (ngSubmit)="importJsonFile()" *ngIf="file">
+                <div class="form-group mb-2">
+                  <label for="password" class="col-md-2 col-form-label">Password: </label>
+                  <div class="col-md-12">
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="password"
+                      formControlName="password"
+                      [ngClass]="{ 'is-invalid': password.touched && password.errors }" />
+                    <div *ngIf="password.errors" class="invalid-feedback">
+                      <div *ngIf="password['errors'].required">Password is required!</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-3 text-center">
+                  <input type="submit" class="btn btn-sm btn-info" value="Import Keys" [disabled]="jsonFilePasswordForm.invalid" />
+                </div>
+              </form>
+            </div>
+            <div *ngIf="importType == 'privateKey'">
+              <form [formGroup]="privateKeyForm" (ngSubmit)="importPrivateKey()">
+                <div class="col-sm-10 mb-4">
+                  <div class="form-group">
+                    <label class="control-label" for="type">Choose signature type:</label>
+                    <select class="form-control" formControlName="type" id="type">
+                      <option value="Ed25519">Ed25519</option>
+                      <option value="ECDSASecp256k1">ECDSASecp256k1</option>
+                      <option value="RSA">RSA</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="alias">Enter key alias:</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="alias"
+                      formControlName="alias"
+                      [ngClass]="{ 'is-invalid': alias.touched && alias.errors }" />
+                    <div *ngIf="alias.errors" class="invalid-feedback">
+                      <div *ngIf="alias['errors'].required">Alias is required!</div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="privateKey">Enter your private key:</label>
+                    <textarea
+                      class="form-control"
+                      id="privateKey"
+                      formControlName="privateKey"
+                      [ngClass]="{ 'is-invalid': privateKey.touched && privateKey.errors }">
+                    </textarea>
+                    <div *ngIf="privateKey.errors" class="invalid-feedback">
+                      <div *ngIf="privateKey['errors'].required">Private key is required!</div>
+                    </div>
+                  </div>
+                  <div class="mt-3 text-center">
+                    <input type="submit" class="btn btn-sm btn-info" value="Import Key" [disabled]="privateKeyForm.invalid" />
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
-          <div class="mt-3 text-center">
-            <input type="submit" class="btn btn-sm btn-info" value="Import Keys" [disabled]="jsonFilePasswordForm.invalid" />
-          </div>
-        </form>
-      </div>
-      <div *ngIf="importType == 'privateKey'">
-        <form [formGroup]="privateKeyForm" (ngSubmit)="importPrivateKey()">
-          <div class="col-sm-10 mb-4">
-            <div class="form-group">
-              <label class="control-label" for="type">Choose signature type:</label>
-              <select class="form-control" formControlName="type" id="type">
-                <option value="Ed25519">Ed25519</option>
-                <option value="ECDSASecp256k1">ECDSASecp256k1</option>
-                <option value="RSA">RSA</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="alias">Enter key alias:</label>
-              <input 
-                type="text"
-                class="form-control"
-                id="alias"
-                formControlName="alias"
-                [ngClass]="{ 'is-invalid': alias.touched && alias.errors }" />
-              <div *ngIf="alias.errors" class="invalid-feedback">
-                <div *ngIf="alias['errors'].required">Alias is required!</div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="privateKey">Enter your private key:</label>
-              <textarea 
-                class="form-control"
-                id="privateKey"
-                formControlName="privateKey"
-                [ngClass]="{ 'is-invalid': privateKey.touched && privateKey.errors }">
-              </textarea>
-              <div *ngIf="privateKey.errors" class="invalid-feedback">
-                <div *ngIf="privateKey['errors'].required">Private key is required!</div>
-              </div>
-            </div>
-            <div class="mt-3 text-center">
-              <input type="submit" class="btn btn-sm btn-info" value="Import Key" [disabled]="privateKeyForm.invalid" />
-            </div>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   </div>

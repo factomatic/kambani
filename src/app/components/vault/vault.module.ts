@@ -2,6 +2,8 @@ import { VaultRoutingModule } from './vault.routing';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
+import { ModalsModule } from '../modals/modals.module';
+import { DIDModule } from '../did/did.module';
 
 import { vaultComponents } from '.';
 
@@ -13,7 +15,9 @@ import { vaultComponents } from '.';
     VaultRoutingModule,
     CommonModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    ModalsModule,
+    DIDModule
   ],
   exports: [
     ...vaultComponents

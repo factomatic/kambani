@@ -1,0 +1,21 @@
+.header {
+  background-color: red;
+  margin-top: 8%;
+}
+
+.title{
+  color: white;
+}
+
+@media( max-width : 375px ){
+  .header {
+    margin-top: 20%;
+  }
+}
+
+
+@media( max-width : 425px ){
+  .header {
+    margin-top: 18%;
+  }
+}

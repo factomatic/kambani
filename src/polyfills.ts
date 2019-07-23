@@ -18,9 +18,6 @@
  * BROWSER POLYFILLS
  */
 
- // Add global to window, assigning the value of window itself.
-  (window as any).global = window;
-
 /** IE9, IE10, IE11, and Chrome <55 requires all of the following polyfills.
  *  This also includes Android Emulators with older versions of Chrome and Google Search/Googlebot
  */
@@ -86,3 +83,7 @@ import 'zone.js/dist/zone';  // Included with Angular CLI.
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
+
+(window as any).global = window;
+// @ts-ignore
+window.Buffer = window.Buffer || require('buffer').Buffer;

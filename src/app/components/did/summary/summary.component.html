@@ -1,0 +1,32 @@
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12">
+      <div class="page-content">
+        <h1 class="page-title text-center">DID preview</h1>
+        <div class="row">
+          <div class="col-xs-12 offset-sm-3 col-sm-6">
+            <div class="alert alert-danger" role="alert" *ngIf="entrySizeExceeded">
+              You have exceeded the entry size limit! Please remove some of your keys or services.
+            </div>
+            <pre><code mwlHighlightJs [source]='entryPretified' language="json"></code></pre>
+            <div class="text-center">
+              <button
+                type="button"
+                mdbBtn
+                color="success"
+                mdbWavesEffect
+                (click)="signData()"
+                *ngIf="selectedAction === actionType.Update">
+                Sign Data
+              </button>
+            </div>
+            <div class="button-holder mt-4">
+              <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()">Back</button>
+              <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="recordOnChain()" [disabled]="entrySizeExceeded">{{recordOnChainButtonName}}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

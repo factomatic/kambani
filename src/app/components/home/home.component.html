@@ -1,15 +1,23 @@
-<div class="heading">
-  <h1 class="text-info text-center">
-    Available Keys
-  </h1>
-</div>
-<div class="mt-4 list-group col-md-4 offset-md-4 mt-3" *ngIf="availableKeys.length > 0">
-  <div class="list-group-item list-group-item-action" *ngFor="let keyViewModel of availableKeys">
-    <h5 class="text-center font-italic text-info">{{keyViewModel.alias}}</h5>
-    <p class="text-center">{{keyViewModel.publicKey}}</p>
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12">
+      <div class="page-content">
+        <h1 class="page-title text-center">
+          Available Keys
+        </h1>
+        <div class="row">
+          <div class="mt-4 list-group col-md-4 offset-md-4 mt-3" *ngIf="availableKeys.length > 0">
+            <div class="list-group-item list-group-item-action" *ngFor="let keyViewModel of availableKeys">
+              <h5 class="text-center font-italic text-info">{{keyViewModel.alias}}</h5>
+              <p class="text-center">{{keyViewModel.publicKey}}</p>
+            </div>
+          </div>
+          <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!availableKeys || availableKeys.length === 0">
+            <p class="text-warning text-center">You have not imported any keys yet</p>
+            <button class="btn btn-success mt-2" routerLink="/vault/import">Import Keys</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
-<div class="center mt-5" *ngIf="!availableKeys || availableKeys.length === 0">
-  <p class="text-warning text-center">You have not imported any keys yet</p>
-  <button class="btn btn-success mt-2" routerLink="/vault/import">Import Keys</button>
 </div>

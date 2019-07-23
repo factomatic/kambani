@@ -1,0 +1,21 @@
+.modal-header {
+  background-color: #4285f4;
+  padding: 1.5em;
+  color:#FFF;
+}
+
+.modal-content {
+  margin-top: 11.2em;
+  background-color: azure;
+}
+
+.close:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.close {
+  color: white;
+  margin-top: 0.5em; 
+}

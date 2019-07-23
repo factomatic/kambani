@@ -1,13 +1,21 @@
-<div class="heading">
-  <h1 class="text-info text-center">
-    Vault Backup
-  </h1>
-</div>
-<div class="center mt-5" *ngIf="publicKeysAny">
-  <p class="text-center">Download your vault backup to be able to restore it</p>
-  <button class="btn btn-success mt-2" (click)="downloadJSONFile()">Download</button>
-</div>
-<div class="center mt-5" *ngIf="!publicKeysAny">
-  <p class="text-warning text-center">You have to import at least one key before backing up your vault</p>
-  <button class="btn btn-success mt-2" routerLink="/vault/import">Import Keys</button>
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12">
+      <div class="page-content">
+        <h1 class="page-title text-center">
+          Vault Backup
+        </h1>
+        <div class="row">
+          <div class="text-center mt-5 col-md-6 col-xs-12 offset-md-3" *ngIf="publicKeysAny">
+            <p class="text-center">Download your vault backup to be able to restore it</p>
+            <button class="btn btn-success mt-2" (click)="downloadJSONFile()">Download</button>
+          </div>
+          <div class="text-center mt-5 col-md-6 col-xs-12 offset-md-3" *ngIf="!publicKeysAny">
+            <p class="text-warning text-center">You have to import at least one key before backing up your vault</p>
+            <button class="btn btn-success mt-2" routerLink="/vault/import">Import Keys</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
