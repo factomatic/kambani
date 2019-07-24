@@ -24,7 +24,7 @@ import { ErrorInterceptor } from './core/interceptors/error.interceptor';
 import { GuardsModule } from './core/guards/guards.module';
 import { HomeComponent } from './components/home/home.component';
 import { ModalsModule } from './components/modals/modals.module';
-import { NavbarComponent } from './components/shared/navbar/navbar.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
 import { ServicesModule } from './core/services/services.module';
 import { SharedModule } from './components/shared/shared.module';
 import { SignerComponent } from './components/signer/signer.component';
@@ -64,8 +64,8 @@ export const metaReducers = environment.production || environment.staging ? [] :
     }),
     HttpClientModule,
     MDBBootstrapModule.forRoot(),
-    NgxSpinnerModule,
     ModalsModule,
+    NgxSpinnerModule,
     ReactiveFormsModule,
     ServicesModule,
     SharedModule,
