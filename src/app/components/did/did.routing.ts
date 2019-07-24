@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { AuthenticationKeysComponent } from './authentication-keys/authentication-keys.component';
 import { EncryptKeysComponent } from './encrypt-keys/encrypt-keys.component';
-import { FinalComponent } from '../shared/final/final.component';
+import { FinalComponent } from './final/final.component';
 import { FinalComponentGuard } from 'src/app/core/guards/final-component.guard';
 import { ProvideDidComponent } from './provide-did/provide-did.component';
 import { PublicKeysComponent } from './public-keys/public-keys.component';
