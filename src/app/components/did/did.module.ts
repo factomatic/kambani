@@ -1,7 +1,7 @@
 import { AliasValidator } from 'src/app/core/utils/alias.validator';
 import { CommonModule } from '@angular/common';
-import { createComponents } from '.';
-import { CreateDIDRoutingModule } from './did.routing';
+import { didComponents } from '.';
+import { DIDRoutingModule } from './did.routing';
 import { FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { HighlightJsModule, HIGHLIGHT_JS } from 'angular-highlight-js';
 import hljs from 'highlight.js/lib/highlight';
@@ -19,11 +19,11 @@ export function highlightJsFactory() {
 @NgModule({
   declarations: [
     AliasValidator,
-    ...createComponents
+    ...didComponents
   ],
   imports: [
     CommonModule,
-    CreateDIDRoutingModule,
+    DIDRoutingModule,
     FormsModule,
     HighlightJsModule.forRoot({
       provide: HIGHLIGHT_JS,
@@ -34,7 +34,7 @@ export function highlightJsFactory() {
     ReactiveFormsModule
   ],
   exports: [
-    ...createComponents
+    ...didComponents
   ]
 })
 export class DIDModule { }
