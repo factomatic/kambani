@@ -26,7 +26,6 @@ import { HomeComponent } from './components/home/home.component';
 import { ModalsModule } from './components/modals/modals.module';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ServicesModule } from './core/services/services.module';
-import { SharedModule } from './components/shared/shared.module';
 import { SignerComponent } from './components/signer/signer.component';
 import { VaultModule } from './components/vault/vault.module';
 
@@ -68,7 +67,6 @@ export const metaReducers = environment.production || environment.staging ? [] :
     NgxSpinnerModule,
     ReactiveFormsModule,
     ServicesModule,
-    SharedModule,
     StoreModule.forRoot(appReducers, { metaReducers }),
     ToastrModule.forRoot(),
     VaultModule
