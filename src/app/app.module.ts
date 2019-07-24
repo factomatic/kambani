@@ -1,4 +1,4 @@
-import { ActionReducer, StoreModule } from '@ngrx/store';
+import { ActionReducer, StoreModule, MetaReducer } from '@ngrx/store';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { DeviceDetectorModule } from 'ngx-device-detector';
@@ -39,7 +39,7 @@ export function logger(reducer: ActionReducer<AppState>): any {
   return storeLogger()(reducer);
 }
 
-export const metaReducers = environment.production || environment.staging ? [] : [logger];
+export const metaReducers: MetaReducer<AppState>[] = environment.production || environment.staging ? [] : [logger];
 
 @NgModule({
   declarations: [
