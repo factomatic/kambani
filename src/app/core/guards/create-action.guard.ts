@@ -28,7 +28,7 @@ export class CreateActionGuard implements CanActivate {
       return true;
     }
 
-    this.router.navigate([SharedRoutes.Action]);
+    this.router.navigate([SharedRoutes.ManageDids]);
     return false;
   }
 }

@@ -33,7 +33,7 @@ export class FinalComponentGuard implements CanActivate {
 
     const currentStepIndex = this.workflowService.getCurrentStepIndex();
     if (currentStepIndex !== finalStepIndex) {
-      this.router.navigate([SharedRoutes.Action]);
+      this.router.navigate([SharedRoutes.ManageDids]);
       return false;
     }
 

@@ -1,4 +1,3 @@
 export enum SharedRoutes {
-  Action = 'createkey',
-  Final = 'final'
+  ManageDids = '/dids/manage'
 }
