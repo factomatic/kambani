@@ -48,7 +48,7 @@ export class EncryptKeysComponent extends BaseComponent implements OnInit {
         this.headerTooltipMessage = this.tooltipMessages[selectedAction][0];
         this.boldPartTooltipMessage = this.tooltipMessages[selectedAction][1];
 
-        if (state.form.publicKeys.length > 0 || state.form.authenticationKeys.length > 0) {
+        if (state.form.managementKeys.length > 0 || state.form.didKeys.length > 0) {
           this.keysGenerated = true;
           this.continueButtonText = 'Next';
         }
