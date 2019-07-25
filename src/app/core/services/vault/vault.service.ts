@@ -4,8 +4,8 @@ import { Injectable } from '@angular/core';
 import LocalStorageStore from 'obs-store/lib/localStorage';
 
 import { environment } from 'src/environments/environment';
+import { ImportKeyModel } from '../../models/import-key.model'
 import { ImportResultModel } from '../../models/import-result.model';
-import { KeyPairModel } from '../../models/KeyPairModel';
 
 @Injectable()
 export class VaultService {
@@ -59,7 +59,7 @@ export class VaultService {
     });
   }
 
-  async importKeys(keyPairs: KeyPairModel[], vaultPassword: string): Promise<ImportResultModel> {
+  async importKeys(keys: ImportKeyModel[], vaultPassword: string): Promise<ImportResultModel> {
     try {
       const vault = this.encryptedVault;
 
@@ -75,16 +75,16 @@ export class VaultService {
       
       const decryptedVault = JSON.parse(await encryptor.decrypt(vaultPassword, vault));
 
-      for (const keyPair of keyPairs) {
-        if (!publicKeys.includes(keyPair.publicKey)) {
-          decryptedVault[keyPair.publicKey] = {
-            alias: keyPair.alias,
-            type: keyPair.type,
-            privateKey: keyPair.privateKey
+      for (const key of keys) {
+        if (!publicKeys.includes(key.publicKey)) {
+          decryptedVault[key.publicKey] = {
+            alias: key.alias,
+            type: key.type,
+            privateKey: key.privateKey
           };
 
-          publicKeys.push(keyPair.publicKey);
-          publicKeysAliases[keyPair.publicKey] = keyPair.alias;
+          publicKeys.push(key.publicKey);
+          publicKeysAliases[key.publicKey] = key.alias;
         }
       }
 
