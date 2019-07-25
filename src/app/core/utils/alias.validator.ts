@@ -3,7 +3,8 @@ import { NG_VALIDATORS, FormControl, ValidatorFn, Validator } from '@angular/for
 import { Store, select } from '@ngrx/store';
 
 import { AppState } from 'src/app/core/store/app.state';
-import { KeyModel } from '../models/key.model';
+import { DidKeyModel } from '../models/did-key.model';
+import { ManagementKeyModel } from '../models/management-key.model';
 
 @Directive({
   // tslint:disable-next-line:directive-selector
@@ -18,16 +19,16 @@ import { KeyModel } from '../models/key.model';
 })
 export class AliasValidator implements Validator {
   validator: ValidatorFn;
-  private publicKeys: KeyModel[];
-  private authenticationKeys: KeyModel[];
+  private managementKeys: ManagementKeyModel[];
+  private didKeys: DidKeyModel[];
   private originalAlias: string;
 
   constructor(private store: Store<AppState>) {
     this.store
       .pipe(select(state => state))
       .subscribe(state => {
-        this.publicKeys = state.form.publicKeys;
-        this.authenticationKeys = state.form.authenticationKeys;
+        this.managementKeys = state.form.managementKeys;
+        this.didKeys = state.form.didKeys;
       });
 
     this.validator = this.aliasValidator();
@@ -44,8 +45,8 @@ export class AliasValidator implements Validator {
         return null;
       }
 
-      if ((!this.publicKeys.find(k => k.alias === c.value)
-        && !this.authenticationKeys.find(k => k.alias === c.value)) || this.originalAlias === c.value) {
+      if ((!this.managementKeys.find(k => k.alias === c.value)
+        && !this.didKeys.find(k => k.alias === c.value)) || this.originalAlias === c.value) {
         return null;
       }
 
