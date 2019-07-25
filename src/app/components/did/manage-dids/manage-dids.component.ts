@@ -11,7 +11,7 @@ import { KeysService } from 'src/app/core/services/keys/keys.service';
 import { WorkflowService } from 'src/app/core/services/workflow/workflow.service';
 
 @Component({
-  selector: 'app-action',
+  selector: 'app-manage-dids',
   templateUrl: './manage-dids.component.html',
   styleUrls: ['./manage-dids.component.scss']
 })
