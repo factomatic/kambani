@@ -1,4 +1,9 @@
+import * as base58 from 'bs58';
+import * as elliptic from 'elliptic';
 import * as encryptor from 'browser-passworder';
+import * as forge from 'node-forge';
+import * as nacl from 'tweetnacl/nacl-fast';
+import { Buffer } from 'buffer/';
 import { defer, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import LocalStorageStore from 'obs-store/lib/localStorage';
@@ -6,6 +11,8 @@ import LocalStorageStore from 'obs-store/lib/localStorage';
 import { environment } from 'src/environments/environment';
 import { ImportKeyModel } from '../../models/import-key.model'
 import { ImportResultModel } from '../../models/import-result.model';
+import { modifyPemPrefixAndSuffix } from '../../utils/helpers';
+import { SignatureType} from '../../enums/signature-type'
 
 @Injectable()
 export class VaultService {
@@ -59,7 +66,69 @@ export class VaultService {
     });
   }
 
-  async importKeys(keys: ImportKeyModel[], vaultPassword: string): Promise<ImportResultModel> {
+  removeVault(): void {
+    localStorage.removeItem(environment.storageKey);
+    this.encryptedVault = undefined;
+  }
+
+  getVault(): string {
+    return this.encryptedVault;
+  }
+
+  getVaultPublicKeys(): string {
+    return this.localStorageStore.getState().publicKeys;
+  }
+
+  getVaultPublicKeysAliases(): string {
+    return this.localStorageStore.getState().publicKeysAliases;
+  }
+
+  vaultExists(): boolean {
+    if (this.encryptedVault) {
+      return true;
+    }
+
+    return false;
+  }
+
+  importKeysFromJsonFile(file: string, filePassword: string, vaultPassword: string): Observable<ImportResultModel> {
+    return defer(async() => {
+      try {
+        const decryptedFile = JSON.parse(await encryptor.decrypt(filePassword, this.extractEncryptedKeys(file)));
+        const importKeysModels: ImportKeyModel[] = [];
+
+        if (Array.isArray(decryptedFile) && decryptedFile.length > 0) {
+          for (const keyModel of decryptedFile) {
+            if (keyModel.alias && keyModel.type && keyModel.privateKey) {
+              const importKeyModel = this.getImportKeyModel(keyModel.alias, keyModel.type, keyModel.privateKey);
+              importKeysModels.push(importKeyModel);
+            }
+          }
+
+          return await this.importKeys(importKeysModels, vaultPassword);
+        } else {
+          return new ImportResultModel(false, 'Invalid type of keystore');
+        }
+      } catch {
+        return new ImportResultModel(false, 'Invalid file password or type of keystore');
+      }
+    });
+  }
+
+  importKeysFromPrivateKey(alias: string, type: string, privateKey: string, vaultPassword: string): Observable<ImportResultModel> {
+    return defer(async () => {
+      try {
+        const importKeyModel = this.getImportKeyModel(alias, type, privateKey);
+        const importKeysModels = [importKeyModel];
+
+        return await this.importKeys(importKeysModels, vaultPassword);
+      } catch {
+        return new ImportResultModel(false, 'Invalid private key');
+      }
+    });
+  }
+
+  private async importKeys(keys: ImportKeyModel[], vaultPassword: string): Promise<ImportResultModel> {
     try {
       const vault = this.encryptedVault;
 
@@ -103,28 +172,38 @@ export class VaultService {
     }
   }
 
-  removeVault(): void {
-    localStorage.removeItem(environment.storageKey);
-    this.encryptedVault = undefined;
-  }
+  private getImportKeyModel(alias: string, type: string, privateKey: string): ImportKeyModel {
+    if (type === SignatureType.EdDSA) {
+      const keyPair = nacl.sign.keyPair.fromSecretKey(base58.decode(privateKey));
+      const publicKey = base58.encode(Buffer.from(keyPair.publicKey));
 
-  getVault(): string {
-    return this.encryptedVault;
-  }
+      return new ImportKeyModel(alias, type, publicKey, privateKey);
+    } else if (type === SignatureType.ECDSA) {
+      const ec = elliptic.ec('secp256k1');
+      const key = ec.keyFromPrivate(base58.decode(privateKey), 'hex');
 
-  getVaultPublicKeys(): string {
-    return this.localStorageStore.getState().publicKeys;
-  }
+      const compressedPubPoint = key.getPublic(true, 'hex');
+      const publicKey = base58.encode(Buffer.from(compressedPubPoint, 'hex'));
 
-  getVaultPublicKeysAliases(): string {
-    return this.localStorageStore.getState().publicKeysAliases;
-  }
+      return new ImportKeyModel(alias, type, publicKey, privateKey);
+    } else if (type === SignatureType.RSA) {
+      const forgePrivateKey = forge.pki.privateKeyFromPem(privateKey);
+      const publicKey = forge.pki.setRsaPublicKey(forgePrivateKey.n, forgePrivateKey.e);
+      let publicKeyPem = forge.pki.publicKeyToPem(publicKey);
+      publicKeyPem = modifyPemPrefixAndSuffix(publicKeyPem);
 
-  vaultExists(): boolean {
-    if (this.encryptedVault) {
-      return true;
+      return new ImportKeyModel(alias, type, publicKeyPem, privateKey);
     }
+  }
 
-    return false;
+  private extractEncryptedKeys(file: string): string {
+    const parsedFile = JSON.parse(file);
+    const keysFile: any = { };
+
+    keysFile.data = parsedFile.data;
+    keysFile.iv = parsedFile.encryptionAlgo.iv;
+    keysFile.salt = parsedFile.encryptionAlgo.salt;
+
+    return JSON.stringify(keysFile);
   }
 }
