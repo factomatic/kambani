@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import LocalStorageStore from 'obs-store/lib/localStorage';
 
 import { environment } from 'src/environments/environment';
-import { ImportResultModel } from '../../models/ImportResultModel';
+import { ImportResultModel } from '../../models/import-result.model';
 import { KeyPairModel } from '../../models/KeyPairModel';
 
 @Injectable()

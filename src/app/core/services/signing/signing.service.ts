@@ -8,7 +8,7 @@ import { defer, Observable } from 'rxjs';
 import { Injectable, Output, EventEmitter } from '@angular/core';
 
 import { arrayBufferToBase64String, convertPemToBinary } from '../../utils/helpers';
-import { SignatureDataModel } from '../../models/SignatureDataModel';
+import { SignatureDataModel } from '../../models/signature-data.model';
 import { SignatureType } from '../../enums/signature-type';
 import { VaultService } from '../vault/vault.service';
 

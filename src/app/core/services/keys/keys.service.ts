@@ -7,8 +7,8 @@ import { Buffer } from 'buffer/';
 import { defer, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 
-import { ImportKeyModel } from '../../models/ImportKeyModel';
-import { ImportResultModel } from '../../models/ImportResultModel';
+import { ImportKeyModel } from '../../models/import-key.model';
+import { ImportResultModel } from '../../models/import-result.model';
 import { KeyPairModel } from '../../models/KeyPairModel';
 import { modifyPemPrefixAndSuffix } from '../../utils/helpers';
 import { SignatureType} from '../../enums/signature-type';

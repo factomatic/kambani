@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { KeyViewModel } from 'src/app/core/models/KeyViewModel';
+import { KeyViewModel } from 'src/app/core/models/key-view.model';
 import { minifyPublicKey } from '../../core/utils/helpers';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 
