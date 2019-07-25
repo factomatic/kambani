@@ -1,0 +1,39 @@
+<header id="main-header">
+  <div class="logo-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-6 col-sm-6 col-xs-6 brand-name">WebSigner</div>
+        <div class="col-xs-6 col-6 col-sm-6 text-right">
+          <a class="remove-vault" (click)="removeVault()">
+            <span class="close-icon"></span>
+            <span class="close-hint">Remove Vault</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="navbar">
+    <div class="container">
+      <ul class="list-unstyled">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/signer">
+            Signing Requests
+            <span class="ml-2 badge badge-light">{{pendingRequestsCount}}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/import">Import Keys</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/dids/manage">Manage DIDs</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/backup">Backup</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</header>

@@ -29,10 +29,14 @@
               "src/contentScript.js"
             ],
             "styles": [
-              "src/styles.scss",
+              "node_modules/@fortawesome/fontawesome-free/scss/fontawesome.scss",
+              "node_modules/@fortawesome/fontawesome-free/scss/solid.scss",
+              "node_modules/@fortawesome/fontawesome-free/scss/regular.scss",
+              "node_modules/@fortawesome/fontawesome-free/scss/brands.scss",
               "src/assets/bootstrap.min.css",
               "node_modules/ngx-toastr/toastr.css",
-              "node_modules/highlight.js/styles/solarized-dark.css"
+              "node_modules/highlight.js/styles/solarized-dark.css",
+              "src/styles.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { RemoveVaultDialogComponent } from '../../dialogs/remove-vault/remove-vault.dialog.component';
+import { RemoveVaultDialogComponent } from '../dialogs/remove-vault/remove-vault.dialog.component';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { SigningService } from 'src/app/core/services/signing/signing.service';

@@ -1,0 +1,21 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h4 class="modal-title">WELCOME TO THE FACTOM DID REGISTRAR</h4>
+    <button type="button" class="close" aria-describedby="modal-title" (click)="activeModal.close()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mt-3">
+    <p>The Factom Decentralized Identifier (DID) registrar is a UI, which walks you through the steps of creating a digital identity.</p>
+    <p>The basic digital identity you are about to create consists of a single public/private key pair, which will allow:</p>
+    <ul>
+      <li>you to sign messages</li>
+      <li>anyone else to authenticate that a message has been signed by your digital identity</li>
+    </ul>
+    <p>The public key of the digital identity will be recorded on the Factom blockchain and can be used by anyone trying to authenticate a signed message coming from you. <strong>The private key will be recorded in an encrypted file that you must download and keep safely stored. It will allow you to sign messages with your digital identity.</strong>.</p>
+    <p>You are now ready to start! Make sure to keep an eye for the  <i class="fas fa-info-circle fa-lg"></i> tooltips along the way, as they will guide you through the procedure.</p>
+  </div>
+  <div class="modal-footer mt-2 text-right">
+    <button class="btn-primary" mdbBtn type="button" color="primary" mdbWavesEffect (click)="activeModal.close()">Close</button>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+<div class="modal-header header">
+  <h4 class="modal-title title">Remove {{capitalize(objectType)}}</h4>
+</div>
+<div class="modal-content">
+  <div class="modal-header">				
+    <h4 class="modal-title">Are you sure?</h4>
+  </div>
+  <div class="modal-body">
+    <p>Do you really want to remove this {{objectType}}? This process cannot be undone.</p>
+  </div>
+  <div class="modal-footer justify-content-center">
+    <button type="button" mdbBtn color="primary" mdbWavesEffect class="mr-3" ngbAutofocus data-dismiss="modal" (click)="activeModal.dismiss('Cross click')">Cancel</button>
+    <button type="button" mdbBtn color="danger" mdbWavesEffect class="ml-3" (click)="activeModal.close('remove')">Remove</button>
+  </div>
+</div>

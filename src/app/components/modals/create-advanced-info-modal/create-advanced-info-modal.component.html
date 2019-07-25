@@ -1,0 +1,24 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title mt-5">WELCOME TO THE FACTOM DID REGISTRAR</h5>
+    <button type="button" class="close" aria-describedby="modal-title" (click)="activeModal.close()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mt-3">
+    <p>The Factom Decentralized Identifier (DID) registrar is a UI, which walks you through the steps of creating a digital identity.</p>
+    <p>Your digital identity contains publicly discoverable information about you, which can be used by anyone when they try to:</p>
+    <ul>
+      <li>communicate with you</li>
+      <li>authenticate you</li>
+      <li>authorize you for access to some resource</li>
+    </ul>
+    <p>In addition to this, a digital identity enables you to digitally sign messages, so that you can prove that a given message comes from you, but also that a different message did not originate from you. This means that no one will be able to falsify a statement you made, or claim that you wrote something when you did not.</p>
+    <p>Digital identities are not limited to people. They could be used to represent just about anything: a computer or a device on a network, your pet, a parcel, or even some paper document.</p>
+    <p>The digital identity you are about to create consists of two components: a public and a private one. The public part will be recorded on the Factom blockchain. It will contain the public keys of the digital identity along with relevant metadata for the identity, which is useful for any party that wants to interact with the subject sitting behind the digital identity. <strong>The private part contains the private keys for the DID. Those will be recorded in an encrypted file that you must download and keep safely stored</strong>.</p>
+    <p>You are now ready to start! Make sure to keep an eye for the  <i class="fas fa-info-circle fa-lg"></i> tooltips along the way, as they will guide you through the procedure.</p>
+  </div>
+  <div class="text-center mt-2 mb-4">
+    <button class="btn-md-blue" mdbBtn type="button" color="primary" mdbWavesEffect (click)="activeModal.close()">Close</button>
+  </div>
+</div>

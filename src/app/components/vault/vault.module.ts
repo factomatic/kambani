@@ -1,19 +1,19 @@
-import { VaultRoutingModule } from './vault.routing';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 
 import { vaultComponents } from '.';
+import { VaultRoutingModule } from './vault.routing';
 
 @NgModule({
   declarations: [
     ...vaultComponents
   ],
   imports: [
-    VaultRoutingModule,
     CommonModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    VaultRoutingModule
   ],
   exports: [
     ...vaultComponents

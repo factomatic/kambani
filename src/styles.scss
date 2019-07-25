@@ -1,7 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
+@import url("//netdna.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.css");
 body {
   height: 600px;
   font-size: 0.85rem !important;
+  font-family: 'Montserrat', sans-serif;
+  background: #DFE7F2;
 }
 
 @media (max-width: 370px) {
@@ -22,6 +25,131 @@ h3, .h3 {
   font-size: 1rem !important;
 }
 
+$mainColor: #2F5BE7;
+$mainColorHover: #1d45c3;
+$redColor: #e85658;
+$lightColor: #F8F8F8;
+.btn {
+    height: 40px;
+    border-radius: 5px;
+    outline: none!important;
+    // font-weight: 600;
+    line-height: 40px;
+    padding: 0px 12px;
+    transition: all 0.3s ease;
+    &.btn-primary {
+        background: $mainColor!important;
+        border-color: $mainColor!important;
+        &.outline {
+            background: transparent;
+            color: $mainColor;
+            border: 1px solid $mainColor;
+        }
+        &:active, &:hover{
+            background: $mainColorHover;
+        }
+        &:active, &:focus {
+            border-color: $mainColor;
+            outline: initial!important;
+            box-shadow: 0 0 0 3px rgba(47, 91, 231, 0.45);
+        }
+    }
+    &.btn-success {
+        background-color: #4caf50;
+        border-color: #4caf50;
+        &.outline {
+            background: transparent;
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+        &:active, &:focus {
+            background-color: #4caf50;
+            border-color: #4caf50;
+            box-shadow: 0 0 0 3px rgba(76,175,80,.5);
+        }
+        &:hover {
+            color: #fff;
+            background-color: #409444;
+            border-color: #3d8b40;
+        }
+    }
+    &.btn-warning {
+        color: #47404f;
+        background-color: #ffc107;
+        border-color: #ffc107;
+        &.outline {
+            background: transparent;
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+        &:active, &:focus {
+            color: #47404f;
+            background-color: #ffc107;
+            border-color: #ffc107;
+            box-shadow: 0 0 0 3px rgba(255,193,7,.5);
+        }
+        &:hover {
+            color: #47404f;
+            background-color: #e0a800;
+            border-color: #d39e00;
+        }
+    }
+    &.btn-danger {
+        color: #fff;
+        background-color: #d22346;
+        border-color: #d22346;
+        &.outline {
+            background: transparent;
+            color: #d22346;
+            border: 1px solid #d22346;
+        }
+        &:active, &:focus {
+            color: #fff;
+            background-color: #d22346;
+            border-color: #d22346;
+            box-shadow: 0 0 0 3px rgba(210,35,70,.5);
+        }
+        &:hover {
+            color: #fff;
+            background-color: #b11e3b;
+            border-color: #a61c37;
+        }
+    }
+    &.btn-default {
+        background: $lightColor;
+    }
+    &.btn-xs {
+        height: 30px;
+        text-transform: none;
+        line-height: 30px;
+    }
+}
+.text-primary {
+  color: $mainColor!important;
+}
+.button-holder {
+  .pull-left {
+    float: left;
+  }
+  .pull-right {
+    float: right;
+  }
+}
+
+.page-content {
+  border-radius: 3px;
+  background: #fff;
+  width: 100%;
+  margin-top: 20px;
+  padding: 20px;
+  .page-title {
+    font-size: 23px;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+}
+
+
 #toast-container > div {
   opacity:1;
 }
@@ -38,13 +166,6 @@ h3, .h3 {
   margin: 20px;
 }
 
-.btn:focus {
-  box-shadow: none !important;
-}
-
-.btn-info {
-  background-color: #4285f4 !important;
-}
 
 .heading{
   margin-top: 40px;

@@ -1,36 +1,44 @@
-<div class="heading">
-  <h1 class="text-info text-center">
-    Signing Requests
-    <span class="ml-2 badge badge-light">{{pendingRequestsCount}}</span>
-  </h1>
-</div>
-<div class="mt-3 col-md-4 offset-md-4" *ngIf="contentPretified">
-  <p class="mb-3 text-center">Received from:</p>
-  <p class="mb-4 text-center">{{from}}</p>
-  <div class="form-group">
-    <label for="exampleTextarea">Data to sign:</label>
-    <pre><code mwlHighlightJs [source]='contentPretified' language="json"></code></pre>
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12">
+      <div class="page-content">
+        <h1 class="page-title text-center">
+          Signing Requests
+          <span class="ml-2 badge badge-light">{{pendingRequestsCount}}</span>
+        </h1>
+        <div class="row">
+          <div class="mt-3 col-xs-12 col-md-6 offset-md-3" *ngIf="contentPretified">
+            <p class="mb-3 text-center">Received from:</p>
+            <p class="mb-4 text-center">{{from}}</p>
+            <div class="form-group">
+              <label for="exampleTextarea">Data to sign:</label>
+              <pre><code mwlHighlightJs [source]='contentPretified' language="json"></code></pre>
+            </div>
+            <div *ngIf="publicKeys.length > 0">
+              <label for="selectKey">Choose key to sign with:</label>
+              <select class="form-control" id="selectKey" (ngModelChange)="onSelectChange($event)" [ngModel]="selectedPublicKey">
+                <option [value]="keyViewModel.publicKey" *ngFor="let keyViewModel of publicKeys">{{keyViewModel.alias}}</option>
+              </select>
+            </div>
+            <div class="center mt-5" *ngIf="publicKeys.length === 0">
+              <p class="text-warning text-center">You need to import keys in order to sign the data.</p>
+            </div>
+            <div class="row justify-content-center mt-4">
+              <button class="btn btn-success mr-1" routerLink="/vault/import" *ngIf="publicKeys.length === 0">Import Keys</button>
+              <button class="btn btn-success mr-1" (click)="signData()" *ngIf="publicKeys.length > 0">Sign Data</button>
+              <button class="btn btn-info ml-1 mr-1" (click)="skipSigning()" *ngIf="pendingRequestsCount > 1">Skip</button>
+              <button class="btn btn-danger ml-1" (click)="cancelSigning()">Cancel</button>
+            </div>
+          </div>
+          <div class="mt-5 col-xs-12 col-md-6 offset-md-3" *ngIf="!contentPretified && publicKeys.length > 0">
+            <p class="text-warning text-center">You do not have any pending requests</p>
+          </div>
+          <div class="text-center mt-5 col-xs-12 col-md-6 offset-md-3" *ngIf="!contentPretified && publicKeys.length === 0">
+            <p class="text-warning text-center">You have not imported any keys yet</p>
+            <button class="btn btn-success mt-2" routerLink="/vault/import">Import Keys</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div *ngIf="publicKeys.length > 0">
-    <label for="selectKey">Choose key to sign with:</label>
-    <select class="form-control" id="selectKey" (ngModelChange)="onSelectChange($event)" [ngModel]="selectedPublicKey">
-      <option [value]="keyViewModel.publicKey" *ngFor="let keyViewModel of publicKeys">{{keyViewModel.alias}}</option>
-    </select>
-  </div>
-  <div class="center mt-5" *ngIf="publicKeys.length === 0">
-    <p class="text-warning text-center">You need to import keys in order to sign the data.</p>
-  </div>
-  <div class="row justify-content-center mt-4">
-    <button class="btn btn-success mr-1" routerLink="/vault/import" *ngIf="publicKeys.length === 0">Import Keys</button>
-    <button class="btn btn-success mr-1" (click)="signData()" *ngIf="publicKeys.length > 0">Sign Data</button>
-    <button class="btn btn-info ml-1 mr-1" (click)="skipSigning()" *ngIf="pendingRequestsCount > 1">Skip</button>
-    <button class="btn btn-danger ml-1" (click)="cancelSigning()">Cancel</button>
-  </div>
-</div>
-<div class="mt-5" *ngIf="!contentPretified && publicKeys.length > 0">
-  <p class="text-warning text-center">You do not have any pending requests</p>
-</div>
-<div class="center mt-5" *ngIf="!contentPretified && publicKeys.length === 0">
-  <p class="text-warning text-center">You have not imported any keys yet</p>
-  <button class="btn btn-success mt-2" routerLink="/vault/import">Import Keys</button>
 </div>
