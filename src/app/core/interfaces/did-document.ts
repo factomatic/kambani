@@ -1,7 +1,6 @@
 export interface DIDDocument {
-  ['@context']: string;
-  id: string;
-  authentication: any[];
-  publicKey: any[];
-  service: any[];
+  didMethodVersion: string;
+  managementKey: any[];
+  didKey?: any[];
+  service?: any[];
 }
