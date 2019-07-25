@@ -1,29 +1,30 @@
 import { Action } from '@ngrx/store';
-import { KeyModel } from '../../models/key.model';
+import { DidKeyModel } from '../../models/did-key.model';
+import { ManagementKeyModel } from '../../models/management-key.model';
 import { ServiceModel } from '../../models/service.model';
 
-export const ADD_AUTHENTICATION_KEY = '[FORM] ADD_AUTHENTICATION_KEY';
-export const ADD_PUBLIC_KEY = '[FORM] ADD_PUBLIC_KEY';
+export const ADD_MANAGEMENT_KEY = '[FORM] ADD_MANAGEMENT_KEY';
+export const ADD_DID_KEY = '[FORM] ADD_DID_KEY';
 export const ADD_SERVICE = '[FORM] ADD_SERVICE';
-export const ADD_ORIGINAL_AUTHENTICATION_KEYS = '[FORM] ADD_ORIGINAL_AUTHENTICATION_KEYS';
-export const ADD_ORIGINAL_PUBLIC_KEYS = '[FORM] ADD_ORIGINAL_PUBLIC_KEYS';
+export const ADD_ORIGINAL_MANAGEMENT_KEYS = '[FORM] ADD_ORIGINAL_MANAGEMENT_KEYS';
+export const ADD_ORIGINAL_DID_KEYS = '[FORM] ADD_ORIGINAL_DID_KEYS';
 export const ADD_ORIGINAL_SERVICES = '[FORM] ADD_ORIGINAL_SERVICES';
-export const UPDATE_AUTHENTICATION_KEY = '[FORM] UPDATE_AUTHENTICATION_KEY';
-export const UPDATE_PUBLIC_KEY = '[FORM] UPDATE_PUBLIC_KEY';
-export const REMOVE_AUTHENTICATION_KEY = '[FORM] REMOVE_AUTHENTICATION_KEY';
-export const REMOVE_PUBLIC_KEY = '[FORM] REMOVE_PUBLIC_KEY';
+export const UPDATE_MANAGEMENT_KEY = '[FORM] UPDATE_MANAGEMENT_KEY';
+export const UPDATE_DID_KEY = '[FORM] UPDATE_DID_KEY';
+export const REMOVE_MANAGEMENT_KEY = '[FORM] REMOVE_MANAGEMENT_KEY';
+export const REMOVE_DID_KEY = '[FORM] REMOVE_DID_KEY';
 export const REMOVE_SERVICE = '[FORM] REMOVE_SERVICE';
 
-export class AddAuthenticationKey implements Action {
-  readonly type: string = ADD_AUTHENTICATION_KEY;
+export class AddManagementKey implements Action {
+  readonly type: string = ADD_MANAGEMENT_KEY;
 
-  constructor (public payload: KeyModel) { }
+  constructor (public payload: ManagementKeyModel) { }
 }
 
-export class AddPublicKey implements Action {
-  readonly type: string = ADD_PUBLIC_KEY;
+export class AddDidKey implements Action {
+  readonly type: string = ADD_DID_KEY;
 
-  constructor (public payload: KeyModel) { }
+  constructor (public payload: DidKeyModel) { }
 }
 
 export class AddService implements Action {
@@ -32,16 +33,16 @@ export class AddService implements Action {
   constructor (public payload: ServiceModel) { }
 }
 
-export class AddOriginalAuthenticationKeys implements Action {
-  readonly type: string = ADD_ORIGINAL_AUTHENTICATION_KEYS;
+export class AddOriginalManagementKeys implements Action {
+  readonly type: string = ADD_ORIGINAL_MANAGEMENT_KEYS;
 
-  constructor (public payload: KeyModel[]) { }
+  constructor (public payload: ManagementKeyModel[]) { }
 }
 
-export class AddOriginalPublicKeys implements Action {
-  readonly type: string = ADD_ORIGINAL_PUBLIC_KEYS;
+export class AddOriginalDidKeys implements Action {
+  readonly type: string = ADD_ORIGINAL_DID_KEYS;
 
-  constructor (public payload: KeyModel[]) { }
+  constructor (public payload: DidKeyModel[]) { }
 }
 
 export class AddOriginalServices implements Action {
@@ -50,28 +51,28 @@ export class AddOriginalServices implements Action {
   constructor (public payload: ServiceModel[]) { }
 }
 
-export class UpdateAuthenticationKey implements Action {
-  readonly type: string = UPDATE_AUTHENTICATION_KEY;
+export class UpdateManagementKey implements Action {
+  readonly type: string = UPDATE_MANAGEMENT_KEY;
 
-  constructor (public payload: KeyModel) { }
+  constructor (public payload: ManagementKeyModel) { }
 }
 
-export class UpdatePublicKey implements Action {
-  readonly type: string = UPDATE_PUBLIC_KEY;
+export class UpdateDidKey implements Action {
+  readonly type: string = UPDATE_DID_KEY;
 
-  constructor (public payload: KeyModel) { }
+  constructor (public payload: DidKeyModel) { }
 }
 
-export class RemoveAuthenticationKey implements Action {
-  readonly type: string = REMOVE_AUTHENTICATION_KEY;
+export class RemoveManagementKey implements Action {
+  readonly type: string = REMOVE_MANAGEMENT_KEY;
 
-  constructor (public payload: KeyModel) { }
+  constructor (public payload: ManagementKeyModel) { }
 }
 
-export class RemovePublicKey implements Action {
-  readonly type: string = REMOVE_PUBLIC_KEY;
+export class RemoveDidKey implements Action {
+  readonly type: string = REMOVE_DID_KEY;
 
-  constructor (public payload: KeyModel) { }
+  constructor (public payload: DidKeyModel) { }
 }
 
 export class RemoveService implements Action {
