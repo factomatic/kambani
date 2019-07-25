@@ -18,7 +18,7 @@ import { SignatureType } from '../../enums/signature-type';
 const DEFAULT_ALIAS = 'defaultpubkey';
 
 @Injectable()
-export class GenerateKeysService {
+export class KeysService {
   private keys;
 
   constructor(
@@ -27,21 +27,19 @@ export class GenerateKeysService {
     this.store
       .pipe(select(state => state.form))
       .subscribe(form => {
-        this.keys = form.publicKeys.map(key => ({
+        const managementKeys = form.managementKeys.map(key => ({
           alias: key.alias,
           type: key.type,
           privateKey: key.privateKey
         }));
 
-        form.authenticationKeys.forEach(key => {
-          if (!this.keys.find(k => k.privateKey === key.privateKey)) {
-            this.keys.push({
-              alias: key.alias,
-              type: key.type,
-              privateKey: key.privateKey
-            });
-          }
-        });
+        const didKeys = form.didKeys.map(key => ({
+          alias: key.alias,
+          type: key.type,
+          privateKey: key.privateKey
+        }));
+
+        this.keys = managementKeys.concat(didKeys);
       });
   } 
 

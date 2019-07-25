@@ -14,7 +14,7 @@ import { ConfirmModalComponent } from '../../modals/confirm-modal/confirm-modal.
 import CustomValidators from 'src/app/core/utils/customValidators';
 import { DIDService } from 'src/app/core/services/did/did.service';
 import { KeyModel } from 'src/app/core/models/key.model';
-import { GenerateKeysService } from 'src/app/core/services/keys/generate.keys.service';
+import { KeysService } from 'src/app/core/services/keys/keys.service';
 import { SignatureType } from 'src/app/core/enums/signature-type';
 import { TooltipMessages } from 'src/app/core/utils/tooltip.messages';
 import { WorkflowService } from 'src/app/core/services/workflow/workflow.service';
@@ -49,7 +49,7 @@ export class AuthenticationKeysComponent extends BaseComponent implements OnInit
     private modalService: NgbModal,
     private zone: NgZone,
     private store: Store<AppState>,
-    private keysService: GenerateKeysService,
+    private keysService: KeysService,
     private didService: DIDService,
     private workflowService: WorkflowService) {
     super();

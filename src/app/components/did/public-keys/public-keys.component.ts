@@ -13,7 +13,7 @@ import { ConfirmModalComponent } from '../../modals/confirm-modal/confirm-modal.
 import { ComponentKeyModel } from 'src/app/core/models/component-key.model';
 import CustomValidators from 'src/app/core/utils/customValidators';
 import { DIDService } from 'src/app/core/services/did/did.service';
-import { GenerateKeysService } from 'src/app/core/services/keys/generate.keys.service';
+import { KeysService } from 'src/app/core/services/keys/keys.service';
 import { KeyModel } from 'src/app/core/models/key.model';
 import { SignatureType } from 'src/app/core/enums/signature-type';
 import { TooltipMessages } from 'src/app/core/utils/tooltip.messages';
@@ -48,7 +48,7 @@ export class PublicKeysComponent extends BaseComponent implements OnInit, AfterV
     private fb: FormBuilder,
     private modalService: NgbModal,
     private store: Store<AppState>,
-    private keysService: GenerateKeysService,
+    private keysService: KeysService,
     private didService: DIDService,
     private workflowService: WorkflowService) {
     super();
