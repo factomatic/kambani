@@ -34,7 +34,7 @@ export class ManageDidsComponent implements OnInit {
     this.store.dispatch(new SelectAction(this.actionType));
 
     if (this.actionType === ActionType.CreateBasic) {
-      this.keysService.autoGeneratePublicKey();
+      this.keysService.autoGenerateKeys();
     }
 
     this.workflowService.moveToNextStep();

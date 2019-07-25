@@ -7,15 +7,15 @@ import { defer, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 
-import { AddPublicKey } from '../../store/form/form.actions';
+import { AddManagementKey, AddDidKey } from '../../store/form/form.actions';
 import { AppState } from '../../store/app.state';
 import { DIDService } from '../did/did.service';
 import { exportPemKeys } from '../../utils/helpers';
-import { KeyModel } from '../../models/key.model';
 import { KeyPairModel } from '../../models/key-pair.model';
 import { SignatureType } from '../../enums/signature-type';
-
-const DEFAULT_ALIAS = 'defaultpubkey';
+import { ManagementKeyModel } from '../../models/management-key.model';
+import { DidKeyModel } from '../../models/did-key.model';
+import { PurposeType } from '../../enums/purpose-type';
 
 @Injectable()
 export class KeysService {
@@ -55,17 +55,33 @@ export class KeysService {
     });
   }
 
-  autoGeneratePublicKey(): void {
-    const keyPair = this.generateEdDSAKeyPair();
-    const generatedKey = new KeyModel(
-      DEFAULT_ALIAS,
+  autoGenerateKeys(): void {
+    let keyPair = this.generateEdDSAKeyPair();
+    const managementKeyAlias = 'default-management-key';
+    const managementKeyPriority = 1;
+    const managementKey = new ManagementKeyModel(
+      managementKeyAlias,
+      managementKeyPriority,
       SignatureType.EdDSA,
       this.didService.getId(),
       keyPair.publicKey,
       keyPair.privateKey
     );
 
-    this.store.dispatch(new AddPublicKey(generatedKey));
+    this.store.dispatch(new AddManagementKey(managementKey));
+
+    keyPair = this.generateEdDSAKeyPair();
+    const didKeyAlias = 'default-public-key';
+    const didKey = new DidKeyModel(
+      didKeyAlias,
+      new Set([PurposeType.PublicKey]),
+      SignatureType.EdDSA,
+      this.didService.getId(),
+      keyPair.publicKey,
+      keyPair.privateKey
+    );
+
+    this.store.dispatch(new AddDidKey(didKey));
   }
 
   encryptKeys(password: string): Observable<string> {
