@@ -107,14 +107,14 @@ export class DIDService {
   }
 
   private generateDocument(): DIDDocument {
-    const managementKeys = this.formManagementKeys.map(k => (this.buildKeyEntryObject(k)));
+    const managementKeys = this.formManagementKeys.map(k => (this.buildManagementKeyEntryObject(k)));
 
     const didDocument: DIDDocument = {
       'didMethodVersion': this.didMethodSpecVersion,
       'managementKey': managementKeys
     };
 
-    const didKeys = this.formDidKeys.map(k => (this.buildKeyEntryObject(k)));
+    const didKeys = this.formDidKeys.map(k => (this.buildDidKeyEntryObject(k)));
     if (didKeys.length > 0) {
       didDocument.didKey = didKeys;
     }
@@ -152,27 +152,33 @@ export class DIDService {
     return updateEntry;
   }
 
+  private buildManagementKeyEntryObject(key: ManagementKeyModel): {} {
+    let keyEntryObject = this.buildKeyEntryObject(key);
+    keyEntryObject['priority'] = key.priority;
+
+    return keyEntryObject;
+  }
+
+  private buildDidKeyEntryObject(key: DidKeyModel): {} {
+    let keyEntryObject = this.buildKeyEntryObject(key);
+    keyEntryObject['purpose'] = key.purpose;
+
+    if (key.priorityRequirement) {
+      keyEntryObject['priorityRequirement'] = key.priorityRequirement;
+    }
+
+    return keyEntryObject;
+  }
+
   private buildKeyEntryObject(key): {} {
     const publicKeyProperty = key.type == SignatureType.RSA ? 'publicKeyPem' : 'publicKeyBase58';
 
-    let keyEntryObject = {
+    return {
       id: `${this.id}#${key.alias}`,
       type: `${key.type}${this.VerificationKeySuffix}`,
       controller: key.controller,
       [publicKeyProperty]: key.publicKey
     };
-     
-    if (key.constructor.name == ManagementKeyModel.name) {
-      keyEntryObject['priority'] = key.priority;
-    } else {
-      keyEntryObject['purpose'] = key.purpose;
-
-      if (key.priorityRequirement) {
-        keyEntryObject['priorityRequirement'] = key.priorityRequirement;
-      }
-    }
-
-    return keyEntryObject;
   }
 
   private buildServiceEntryObject(service: ServiceModel): {} {
@@ -217,11 +223,11 @@ export class DIDService {
     const add = {};
 
     if (newManagementKeys.length > 0) {
-      add['managementKey'] = newManagementKeys.map(k => (this.buildKeyEntryObject(k)));
+      add['managementKey'] = newManagementKeys.map(k => (this.buildManagementKeyEntryObject(k)));
     }
 
     if (newDidKeys.length > 0) {
-      add['didKey'] = newDidKeys.map(k => (this.buildKeyEntryObject(k)));
+      add['didKey'] = newDidKeys.map(k => (this.buildDidKeyEntryObject(k)));
     }
 
     if (newServices.length > 0) {
