@@ -88,7 +88,7 @@ export class DIDService {
   upload(didId: string) {
     // call resolver to get did document
     // tslint:disable-next-line:max-line-length
-    const response = `{"@context":"https://w3id.org/did/v1","id":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKey":[{"id":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myfirstkey","type":"Ed25519VerificationKey","controller":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"GtRQwPQ6a8Qe9DbzBCTmBERovZ4URh7BvwziQMURRaEQ"},{"id":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mysecondkey","type":"ECDSASecp256k1VerificationKey","controller":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"eeK7Saop24d3hej7r4BNgyna6pXrCEbgCTZYHj7ApkRh"}],"authentication":["did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myfirstkey",{"id":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mythirdkey","type":"Ed25519VerificationKey","controller":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"2reWgag62C9ryZcCmheyzDVvQE5j9j1HCgVMbJBmoPvx"}],"service":[{"id":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myservice","type":"PhotoStreamService","serviceEndpoint":"https://example.org/photos/379283"}]}`;
+    const response = `{"@context":"https://w3id.org/did/v1","id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","managementKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myfirstkey","type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"GtRQwPQ6a8Qe9DbzBCTmBERovZ4URh7BvwziQMURRaEQ","priority":1},{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mysecondkey","type":"ECDSASecp256k1VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"eeK7Saop24d3hej7r4BNgyna6pXrCEbgCTZYHj7ApkRh","priority":2}],"didKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mythirdkey","purpose":["publicKey"],"type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"2reWgag62C9ryZcCmheyzDVvQE5j9j1HCgVMbJBmoPvx"}],"service":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myservice","type":"PhotoStreamService","serviceEndpoint":"https://example.org/photos/379283"}]}`;
     this.id = didId;
     const didDocument: DIDDocument = JSON.parse(response);
     this.parseDocument(didDocument);
@@ -161,8 +161,8 @@ export class DIDService {
       controller: key.controller,
       [publicKeyProperty]: key.publicKey
     };
-
-    if (typeof key == ManagementKeyModel.name) {
+     
+    if (key.constructor.name == ManagementKeyModel.name) {
       keyEntryObject['priority'] = key.priority;
     } else {
       keyEntryObject['purpose'] = key.purpose;
@@ -253,7 +253,7 @@ export class DIDService {
     this.nonce = toHexString(nacl.randomBytes(32));
 
     const chainId = calculateChainId([EntryType.CreateDIDEntry, this.entrySchemaVersion, this.nonce]);
-    this.id = `did:fctr:${chainId}`;
+    this.id = `did:factom:${chainId}`;
     return this.id;
   }
 
