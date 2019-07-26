@@ -74,7 +74,7 @@ export class KeysService {
     const didKeyAlias = 'default-public-key';
     const didKey = new DidKeyModel(
       didKeyAlias,
-      new Set([PurposeType.PublicKey]),
+      [PurposeType.PublicKey],
       SignatureType.EdDSA,
       this.didService.getId(),
       keyPair.publicKey,

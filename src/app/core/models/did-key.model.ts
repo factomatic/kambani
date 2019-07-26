@@ -4,7 +4,7 @@ import { PurposeType } from '../enums/purpose-type';
 export class DidKeyModel extends KeyModel {
   constructor(
     public alias: string,
-    public purpose: Set<PurposeType>,
+    public purpose: PurposeType[],
     public type: string,
     public controller: string,
     public publicKey: string,
