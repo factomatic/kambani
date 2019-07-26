@@ -16,7 +16,7 @@
                   formControlName="didId"
                   id="didId"
                   placeholder="DID Id"
-                  pattern="^did:fctr:[abcdef0-9]{64}$"
+                  pattern="^did:factom:[abcdef0-9]{64}$"
                   [ngClass]="{ 'is-invalid': didId.touched && didId.errors }" />
                 <div *ngIf="didId.errors" class="invalid-feedback">
                   <div *ngIf="didId.errors['required']">DID Id is required!</div>

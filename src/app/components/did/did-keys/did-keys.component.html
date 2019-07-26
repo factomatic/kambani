@@ -43,7 +43,7 @@
                     id="keyController"
                     #keyController="ngModel"
                     [(ngModel)]="key.keyModel.controller"
-                    pattern="^did:fctr:[abcdef0-9]{64}$"
+                    pattern="^did:factom:[abcdef0-9]{64}$"
                     [ngClass]="{ 'invalid-border': keyController.invalid, 'disabled': key.disabled }"
                     required />
                   <div class="invalid-alert" *ngIf="keyController.errors && (keyController.dirty || keyController.touched)">
@@ -115,7 +115,7 @@
                       formControlName="controller"
                       id="controller"
                       placeholder="Key controller"
-                      pattern="^did:fctr:[abcdef0-9]{64}$"
+                      pattern="^did:factom:[abcdef0-9]{64}$"
                       [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
                     <div *ngIf="controller.errors" class="invalid-feedback">
                       <div *ngIf="controller['errors'].required">Key controller is required!</div>
