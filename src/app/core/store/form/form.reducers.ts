@@ -1,32 +1,33 @@
-import { ADD_AUTHENTICATION_KEY, ADD_PUBLIC_KEY, ADD_SERVICE,
-  ADD_ORIGINAL_AUTHENTICATION_KEYS, ADD_ORIGINAL_PUBLIC_KEYS, ADD_ORIGINAL_SERVICES,
-  UPDATE_AUTHENTICATION_KEY, UPDATE_PUBLIC_KEY,
-  REMOVE_AUTHENTICATION_KEY, REMOVE_PUBLIC_KEY, REMOVE_SERVICE } from './form.actions';
+import { ADD_MANAGEMENT_KEY, ADD_DID_KEY, ADD_SERVICE,
+  ADD_ORIGINAL_MANAGEMENT_KEYS, ADD_ORIGINAL_DID_KEYS, ADD_ORIGINAL_SERVICES,
+  UPDATE_MANAGEMENT_KEY, UPDATE_DID_KEY,
+  REMOVE_MANAGEMENT_KEY, REMOVE_DID_KEY, REMOVE_SERVICE } from './form.actions';
 import { CLEAR_FORM } from '../action/action.actions';
+import { DidKeyModel } from '../../models/did-key.model';
 import { FormState } from './form.state';
-import { KeyModel } from '../../models/key.model';
+import { ManagementKeyModel } from '../../models/management-key.model';
 import { ServiceModel } from '../../models/service.model';
 
 const initialState: FormState = {
-  authenticationKeys: [],
-  publicKeys: [],
+  managementKeys: [],
+  didKeys: [],
   services: [],
-  originalAuthenticationKeys: [],
-  originalPublicKeys: [],
+  originalManagementKeys: [],
+  originalDidKeys: [],
   originalServices: []
 };
 
-function addAuthenticationKey(state: FormState, authenticationKey: KeyModel) {
+function addManagementKey(state: FormState, managementKey: ManagementKeyModel) {
   return {
     ...state,
-    authenticationKeys: [...state.authenticationKeys, authenticationKey]
+    managementKeys: [...state.managementKeys, managementKey]
   };
 }
 
-function addPublicKey(state: FormState, publicKey: KeyModel) {
+function addDidKey(state: FormState, didKey: DidKeyModel) {
   return {
     ...state,
-    publicKeys: [...state.publicKeys, publicKey]
+    didKeys: [...state.didKeys, didKey]
   };
 }
 
@@ -37,19 +38,19 @@ function addService(state: FormState, service: ServiceModel) {
   };
 }
 
-function addOriginalAuthenticationKeys(state: FormState, authenticationKeys: KeyModel[]) {
+function addOriginalManagementKeys(state: FormState, managementKeys: ManagementKeyModel[]) {
   return {
     ...state,
-    authenticationKeys: authenticationKeys,
-    originalAuthenticationKeys: authenticationKeys
+    managementKeys: managementKeys,
+    originalManagementKeys: managementKeys
   };
 }
 
-function addOriginalPublicKey(state: FormState, publicKeys: KeyModel[]) {
+function addOriginalDidKey(state: FormState, didKeys: DidKeyModel[]) {
   return {
     ...state,
-    publicKeys: publicKeys,
-    originalPublicKeys: publicKeys
+    didKeys: didKeys,
+    originalDidKeys: didKeys
   };
 }
 
@@ -61,54 +62,39 @@ function addOriginalService(state: FormState, services: ServiceModel[]) {
   };
 }
 
-function updateAuthenticationKey(state: FormState, key: KeyModel) {
-  const authenticationKeys = state.authenticationKeys.slice();
-  const authKeyIndex = authenticationKeys.findIndex(k => k.publicKey === key.publicKey);
-  authenticationKeys[authKeyIndex] = key;
-
-  const publicKeys = state.publicKeys.slice();
-  const pubKeyIndex = publicKeys.findIndex(k => k.publicKey === key.publicKey);
-  if (pubKeyIndex > -1) {
-    publicKeys[pubKeyIndex] = key;
-  }
+function updateManagementKey(state: FormState, key: ManagementKeyModel) {
+  const managementKeys = state.managementKeys.slice();
+  const managementKeyIndex = managementKeys.findIndex(k => k.publicKey === key.publicKey);
+  managementKeys[managementKeyIndex] = key;
 
   return {
     ...state,
-    publicKeys: publicKeys,
-    authenticationKeys: authenticationKeys
+    managementKeys: managementKeys
   };
 }
 
-function updatePublicKey(state: FormState, key: KeyModel) {
-  const publicKeys = state.publicKeys.slice();
-  const pubKeyIndex = publicKeys.findIndex(k => k.publicKey === key.publicKey);
-  publicKeys[pubKeyIndex] = key;
-
-  const authenticationKeys = state.authenticationKeys.slice();
-  const authKeyIndex = authenticationKeys.findIndex(k => k.publicKey === key.publicKey);
-  if (authKeyIndex > -1) {
-    authenticationKeys[authKeyIndex] = key;
-  }
+function updateDidKey(state: FormState, key: DidKeyModel) {
+  const didKeys = state.didKeys.slice();
+  const didKeyIndex = didKeys.findIndex(k => k.publicKey === key.publicKey);
+  didKeys[didKeyIndex] = key;
 
   return {
     ...state,
-    publicKeys: publicKeys,
-    authenticationKeys: authenticationKeys
+    didKeys: didKeys
   };
 }
 
-function removeAuthenticationKey(state: FormState, key: KeyModel) {
+function removeManagementKey(state: FormState, key: ManagementKeyModel) {
   return {
     ...state,
-    authenticationKeys: state.authenticationKeys.filter(k => k.publicKey !== key.publicKey),
+    managementKeys: state.managementKeys.filter(k => k.publicKey !== key.publicKey)
   };
 }
 
-function removePublicKey(state: FormState, key: KeyModel) {
+function removeDidKey(state: FormState, key: DidKeyModel) {
   return {
     ...state,
-    authenticationKeys: state.authenticationKeys.filter(k => k.publicKey !== key.publicKey),
-    publicKeys: state.publicKeys.filter(k => k.publicKey !== key.publicKey)
+    didKeys: state.didKeys.filter(k => k.publicKey !== key.publicKey)
   };
 }
 
@@ -121,28 +107,28 @@ function removeService(state: FormState, service: ServiceModel) {
 
 export function formReducers(state: FormState = initialState, action) {
   switch (action.type) {
-    case ADD_AUTHENTICATION_KEY:
-      return addAuthenticationKey(state, action.payload);
-    case ADD_PUBLIC_KEY:
-      return addPublicKey(state, action.payload);
+    case ADD_MANAGEMENT_KEY:
+      return addManagementKey(state, action.payload);
+    case ADD_DID_KEY:
+      return addDidKey(state, action.payload);
     case ADD_SERVICE:
       return addService(state, action.payload);
-    case ADD_ORIGINAL_AUTHENTICATION_KEYS:
-      return addOriginalAuthenticationKeys(state, action.payload);
-    case ADD_ORIGINAL_PUBLIC_KEYS:
-      return addOriginalPublicKey(state, action.payload);
+    case ADD_ORIGINAL_MANAGEMENT_KEYS:
+      return addOriginalManagementKeys(state, action.payload);
+    case ADD_ORIGINAL_DID_KEYS:
+      return addOriginalDidKey(state, action.payload);
     case ADD_ORIGINAL_SERVICES:
       return addOriginalService(state, action.payload);
-    case UPDATE_AUTHENTICATION_KEY:
-      return updateAuthenticationKey(state, action.payload);
-    case UPDATE_PUBLIC_KEY:
-      return updatePublicKey(state, action.payload);
+    case UPDATE_MANAGEMENT_KEY:
+      return updateManagementKey(state, action.payload);
+    case UPDATE_DID_KEY:
+      return updateDidKey(state, action.payload);
     case CLEAR_FORM:
       return initialState;
-    case REMOVE_AUTHENTICATION_KEY:
-      return removeAuthenticationKey(state, action.payload);
-    case REMOVE_PUBLIC_KEY:
-      return removePublicKey(state, action.payload);
+    case REMOVE_MANAGEMENT_KEY:
+      return removeManagementKey(state, action.payload);
+    case REMOVE_DID_KEY:
+      return removeDidKey(state, action.payload);
     case REMOVE_SERVICE:
       return removeService(state, action.payload);
     default:

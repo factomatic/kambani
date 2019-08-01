@@ -6,11 +6,11 @@ import { ToastrService } from 'ngx-toastr';
 
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
-import { KeyViewModel } from 'src/app/core/models/KeyViewModel';
+import { KeyViewModel } from 'src/app/core/models/key-view.model';
 import { minifyPublicKey } from 'src/app/core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
-import { SignatureDataModel } from 'src/app/core/models/SignatureDataModel';
+import { SignatureDataModel } from 'src/app/core/models/signature-data.model';
 import { SigningService } from 'src/app/core/services/signing/signing.service';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 

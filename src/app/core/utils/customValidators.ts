@@ -1,6 +1,7 @@
 import { AbstractControl, FormGroup, ValidatorFn } from '@angular/forms';
 
-import { KeyModel } from '../models/key.model';
+import { DidKeyModel } from '../models/did-key.model';
+import { ManagementKeyModel } from '../models/management-key.model';
 import { ServiceModel } from '../models/service.model';
 
 export default class CustomValidators {
@@ -20,11 +21,12 @@ export default class CustomValidators {
 
     return null;
   }
-  static uniqueKeyAlias(publicKeys: KeyModel[], authenticationKeys: KeyModel[]): ValidatorFn {
+  
+  static uniqueKeyAlias(managementKeys: ManagementKeyModel[], didKeys: DidKeyModel[]): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } | null => {
       if (control.value !== null) {
-        if (!publicKeys.find(k => k.alias === control.value)
-          && !authenticationKeys.find(k => k.alias === control.value)) {
+        if (!managementKeys.find(k => k.alias === control.value)
+          && !didKeys.find(k => k.alias === control.value)) {
           return null;
         }
 

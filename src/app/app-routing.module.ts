@@ -13,7 +13,7 @@ const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [VaultGuard] },
   { path: 'signer', component: SignerComponent, canActivate: [VaultGuard] },
   { path: 'vault', loadChildren: './components/vault/vault.module#VaultModule' },
-  { path: 'dids/manage', component: ManageDidsComponent },
+  { path: 'dids/manage', component: ManageDidsComponent, canActivate: [VaultGuard] },
   { path: 'dids/create', loadChildren: './components/did/did.module#DIDModule', canActivate: [ CreateActionGuard ] },
   { path: 'dids/update', loadChildren: './components/did/did.module#DIDModule', canActivate: [ UpdateActionGuard ] }
 ];

@@ -6,7 +6,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
-import { ImportResultModel } from 'src/app/core/models/ImportResultModel';
+import { ImportResultModel } from 'src/app/core/models/import-result.model';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 

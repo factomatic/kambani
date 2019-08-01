@@ -2,8 +2,8 @@
   <div class="row">
     <div class="col-xs-12 col-sm-12 col-md-12">
       <div class="page-content">
-        <h1 class="page-title text-center" *ngIf="selectedAction === actionType.CreateAdvanced">Create public keys</h1>
-        <h1 class="page-title text-center" *ngIf="selectedAction === actionType.Update">Update public keys</h1>
+        <h1 class="page-title text-center" *ngIf="selectedAction === actionType.CreateAdvanced">Create management keys</h1>
+        <h1 class="page-title text-center" *ngIf="selectedAction === actionType.Update">Update management keys</h1>
         <div class="row">
           <div class="col-xs-12 offset-sm-3 col-sm-6">
             <fieldset class="collapsible collapsed mb-5" *ngFor="let key of componentKeys">
@@ -17,7 +17,12 @@
               <div mdbCollapse #collapse="bs-collapse">
                 <div class="form-group">
                   <label class="control-label" for="type">Signature type</label>
-                  <input type="text" class="form-control input-md" id="type" value="{{key.keyModel.type}}" disabled />
+                  <input 
+                    type="text" 
+                    class="form-control input-md" 
+                    id="type" 
+                    value="{{key.keyModel.type}}" 
+                    disabled />
                 </div>
 
                 <div class="form-group">
@@ -28,7 +33,7 @@
                     id="keyController"
                     #keyController="ngModel"
                     [(ngModel)]="key.keyModel.controller"
-                    pattern="^did:fctr:[abcdef0-9]{64}$"
+                    pattern="^did:factom:[abcdef0-9]{64}$"
                     [ngClass]="{ 'invalid-border': keyController.invalid, 'disabled': key.disabled }"
                     required />
                   <div class="invalid-alert" *ngIf="keyController.errors && (keyController.dirty || keyController.touched)">
@@ -57,8 +62,28 @@
                 </div>
 
                 <div class="form-group">
+                  <label class="control-label" for="keyPriority">Priority</label>
+                  <input
+                    type="number"
+                    class="form-control input-md"
+                    id="keyPriority"
+                    #keyPriority="ngModel"
+                    [(ngModel)]="key.keyModel.priority"
+                    [ngClass]="{ 'invalid-border': keyPriority.invalid, 'disabled': key.disabled }"
+                    required />
+                  <div class="invalid-alert" *ngIf="keyPriority.errors && (keyPriority.dirty || keyPriority.touched)">
+                    <p *ngIf="keyPriority?.errors.required">Priority is required!</p>
+                  </div>
+                </div>
+
+                <div class="form-group">
                   <label class="control-label" for="controller">Key (Base58)</label>
-                  <input type="text" class="form-control input-md" id="controller" value="{{key.keyModel.publicKey}}" disabled />
+                  <input 
+                    type="text" 
+                    class="form-control input-md" 
+                    id="controller" 
+                    value="{{key.keyModel.publicKey}}" 
+                    disabled />
                 </div>
 
                 <div class="form-group text-center">
@@ -72,7 +97,7 @@
               </div>
             </fieldset>
             <fieldset class="collapsible collapsed">
-              <legend (click)="collapse.toggle()">Generate Public Key</legend>
+              <legend (click)="collapse.toggle()">Generate Management Key</legend>
               <div mdbCollapse #collapse="bs-collapse">
                 <form [formGroup]="keyForm" (ngSubmit)="generateKey()">
                   <div class="form-group">
@@ -98,7 +123,7 @@
                       formControlName="controller"
                       id="controller"
                       placeholder="Key controller"
-                      pattern="^did:fctr:[abcdef0-9]{64}$"
+                      pattern="^did:factom:[abcdef0-9]{64}$"
                       [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
                     <div *ngIf="controller.errors" class="invalid-feedback">
                       <div *ngIf="controller['errors'].required">Key controller is required!</div>
@@ -114,7 +139,8 @@
                     <input
                       type="text"
                       class="form-control input-md"
-                      formControlName="alias" id="alias"
+                      formControlName="alias"
+                      id="alias"
                       placeholder="Alias"
                       pattern="^[a-z0-9-]{1,32}$"
                       [ngClass]="{ 'is-invalid': alias.touched && alias.errors }" />
@@ -122,6 +148,23 @@
                       <div *ngIf="alias['errors'].required">Alias is required!</div>
                       <div *ngIf="alias['errors'].pattern">Alias must not be more than 32 characters long and must contain only lower-case letters, digits and hyphens!</div>
                       <div *ngIf="alias['errors'].taken">You have already used this alias!</div>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label" for="priority">
+                      Priority
+                    </label>
+                    <input
+                      type="number"
+                      class="form-control input-md"
+                      formControlName="priority"
+                      id="priority"
+                      [ngClass]="{ 'is-invalid': priority.touched && priority.errors }" />
+                    <div *ngIf="priority.errors" class="invalid-feedback">
+                      <div *ngIf="priority['errors'].required">Priority is required!</div>
+                      <div *ngIf="priority['errors'].min">Priority must be a positive number!</div>
+                      <div *ngIf="priority['errors'].max">Priority must not be bigger than 100!</div>
                     </div>
                   </div>
 

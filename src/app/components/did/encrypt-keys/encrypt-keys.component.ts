@@ -7,7 +7,7 @@ import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from '../../base.component';
 import CustomValidators from 'src/app/core/utils/customValidators';
 import { DIDService } from 'src/app/core/services/did/did.service';
-import { GenerateKeysService } from 'src/app/core/services/keys/generate.keys.service';
+import { KeysService } from 'src/app/core/services/keys/keys.service';
 import { Subscription } from 'rxjs';
 import { TooltipMessages } from 'src/app/core/utils/tooltip.messages';
 import { WorkflowService } from 'src/app/core/services/workflow/workflow.service';
@@ -33,7 +33,7 @@ export class EncryptKeysComponent extends BaseComponent implements OnInit {
     private didService: DIDService,
     private fb: FormBuilder,
     private store: Store<AppState>,
-    private keysService: GenerateKeysService,
+    private keysService: KeysService,
     private workflowService: WorkflowService) {
     super();
   }
@@ -48,7 +48,7 @@ export class EncryptKeysComponent extends BaseComponent implements OnInit {
         this.headerTooltipMessage = this.tooltipMessages[selectedAction][0];
         this.boldPartTooltipMessage = this.tooltipMessages[selectedAction][1];
 
-        if (state.form.publicKeys.length > 0 || state.form.authenticationKeys.length > 0) {
+        if (state.form.managementKeys.length > 0 || state.form.didKeys.length > 0) {
           this.keysGenerated = true;
           this.continueButtonText = 'Next';
         }

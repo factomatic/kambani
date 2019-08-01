@@ -8,10 +8,10 @@ import { ToastrService } from 'ngx-toastr';
 
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
-import { KeysService } from 'src/app/core/services/keys/keys.service';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
 import { SignatureType } from 'src/app/core/enums/signature-type';
+import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
   selector: 'app-import-keys',
@@ -27,10 +27,10 @@ export class ImportKeysComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private dialogsService: DialogsService,
-    private keysService: KeysService,
     private router: Router,
     private spinner: NgxSpinnerService,
-    private toastr: ToastrService ) { }
+    private toastr: ToastrService,
+    private vaultService: VaultService ) { }
 
   ngOnInit() {
     this.createJsonFilePasswordForm();
@@ -85,8 +85,8 @@ export class ImportKeysComponent implements OnInit {
 
         if (vaultPassword) {
           this.spinner.show();
-          this.keysService
-            .importFromJsonFile(this.file, filePassword, vaultPassword)
+          this.vaultService
+            .importKeysFromJsonFile(this.file, filePassword, vaultPassword)
             .subscribe(result => {
               this.spinner.hide();
               if (result.success) {
@@ -112,8 +112,8 @@ export class ImportKeysComponent implements OnInit {
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {
           this.spinner.show();
-          this.keysService
-            .importFromPrivateKey(this.alias.value, this.type.value, this.privateKey.value, vaultPassword)
+          this.vaultService
+            .importKeysFromPrivateKey(this.alias.value, this.type.value, this.privateKey.value, vaultPassword)
             .subscribe(result => {
               this.spinner.hide();
               if (result.success) {

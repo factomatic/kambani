@@ -2,8 +2,8 @@
   <div class="row">
     <div class="col-xs-12 col-sm-12 col-md-12">
       <div class="page-content">
-        <h1 class="page-title text-center" *ngIf="selectedAction === actionType.CreateAdvanced">Create authentication keys</h1>
-        <h1 class="page-title text-center" *ngIf="selectedAction === actionType.Update">Update authentication keys</h1>
+        <h1 class="page-title text-center" *ngIf="selectedAction === actionType.CreateAdvanced">Create DID keys</h1>
+        <h1 class="page-title text-center" *ngIf="selectedAction === actionType.Update">Update DID keys</h1>
         <div class="row">
           <div class="col-xs-12 offset-sm-3 col-sm-6">
             <fieldset class="collapsible collapsed mb-5" *ngFor="let key of componentKeys">
@@ -16,8 +16,23 @@
               </legend>
               <div mdbCollapse #collapse="bs-collapse">
                 <div class="form-group">
+                  <label class="control-label" for="purpose">Purpose type</label>
+                  <input 
+                    type="text"
+                    class="form-control input-md"
+                    id="purpose"
+                    value="{{key.keyModel.purpose}}"
+                    disabled />
+                </div>
+
+                <div class="form-group">
                   <label class="control-label" for="type">Signature type</label>
-                  <input type="text" class="form-control input-md" id="type" value="{{key.keyModel.type}}" disabled />
+                  <input 
+                    type="text" 
+                    class="form-control input-md" 
+                    id="type" 
+                    value="{{key.keyModel.type}}" 
+                    disabled />
                 </div>
 
                 <div class="form-group">
@@ -28,7 +43,7 @@
                     id="keyController"
                     #keyController="ngModel"
                     [(ngModel)]="key.keyModel.controller"
-                    pattern="^did:fctr:[abcdef0-9]{64}$"
+                    pattern="^did:factom:[abcdef0-9]{64}$"
                     [ngClass]="{ 'invalid-border': keyController.invalid, 'disabled': key.disabled }"
                     required />
                   <div class="invalid-alert" *ngIf="keyController.errors && (keyController.dirty || keyController.touched)">
@@ -71,48 +86,18 @@
                 </div>
               </div>
             </fieldset>
-            <div class="mb-4">
-              <label class="control-label" for="action">
-                Select or generate key
-                <i class="fas fa-info-circle text-primary" ngbTooltip="{{actionDropdownTooltipMessage}}" tooltipClass="custom-tooltip"></i>
-              </label>
-              <select class="form-control" id="action" (change)="changeAction($event)">
-                <option value="generate">Generate New Key</option>
-                <option value="{{key.keyModel.publicKey}}" *ngFor="let key of availablePublicKeys">{{key.keyModel.alias}}</option>
-              </select>
-            </div>
-            <fieldset class="collapsible collapsed" *ngIf="selectedKey">
-              <legend (click)="collapse.toggle()">{{selectedKey.alias}}</legend>
-              <div mdbCollapse #collapse="bs-collapse">
-                <div class="form-group">
-                  <label class="control-label" for="type">Signature type</label>
-                  <input type="text" class="form-control input-md" id="type" value="{{selectedKey.type}}" disabled />
-                </div>
-
-                <div class="form-group">
-                  <label class="control-label" for="controller">Key controller</label>
-                  <input type="text" class="form-control input-md" id="controller" value="{{selectedKey.controller}}" disabled />
-                </div>
-
-                <div class="form-group">
-                  <label class="control-label" for="alias">Alias</label>
-                  <input type="text" class="form-control input-md" id="alias" value="{{selectedKey.alias}}" disabled />
-                </div>
-
-                <div class="form-group">
-                  <label class="control-label" for="controller">Key (Base58)</label>
-                  <input type="text" class="form-control input-md" id="controller" value="{{selectedKey.publicKey}}" disabled />
-                </div>
-
-                <div class="form-group text-center">
-                  <button type="button" mdbBtn color="success" mdbWavesEffect (click)=addSelectedKey()>Add Key</button>
-                </div>
-              </div>
-            </fieldset>
-            <fieldset class="collapsible collapsed" *ngIf="componentAction === 'generate'">
-              <legend (click)="collapse.toggle()">Generate Authentication Key</legend>
+            <fieldset class="collapsible collapsed">
+              <legend (click)="collapse.toggle()">Generate DID Key</legend>
               <div mdbCollapse #collapse="bs-collapse">
                 <form [formGroup]="keyForm" (ngSubmit)="generateKey()">
+                  <div class="form-group">
+                    <label class="control-label" for="purpose">Purpose type</label>
+                    <select class="form-control" formControlName="purpose" id="purpose">
+                      <option value="publicKey">Public Key</option>
+                      <option value="authentication">Authentication Key</option>
+                    </select>
+                  </div>
+
                   <div class="form-group">
                     <label class="control-label" for="type">Signature type</label>
                     <select class="form-control" formControlName="type" id="type">
@@ -130,7 +115,7 @@
                       formControlName="controller"
                       id="controller"
                       placeholder="Key controller"
-                      pattern="^did:fctr:[abcdef0-9]{64}$"
+                      pattern="^did:factom:[abcdef0-9]{64}$"
                       [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
                     <div *ngIf="controller.errors" class="invalid-feedback">
                       <div *ngIf="controller['errors'].required">Key controller is required!</div>

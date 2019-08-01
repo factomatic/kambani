@@ -1,11 +1,12 @@
+import { DidKeyModel } from '../../models/did-key.model';
+import { ManagementKeyModel } from '../../models/management-key.model';
 import { ServiceModel } from '../../models/service.model';
-import { KeyModel } from '../../models/key.model';
 
 export interface FormState {
-  readonly authenticationKeys: KeyModel[];
-  readonly publicKeys: KeyModel[];
+  readonly managementKeys: ManagementKeyModel[];
+  readonly didKeys: DidKeyModel[];
   readonly services: ServiceModel[];
-  readonly originalAuthenticationKeys: KeyModel[];
-  readonly originalPublicKeys: KeyModel[];
+  readonly originalManagementKeys: ManagementKeyModel[];
+  readonly originalDidKeys: DidKeyModel[];
   readonly originalServices: ServiceModel[];
 }

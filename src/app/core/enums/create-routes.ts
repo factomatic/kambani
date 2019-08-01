@@ -1,6 +1,6 @@
 export enum CreateRoutes {
-  PublicKeys = '/dids/create/keys/public',
-  AuthenticationKeys = '/dids/create/keys/authentication',
+  ManagementKeys = '/dids/create/keys/management',
+  DidKeys = '/dids/create/keys/did',
   Services = '/dids/create/services',
   EncryptKeys = '/dids/create/keys/encrypt',
   Summary = '/dids/create/summary',

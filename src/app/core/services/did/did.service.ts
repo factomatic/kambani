@@ -5,12 +5,13 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store, select } from '@ngrx/store';
 
-import { AddOriginalAuthenticationKeys, AddOriginalPublicKeys, AddOriginalServices } from '../../store/form/form.actions';
+import { AddOriginalManagementKeys, AddOriginalDidKeys, AddOriginalServices } from '../../store/form/form.actions';
 import { AppState } from '../../store/app.state';
 import { DIDDocument } from '../../interfaces/did-document';
+import { DidKeyModel } from '../../models/did-key.model';
 import { EntryType } from '../../enums/entry-type';
 import { environment } from 'src/environments/environment';
-import { KeyModel } from '../../models/key.model';
+import { ManagementKeyModel } from '../../models/management-key.model';
 import { ServiceModel } from '../../models/service.model';
 import { SignatureType } from '../../enums/signature-type';
 import { toHexString, calculateChainId, calculateSha512 } from '../../utils/helpers';
@@ -19,14 +20,15 @@ import { toHexString, calculateChainId, calculateSha512 } from '../../utils/help
 export class DIDService {
   private VerificationKeySuffix = 'VerificationKey';
   private apiUrl = environment.apiUrl;
-  private version = environment.version;
+  private didMethodSpecVersion = environment.didMethodSpecVersion;
+  private entrySchemaVersion = environment.entrySchemaVersion;
   private id: string;
   private nonce: string;
-  private formPublicKeys: KeyModel[];
-  private formAuthenticationKeys: KeyModel[];
+  private formManagementKeys: ManagementKeyModel[];
+  private formDidKeys: DidKeyModel[];
   private formServices: ServiceModel[];
-  private originalPublicKeys: Set<KeyModel>;
-  private originalAuthenticationKeys: Set<KeyModel>;
+  private originalManagementKeys: Set<ManagementKeyModel>;
+  private originalDidKeys: Set<DidKeyModel>;
   private originalServices: Set<ServiceModel>;
 
   constructor(
@@ -35,11 +37,11 @@ export class DIDService {
     this.store
       .pipe(select(state => state.form))
       .subscribe(form => {
-        this.formPublicKeys = form.publicKeys;
-        this.formAuthenticationKeys = form.authenticationKeys;
+        this.formManagementKeys = form.managementKeys;
+        this.formDidKeys = form.didKeys;
         this.formServices = form.services;
-        this.originalPublicKeys = new Set(form.originalPublicKeys);
-        this.originalAuthenticationKeys = new Set(form.originalAuthenticationKeys);
+        this.originalManagementKeys = new Set(form.originalManagementKeys);
+        this.originalDidKeys = new Set(form.originalDidKeys);
         this.originalServices = new Set(form.originalServices);
       });
   }
@@ -63,14 +65,14 @@ export class DIDService {
   getEntrySize(entry: {}, entryType: string): number {
     return this.calculateEntrySize(
       [this.nonce],
-      [entryType, this.version],
+      [entryType, this.entrySchemaVersion],
       JSON.stringify(entry)
     );
   }
 
   recordOnChain(entry: {}, entryType: string): Observable<Object> {
     const data = JSON.stringify([
-      [entryType, this.version, this.nonce],
+      [entryType, this.entrySchemaVersion, this.nonce],
       entry
     ]);
 
@@ -86,7 +88,7 @@ export class DIDService {
   upload(didId: string) {
     // call resolver to get did document
     // tslint:disable-next-line:max-line-length
-    const response = `{"@context":"https://w3id.org/did/v1","id":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKey":[{"id":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myfirstkey","type":"Ed25519VerificationKey","controller":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"GtRQwPQ6a8Qe9DbzBCTmBERovZ4URh7BvwziQMURRaEQ"},{"id":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mysecondkey","type":"ECDSASecp256k1VerificationKey","controller":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"eeK7Saop24d3hej7r4BNgyna6pXrCEbgCTZYHj7ApkRh"}],"authentication":["did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myfirstkey",{"id":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mythirdkey","type":"Ed25519VerificationKey","controller":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"2reWgag62C9ryZcCmheyzDVvQE5j9j1HCgVMbJBmoPvx"}],"service":[{"id":"did:fctr:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myservice","type":"PhotoStreamService","serviceEndpoint":"https://example.org/photos/379283"}]}`;
+    const response = `{"@context":"https://w3id.org/did/v1","id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","managementKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myfirstkey","type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"GtRQwPQ6a8Qe9DbzBCTmBERovZ4URh7BvwziQMURRaEQ","priority":1},{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mysecondkey","type":"ECDSASecp256k1VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"eeK7Saop24d3hej7r4BNgyna6pXrCEbgCTZYHj7ApkRh","priority":2}],"didKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mythirdkey","purpose":["publicKey"],"type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"2reWgag62C9ryZcCmheyzDVvQE5j9j1HCgVMbJBmoPvx"}],"service":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myservice","type":"PhotoStreamService","serviceEndpoint":"https://example.org/photos/379283"}]}`;
     this.id = didId;
     const didDocument: DIDDocument = JSON.parse(response);
     this.parseDocument(didDocument);
@@ -105,74 +107,70 @@ export class DIDService {
   }
 
   private generateDocument(): DIDDocument {
-    const publicKeys = this.transformPublicKeysToEntryObjects(this.formPublicKeys);
-    const authenticationKeys = this.transformAuthenticationKeysToEntryObjects(this.formAuthenticationKeys, this.formPublicKeys);
-    const services = this.transformServicesToEntryObjects(this.formServices);
+    const managementKeys = this.formManagementKeys.map(k => (this.buildManagementKeyEntryObject(k)));
 
     const didDocument: DIDDocument = {
-      '@context': 'https://w3id.org/did/v1',
-      'id': this.id,
-      'publicKey': publicKeys,
-      'authentication': authenticationKeys,
-      'service': services
+      'didMethodVersion': this.didMethodSpecVersion,
+      'managementKey': managementKeys
     };
+
+    const didKeys = this.formDidKeys.map(k => (this.buildDidKeyEntryObject(k)));
+    if (didKeys.length > 0) {
+      didDocument.didKey = didKeys;
+    }
+
+    const services = this.formServices.map(s => (this.buildServiceEntryObject(s)));
+    if (services.length > 0) {
+      didDocument.service = services;
+    }
 
     return didDocument;
   }
 
   private generateUpdateEntry(): {} {
-    const newPublicKeys = this.getNew(this.originalPublicKeys, this.formPublicKeys);
-    const newAuthenticationKeys = this.getNew(this.originalAuthenticationKeys, this.formAuthenticationKeys);
+    const newManagementKeys = this.getNew(this.originalManagementKeys, this.formManagementKeys);
+    const newDidKeys = this.getNew(this.originalDidKeys, this.formDidKeys);
     const newServices = this.getNew(this.originalServices, this.formServices);
-    const revokedPublicKeys = this.getRevoked(this.originalPublicKeys, new Set(this.formPublicKeys));
-    const revokedAuthenticationKeys = this.getRevoked(this.originalAuthenticationKeys, new Set(this.formAuthenticationKeys));
+    const revokedManagementKeys = this.getRevoked(this.originalManagementKeys, new Set(this.formManagementKeys));
+    const revokedDidKeys = this.getRevoked(this.originalDidKeys, new Set(this.formDidKeys));
     const revokedServices = this.getRevoked(this.originalServices, new Set(this.formServices));
 
     const updateEntry = {};
 
-    if (newPublicKeys.length > 0 || newAuthenticationKeys.length > 0 || newServices.length > 0) {
+    if (newManagementKeys.length > 0 || newDidKeys.length > 0 || newServices.length > 0) {
       updateEntry['add'] = this.constructAddObject(
-        newPublicKeys as KeyModel[],
-        newAuthenticationKeys as KeyModel[],
+        newManagementKeys as ManagementKeyModel[],
+        newDidKeys as DidKeyModel[],
         newServices as ServiceModel[]
       );
     }
 
-    if (revokedPublicKeys.length > 0 || revokedAuthenticationKeys.length > 0 || revokedServices.length > 0) {
-      updateEntry['revoke'] = this.constructRevokeObject(revokedPublicKeys, revokedAuthenticationKeys, revokedServices);
+    if (revokedManagementKeys.length > 0 || revokedDidKeys.length > 0 || revokedServices.length > 0) {
+      updateEntry['revoke'] = this.constructRevokeObject(revokedManagementKeys, revokedDidKeys, revokedServices);
     }
 
     return updateEntry;
   }
 
-  private transformPublicKeysToEntryObjects(publicKeys: KeyModel[]): Array<{}> {
-    return publicKeys.map(k => (this.buildKeyEntryObject(k)));
+  private buildManagementKeyEntryObject(key: ManagementKeyModel): {} {
+    let keyEntryObject = this.buildKeyEntryObject(key);
+    keyEntryObject['priority'] = key.priority;
+
+    return keyEntryObject;
   }
 
-  private transformAuthenticationKeysToEntryObjects(authenticationKeys: KeyModel[], publicKeys: KeyModel[]) {
-    /** Divided in two separate arrays because the embeddedKeys must be included first in the final array. */
-    const embeddedAuthenticationKeys = [];
-    const fullAuthenticationKeys = [];
-    authenticationKeys.forEach(k => {
-      if (publicKeys.includes(k)) {
-        embeddedAuthenticationKeys.push(`${this.id}#${k.alias}`);
-      } else {
-        fullAuthenticationKeys.push(this.buildKeyEntryObject(k));
-      }
-    });
+  private buildDidKeyEntryObject(key: DidKeyModel): {} {
+    let keyEntryObject = this.buildKeyEntryObject(key);
+    keyEntryObject['purpose'] = key.purpose;
 
-    return embeddedAuthenticationKeys.concat(fullAuthenticationKeys);
+    if (key.priorityRequirement) {
+      keyEntryObject['priorityRequirement'] = key.priorityRequirement;
+    }
+
+    return keyEntryObject;
   }
 
-  private transformServicesToEntryObjects(services: ServiceModel[]): Array<{}> {
-    return services.map(s => ({
-      id: `${this.id}#${s.alias}`,
-      type: s.type,
-      serviceEndpoint: s.endpoint
-    }));
-  }
-
-  private buildKeyEntryObject(key: KeyModel): {} {
+  private buildKeyEntryObject(key): {} {
     const publicKeyProperty = key.type == SignatureType.RSA ? 'publicKeyPem' : 'publicKeyBase58';
 
     return {
@@ -181,6 +179,20 @@ export class DIDService {
       controller: key.controller,
       [publicKeyProperty]: key.publicKey
     };
+  }
+
+  private buildServiceEntryObject(service: ServiceModel): {} {
+    let serviceEntryObject = {
+      id: `${this.id}#${service.alias}`,
+      type: service.type,
+      serviceEndpoint: service.endpoint
+    };
+
+    if (service.priorityRequirement) {
+      serviceEntryObject['priorityRequirement'] = service.priorityRequirement;
+    }
+
+    return serviceEntryObject;
   }
 
   private getNew(original, current): Array<{}> {
@@ -207,33 +219,33 @@ export class DIDService {
     return revoked;
   }
 
-  private constructAddObject(newPublicKeys: KeyModel[], newAuthenticationKeys: KeyModel[], newServices: ServiceModel[]): {} {
+  private constructAddObject(newManagementKeys: ManagementKeyModel[], newDidKeys: DidKeyModel[], newServices: ServiceModel[]): {} {
     const add = {};
 
-    if (newPublicKeys.length > 0) {
-      add['publicKey'] = this.transformPublicKeysToEntryObjects(newPublicKeys as KeyModel[]);
+    if (newManagementKeys.length > 0) {
+      add['managementKey'] = newManagementKeys.map(k => (this.buildManagementKeyEntryObject(k)));
     }
 
-    if (newAuthenticationKeys.length > 0) {
-      add['authentication'] = this.transformAuthenticationKeysToEntryObjects(newAuthenticationKeys as KeyModel[], this.formPublicKeys);
+    if (newDidKeys.length > 0) {
+      add['didKey'] = newDidKeys.map(k => (this.buildDidKeyEntryObject(k)));
     }
 
     if (newServices.length > 0) {
-      add['service'] = this.transformServicesToEntryObjects(newServices as ServiceModel[]);
+      add['service'] = newServices.map(s => (this.buildServiceEntryObject(s)));
     }
 
     return add;
   }
 
-  private constructRevokeObject(revokedPublicKeys: string[], revokedAuthenticationKeys: string[], revokedServices: string[]): {} {
+  private constructRevokeObject(revokedManagementKeys: string[], revokedDidKeys: string[], revokedServices: string[]): {} {
     const revoke = {};
 
-    if (revokedPublicKeys.length > 0) {
-      revoke['publicKey'] = revokedPublicKeys;
+    if (revokedManagementKeys.length > 0) {
+      revoke['managementKey'] = revokedManagementKeys;
     }
 
-    if (revokedAuthenticationKeys.length > 0) {
-      revoke['authentication'] = revokedAuthenticationKeys;
+    if (revokedDidKeys.length > 0) {
+      revoke['didKey'] = revokedDidKeys;
     }
 
     if (revokedServices.length > 0) {
@@ -246,8 +258,8 @@ export class DIDService {
   private generateId(): string {
     this.nonce = toHexString(nacl.randomBytes(32));
 
-    const chainId = calculateChainId([EntryType.CreateDIDEntry, this.version, this.nonce]);
-    this.id = `did:fctr:${chainId}`;
+    const chainId = calculateChainId([EntryType.CreateDIDEntry, this.entrySchemaVersion, this.nonce]);
+    this.id = `did:factom:${chainId}`;
     return this.id;
   }
 
@@ -274,48 +286,43 @@ export class DIDService {
   }
 
   private parseDocument(didDocument: DIDDocument) {
-    const publicKeys = this.extractPublicKeys(didDocument.publicKey);
-    const authenticationKeys = this.extractAuthenticationKeys(didDocument.authentication, publicKeys);
+    const managementKeys = this.extractManagementKeys(didDocument.managementKey);
+    const didKeys = this.extractDidKeys(didDocument.didKey);
     const services = this.extractServices(didDocument.service);
 
-    this.store.dispatch(new AddOriginalAuthenticationKeys(authenticationKeys));
-    this.store.dispatch(new AddOriginalPublicKeys(publicKeys));
+    this.store.dispatch(new AddOriginalManagementKeys(managementKeys));
+    this.store.dispatch(new AddOriginalDidKeys(didKeys));
     this.store.dispatch(new AddOriginalServices(services));
   }
 
-  private extractPublicKeys(documentPubKeys: any[]): KeyModel[] {
-    return documentPubKeys.map(k => new KeyModel(
+  private extractManagementKeys(documentManagementKeys: any[]): ManagementKeyModel[] {
+    return documentManagementKeys.map(k => new ManagementKeyModel(
       k.id.split('#')[1],
+      k.priority,
       k.type,
       k.controller,
-      k.publicKeyBase58
+      k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem
     ));
   }
 
-  private extractAuthenticationKeys(documentAuthKeys: any[], publicKeys: KeyModel[]): KeyModel[] {
-    const authenticationKeys: KeyModel[] = [];
-    documentAuthKeys.forEach(k => {
-      if (typeof k === 'string') {
-        const key = publicKeys.find(pk => pk.alias === k.split('#')[1]);
-        authenticationKeys.push(key);
-      } else {
-        authenticationKeys.push(new KeyModel(
-          k.id.split('#')[1],
-          k.type,
-          k.controller,
-          k.publicKeyBase58
-        ));
-      }
-    });
-
-    return authenticationKeys;
+  private extractDidKeys(documentDidKeys: any[]): DidKeyModel[] {
+    return documentDidKeys.map(k => new DidKeyModel(
+      k.id.split('#')[1],
+      k.purpose,
+      k.type,
+      k.controller,
+      k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem,
+      undefined,
+      k.priorityRequirement
+    ));
   }
 
   private extractServices(documentServices: any[]): ServiceModel[] {
     return documentServices.map(s => new ServiceModel(
       s.type,
       s.serviceEndpoint,
-      s.id.split('#')[1]
+      s.id.split('#')[1],
+      s.priorityRequirement
     ));
   }
 }

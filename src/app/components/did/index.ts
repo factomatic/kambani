@@ -1,19 +1,19 @@
-import { AuthenticationKeysComponent } from './authentication-keys/authentication-keys.component';
+import { DidKeysComponent } from './did-keys/did-keys.component';
 import { EncryptKeysComponent } from './encrypt-keys/encrypt-keys.component';
 import { FinalComponent } from './final/final.component';
 import { ManageDidsComponent } from './manage-dids/manage-dids.component';
+import { ManagementKeysComponent } from './management-keys/management-keys.component';
 import { ProvideDidComponent } from './provide-did/provide-did.component';
-import { PublicKeysComponent } from './public-keys/public-keys.component';
 import { ServicesComponent } from './services/services.component';
 import { SummaryComponent } from './summary/summary.component';
 
 export const didComponents = [
-  AuthenticationKeysComponent,
+  DidKeysComponent,
   EncryptKeysComponent,
   FinalComponent,
   ManageDidsComponent,
+  ManagementKeysComponent,
   ProvideDidComponent,
-  PublicKeysComponent,
   ServicesComponent,
   SummaryComponent
 ];

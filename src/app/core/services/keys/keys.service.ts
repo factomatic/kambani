@@ -1,95 +1,131 @@
+declare const Buffer;
+import * as nacl from 'tweetnacl/nacl-fast';
 import * as base58 from 'bs58';
 import * as elliptic from 'elliptic';
 import * as encryptor from 'browser-passworder';
-import * as forge from 'node-forge';
-import * as nacl from 'tweetnacl/nacl-fast';
-import { Buffer } from 'buffer/';
 import { defer, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
+import { Store, select } from '@ngrx/store';
 
-import { ImportKeyModel } from '../../models/ImportKeyModel';
-import { ImportResultModel } from '../../models/ImportResultModel';
-import { KeyPairModel } from '../../models/KeyPairModel';
-import { modifyPemPrefixAndSuffix } from '../../utils/helpers';
-import { SignatureType} from '../../enums/signature-type';
-import { VaultService } from '../vault/vault.service';
+import { AddManagementKey, AddDidKey } from '../../store/form/form.actions';
+import { AppState } from '../../store/app.state';
+import { DIDService } from '../did/did.service';
+import { exportPemKeys } from '../../utils/helpers';
+import { KeyPairModel } from '../../models/key-pair.model';
+import { SignatureType } from '../../enums/signature-type';
+import { ManagementKeyModel } from '../../models/management-key.model';
+import { DidKeyModel } from '../../models/did-key.model';
+import { PurposeType } from '../../enums/purpose-type';
 
 @Injectable()
 export class KeysService {
+  private keys;
 
-  constructor(private vaultService: VaultService) { }
+  constructor(
+    private didService: DIDService,
+    private store: Store<AppState>) {
+    this.store
+      .pipe(select(state => state.form))
+      .subscribe(form => {
+        const managementKeys = form.managementKeys.map(key => ({
+          alias: key.alias,
+          type: key.type,
+          privateKey: key.privateKey
+        }));
 
-  importFromJsonFile(file: string, filePassword: string, vaultPassword: string): Observable<ImportResultModel> {
-    return defer(async() => {
-      try {
-        const decryptedFile = JSON.parse(await encryptor.decrypt(filePassword, this.extractEncryptedKeys(file)));
-        const keyPairs: KeyPairModel[] = [];
+        const didKeys = form.didKeys.map(key => ({
+          alias: key.alias,
+          type: key.type,
+          privateKey: key.privateKey
+        }));
 
-        if (Array.isArray(decryptedFile) && decryptedFile.length > 0) {
-          for (const keyModel of decryptedFile) {
-            if (keyModel.alias && keyModel.type && keyModel.privateKey) {
-              const importKeyModel = new ImportKeyModel(keyModel.alias, keyModel.type, keyModel.privateKey);
-              const keyPairModel = this.getKeyPairModel(importKeyModel);
-              keyPairs.push(keyPairModel);
-            }
-          }
+        this.keys = managementKeys.concat(didKeys);
+      });
+  } 
 
-          return await this.vaultService.importKeys(keyPairs, vaultPassword);
-        } else {
-          return new ImportResultModel(false, 'Invalid type of keystore');
-        }
-      } catch {
-        return new ImportResultModel(false, 'Invalid file password or type of keystore');
-      }
-    });
-  }
-
-  importFromPrivateKey(alias: string, type: string, privateKey: string, vaultPassword: string): Observable<ImportResultModel> {
+  generateKeyPair(type: SignatureType): Observable<KeyPairModel> {
     return defer(async () => {
-      try {
-        const importKeyModel = new ImportKeyModel(alias, type, privateKey);
-        const keyPairModel = this.getKeyPairModel(importKeyModel);
-        const keyPairs = [keyPairModel];
-
-        return await this.vaultService.importKeys(keyPairs, vaultPassword);
-      } catch {
-        return new ImportResultModel(false, 'Invalid private key');
+      if (type === SignatureType.EdDSA) {
+        return this.generateEdDSAKeyPair();
+      } else if (type === SignatureType.ECDSA) {
+        return this.generateECDSAKeyPair();
+      } else if (type === SignatureType.RSA) {
+        return await this.generateRSAKeyPair();
       }
     });
   }
 
-  private getKeyPairModel(importKeyModel: ImportKeyModel): KeyPairModel {
-    if (importKeyModel.type === SignatureType.EdDSA) {
-      const keyPair = nacl.sign.keyPair.fromSecretKey(base58.decode(importKeyModel.privateKey));
-      const publicKey = base58.encode(Buffer.from(keyPair.publicKey));
+  autoGenerateKeys(): void {
+    let keyPair = this.generateEdDSAKeyPair();
+    const managementKeyAlias = 'default-management-key';
+    const managementKeyPriority = 1;
+    const managementKey = new ManagementKeyModel(
+      managementKeyAlias,
+      managementKeyPriority,
+      SignatureType.EdDSA,
+      this.didService.getId(),
+      keyPair.publicKey,
+      keyPair.privateKey
+    );
 
-      return new KeyPairModel(importKeyModel.alias, importKeyModel.type, publicKey, importKeyModel.privateKey);
-    } else if (importKeyModel.type === SignatureType.ECDSA) {
-      const ec = elliptic.ec('secp256k1');
-      const key = ec.keyFromPrivate(base58.decode(importKeyModel.privateKey), 'hex');
+    this.store.dispatch(new AddManagementKey(managementKey));
 
-      const compressedPubPoint = key.getPublic(true, 'hex');
-      const publicKey = base58.encode(Buffer.from(compressedPubPoint, 'hex'));
+    keyPair = this.generateEdDSAKeyPair();
+    const didKeyAlias = 'default-public-key';
+    const didKey = new DidKeyModel(
+      didKeyAlias,
+      [PurposeType.PublicKey],
+      SignatureType.EdDSA,
+      this.didService.getId(),
+      keyPair.publicKey,
+      keyPair.privateKey
+    );
 
-      return new KeyPairModel(importKeyModel.alias, importKeyModel.type, publicKey, importKeyModel.privateKey);
-    } else if (importKeyModel.type === SignatureType.RSA) {
-      const privateKey = forge.pki.privateKeyFromPem(importKeyModel.privateKey);
-      const publicKey = forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);
-      let publicKeyPem = forge.pki.publicKeyToPem(publicKey);
-      publicKeyPem = modifyPemPrefixAndSuffix(publicKeyPem);
-
-      return new KeyPairModel(importKeyModel.alias, importKeyModel.type, publicKeyPem, importKeyModel.privateKey);
-    }
+    this.store.dispatch(new AddDidKey(didKey));
   }
 
-  private extractEncryptedKeys(file: string): string {
-    const parsedFile = JSON.parse(file);
-    const keysFile: any = { };
+  encryptKeys(password: string): Observable<string> {
+    return defer(async () => {
+      const encryptedFile = await encryptor.encrypt(password, JSON.stringify(this.keys));
+      return encryptedFile;
+    });
+  }
 
-    keysFile.data = parsedFile.data;
-    keysFile.iv = parsedFile.encryptionAlgo.iv;
-    keysFile.salt = parsedFile.encryptionAlgo.salt;
+  private generateEdDSAKeyPair(): KeyPairModel {
+    const seed = nacl.randomBytes(32);
+    const keyPair = nacl.sign.keyPair.fromSeed(seed);
 
-    return JSON.stringify(keysFile);
+    const publicKeyBase58 = base58.encode(Buffer.from(keyPair.publicKey));
+    const privateKeyBase58 = base58.encode(Buffer.from(keyPair.secretKey));
+
+    return new KeyPairModel(publicKeyBase58, privateKeyBase58);
+  }
+
+  private generateECDSAKeyPair(): KeyPairModel {
+    const ec = new elliptic.ec('secp256k1');
+    const key = ec.genKeyPair();
+
+    const compressedPubPoint = key.getPublic(true, 'hex');
+    const privateKey = key.getPrivate('hex');
+
+    const publicKeyBase58 = base58.encode(Buffer.from(compressedPubPoint, 'hex'));
+    const privateKeyBase58 = base58.encode(Buffer.from(privateKey, 'hex'));
+
+    return new KeyPairModel(publicKeyBase58, privateKeyBase58);
+  }
+
+  private async generateRSAKeyPair(): Promise<KeyPairModel> {
+    const keyPair = await window.crypto.subtle.generateKey(
+      {
+        name: "RSASSA-PKCS1-v1_5",
+        modulusLength: 4096,
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+        hash: { name: "SHA-256" }
+      },
+      true,
+      ["sign", "verify"]);
+
+    const exportedKeys = await exportPemKeys(keyPair);
+    return new KeyPairModel(exportedKeys.publicKey, exportedKeys.privateKey);
   }
 }
