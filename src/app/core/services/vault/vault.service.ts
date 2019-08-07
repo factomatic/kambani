@@ -90,7 +90,10 @@ export class VaultService {
 
     return false;
   }
-
+  
+  /**
+  * @deprecated method.
+  */
   importKeysFromJsonFile(file: string, filePassword: string, vaultPassword: string): Observable<ImportResultModel> {
     return defer(async() => {
       try {
@@ -115,6 +118,9 @@ export class VaultService {
     });
   }
 
+  /**
+  * @deprecated method.
+  */
   importKeysFromPrivateKey(alias: string, type: string, privateKey: string, vaultPassword: string): Observable<ImportResultModel> {
     return defer(async () => {
       try {
@@ -128,6 +134,9 @@ export class VaultService {
     });
   }
 
+  /**
+  * @deprecated method.
+  */
   private async importKeys(keys: ImportKeyModel[], vaultPassword: string): Promise<ImportResultModel> {
     try {
       const vault = this.encryptedVault;
@@ -172,6 +181,9 @@ export class VaultService {
     }
   }
 
+  /**
+  * @deprecated method.
+  */
   private getImportKeyModel(alias: string, type: string, privateKey: string): ImportKeyModel {
     if (type === SignatureType.EdDSA) {
       const keyPair = nacl.sign.keyPair.fromSecretKey(base58.decode(privateKey));
@@ -196,6 +208,9 @@ export class VaultService {
     }
   }
 
+  /**
+  * @deprecated method.
+  */
   private extractEncryptedKeys(file: string): string {
     const parsedFile = JSON.parse(file);
     const keysFile: any = { };
