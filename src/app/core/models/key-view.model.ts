@@ -1,3 +1,6 @@
+/**
+  * @deprecated
+ */
 export class KeyViewModel {
   constructor(
     public alias: string,
