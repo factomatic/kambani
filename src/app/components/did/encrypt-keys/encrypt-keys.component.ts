@@ -6,11 +6,15 @@ import { ActionType } from 'src/app/core/enums/action-type';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from '../../base.component';
 import CustomValidators from 'src/app/core/utils/customValidators';
+import { DidKeyModel } from 'src/app/core/models/did-key.model';
 import { DIDService } from 'src/app/core/services/did/did.service';
-import { KeysService } from 'src/app/core/services/keys/keys.service';
+import { ServiceModel } from 'src/app/core/models/service.model';
 import { Subscription } from 'rxjs';
 import { TooltipMessages } from 'src/app/core/utils/tooltip.messages';
+import { VaultService } from 'src/app/core/services/vault/vault.service';
 import { WorkflowService } from 'src/app/core/services/workflow/workflow.service';
+import { ManagementKeyModel } from 'src/app/core/models/management-key.model';
+import { ResultModel } from 'src/app/core/models/result.model';
 
 @Component({
   selector: 'app-encrypt-keys',
@@ -25,15 +29,19 @@ export class EncryptKeysComponent extends BaseComponent implements OnInit {
   public encryptedFile: string;
   public fileDowloaded: boolean;
   public keysGenerated: boolean;
+  public didSaved: boolean;
   public headerTooltipMessage: string;
   public boldPartTooltipMessage: string;
   public continueButtonText = 'Skip';
+  public managementKeys: ManagementKeyModel[];
+  public didKeys: DidKeyModel[];
+  public services: ServiceModel[];
 
   constructor(
     private didService: DIDService,
     private fb: FormBuilder,
     private store: Store<AppState>,
-    private keysService: KeysService,
+    private vaultService: VaultService,
     private workflowService: WorkflowService) {
     super();
   }
@@ -44,6 +52,10 @@ export class EncryptKeysComponent extends BaseComponent implements OnInit {
      .pipe(select(state => state))
      .subscribe(state => {
         this.currentStepIndex = state.action.currentStepIndex;
+        this.managementKeys = state.form.managementKeys;
+        this.didKeys = state.form.didKeys;
+        this.services = state.form.services;
+
         const selectedAction = state.action.selectedAction;
         this.headerTooltipMessage = this.tooltipMessages[selectedAction][0];
         this.boldPartTooltipMessage = this.tooltipMessages[selectedAction][1];
@@ -63,15 +75,16 @@ export class EncryptKeysComponent extends BaseComponent implements OnInit {
   }
 
   encryptKeys() {
-    if (this.encryptForm.invalid) {
-      return;
-    }
-
-    this.keysService
-      .encryptKeys(this.password.value)
-      .subscribe(encryptedFile => {
-        this.encryptedFile = this.postProcessDidFile(encryptedFile);
-        this.encryptForm.reset();
+    this.vaultService.saveDIDToVault(
+      this.didService.getId(),
+      this.managementKeys,
+      this.didKeys,
+      this.services,
+      '123qweASD!@#').subscribe((result: ResultModel) => {
+        console.log(result);
+        if (result.success) {
+          this.didSaved = true;
+        }
       });
   }
 
@@ -94,7 +107,7 @@ export class EncryptKeysComponent extends BaseComponent implements OnInit {
   }
 
   goToNext() {
-    if (this.fileDowloaded || !this.keysGenerated) {
+    if (this.didSaved) {
       this.workflowService.moveToNextStep();
     }
   }
