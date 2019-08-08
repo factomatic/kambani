@@ -46,7 +46,7 @@
               </div>
 
               <div class="form-group text-center">
-                <input type="submit" mdbBtn color="success" mdbWavesEffect value="Encrypt keys" [disabled]="encryptForm.invalid" />
+                <input type="submit" mdbBtn color="success" mdbWavesEffect value="Save keys" />
               </div>
             </form>
             <div *ngIf="encryptedFile" class="mt-5 text-center">
@@ -55,7 +55,7 @@
             </div>
             <div class="mt-4 button-holder">
               <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()">Back</button>
-              <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToNext()" [disabled]="!fileDowloaded && keysGenerated"> {{continueButtonText}}</button>
+              <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToNext()" [disabled]="!didSaved"> {{continueButtonText}}</button>
               <div class="clearfix"></div>
             </div>
           </div>

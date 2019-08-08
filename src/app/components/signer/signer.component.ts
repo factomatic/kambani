@@ -85,19 +85,19 @@ export class SignerComponent implements OnInit {
   }
 
   private getPublicKeys() {
-    const publicKeys = this.vaultService.getVaultPublicKeys();
-    if (publicKeys) {
-      const publicKeysArray = JSON.parse(publicKeys);
-      const publicKeysAliases = JSON.parse(this.vaultService.getVaultPublicKeysAliases());
-      publicKeysArray.forEach(publicKey => {
-        this.publicKeys.push(new KeyViewModel(
-          publicKeysAliases[publicKey] ? publicKeysAliases[publicKey] : 'unknown',
-          publicKey
-        ));
-      });
+    // const publicKeys = this.vaultService.getVaultPublicKeys();
+    // if (publicKeys) {
+    //   const publicKeysArray = JSON.parse(publicKeys);
+    //   const publicKeysAliases = JSON.parse(this.vaultService.getVaultPublicKeysAliases());
+    //   publicKeysArray.forEach(publicKey => {
+    //     this.publicKeys.push(new KeyViewModel(
+    //       publicKeysAliases[publicKey] ? publicKeysAliases[publicKey] : 'unknown',
+    //       publicKey
+    //     ));
+    //   });
 
-      this.selectedPublicKey = this.publicKeys[0].publicKey;
-    }
+    //   this.selectedPublicKey = this.publicKeys[0].publicKey;
+    // }
   }
 
   private getContentToSign() {

@@ -6,13 +6,13 @@
           Vault Backup
         </h1>
         <div class="row">
-          <div class="text-center mt-5 col-md-6 col-xs-12 offset-md-3" *ngIf="publicKeysAny">
+          <div class="text-center mt-5 col-md-6 col-xs-12 offset-md-3" *ngIf="didsAny">
             <p class="text-center">Download your vault backup to be able to restore it</p>
             <button class="btn btn-success mt-2" (click)="downloadJSONFile()">Download</button>
           </div>
-          <div class="text-center mt-5 col-md-6 col-xs-12 offset-md-3" *ngIf="!publicKeysAny">
-            <p class="text-warning text-center">You have to import at least one key before backing up your vault</p>
-            <button class="btn btn-success mt-2" routerLink="/vault/import">Import Keys</button>
+          <div class="text-center mt-5 col-md-6 col-xs-12 offset-md-3" *ngIf="!didsAny">
+            <p class="text-warning text-center">You have to create at least one DID before backing up your vault</p>
+            <button class="btn btn-success mt-2" routerLink="/dids/manage">Create DID</button>
           </div>
         </div>
       </div>

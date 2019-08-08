@@ -6,9 +6,9 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
-import { ImportResultModel } from 'src/app/core/models/import-result.model';
-import { VaultService } from 'src/app/core/services/vault/vault.service';
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
+import { ResultModel } from 'src/app/core/models/result.model';
+import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
   selector: 'app-restore-vault',
@@ -61,7 +61,7 @@ export class RestoreVaultComponent implements OnInit {
     this.spinner.show();
     this.vaultService
       .restoreVault(this.file, this.password.value)
-      .subscribe((result: ImportResultModel) => {
+      .subscribe((result: ResultModel) => {
         if (result.success) {
           this.spinner.hide();
           this.toastr.success(result.message);

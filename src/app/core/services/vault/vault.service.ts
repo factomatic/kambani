@@ -8,11 +8,15 @@ import { defer, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import LocalStorageStore from 'obs-store/lib/localStorage';
 
+import { DidKeyModel } from '../../models/did-key.model';
 import { environment } from 'src/environments/environment';
 import { ImportKeyModel } from '../../models/import-key.model'
 import { ImportResultModel } from '../../models/import-result.model';
+import { ManagementKeyModel } from '../../models/management-key.model';
 import { modifyPemPrefixAndSuffix } from '../../utils/helpers';
-import { SignatureType} from '../../enums/signature-type'
+import { ResultModel } from '../../models/result.model';
+import { ServiceModel } from '../../models/service.model';
+import { SignatureType} from '../../enums/signature-type';
 
 @Injectable()
 export class VaultService {
@@ -30,38 +34,93 @@ export class VaultService {
 
   createNewVault(password: string): Observable<void> {
     return defer(async () => {
-      const newVault = JSON.stringify({});
+      const newVault = {};
       const encryptedVault = await encryptor.encrypt(password, newVault);
 
       this.localStorageStore.putState({
-        vault: encryptedVault
+        vault: encryptedVault,
+        dids: JSON.stringify({})
       });
 
       this.encryptedVault = encryptedVault;
     });
   }
 
-  restoreVault(encryptedVault: string, password: string): Observable<ImportResultModel> {
+  saveDIDToVault(
+    didId: string,
+    managementKeys: ManagementKeyModel[],
+    didKeys: DidKeyModel[],
+    services: ServiceModel[],
+    vaultPassword: string): Observable<ResultModel> {
+      return defer(async () => {
+        try {
+          const decryptedVault = await encryptor.decrypt(vaultPassword, this.encryptedVault);
+
+          const managementKeysVaultDict = {};
+          const managementKeysPublicInfoDict = {};
+          for (const managementKey of managementKeys) {
+            managementKeysVaultDict[managementKey.alias] = managementKey.privateKey;
+            managementKeysPublicInfoDict[managementKey.alias] = {
+              type: managementKey.type,
+              controller: managementKey.controller,
+              publicKey: managementKey.publicKey,
+              priority: managementKey.priority
+            };
+          }
+
+          const didKeysVaultDict = {};
+          const didKeysPublicInfoDict = {};
+          for (const didKey of didKeys) {
+            didKeysVaultDict[didKey.alias] = didKey.privateKey;
+            didKeysPublicInfoDict[didKey.alias] = {
+              type: didKey.type,
+              controller: didKey.controller,
+              purpose: didKey.purpose,
+              publicKey: didKey.publicKey,
+              priorityRequirement: didKey.priorityRequirement
+            };
+          }
+
+          decryptedVault[didId] = {
+            managementKeys: managementKeysVaultDict,
+            didKeys: didKeysVaultDict
+          };
+
+          const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
+          this.encryptedVault = encryptedVault;
+
+          const dids = this.getDIDs();
+          dids[didId] = {
+            managementKeys: managementKeysPublicInfoDict,
+            didKeys: didKeysPublicInfoDict,
+            services: services
+          };
+
+          this.localStorageStore.putState({
+            vault: encryptedVault,
+            dids: JSON.stringify(dids)
+          });
+
+          return new ResultModel(true, 'DID was successfully saved');
+        } catch {
+          return new ResultModel(false, 'Incorrect vault password');
+        }
+      });
+  }
+
+  restoreVault(encryptedVault: string, password: string): Observable<ResultModel> {
     return defer(async () => {
       try {
-        const decryptedVault = JSON.parse(await encryptor.decrypt(password, encryptedVault));
-        const publicKeys = Object.keys(decryptedVault);
-        const publicKeysAliases = {};
-        publicKeys.forEach(pk => {
-          publicKeysAliases[pk] = decryptedVault[pk].alias;
-        });
-
         this.localStorageStore.putState({
           vault: encryptedVault,
-          publicKeys: JSON.stringify(publicKeys),
-          publicKeysAliases: JSON.stringify(publicKeysAliases)
+          dids: JSON.stringify({})
         });
 
         this.encryptedVault = encryptedVault;
 
-        return new ImportResultModel(true, 'Restore was successful');
+        return new ResultModel(true, 'Restore was successful');
       } catch {
-        return new ImportResultModel(false, 'Invalid vault password or type of vault backup');
+        return new ResultModel(false, 'Invalid vault password or type of vault backup');
       }
     });
   }
@@ -75,12 +134,8 @@ export class VaultService {
     return this.encryptedVault;
   }
 
-  getVaultPublicKeys(): string {
-    return this.localStorageStore.getState().publicKeys;
-  }
-
-  getVaultPublicKeysAliases(): string {
-    return this.localStorageStore.getState().publicKeysAliases;
+  getDIDs(): object{
+    return JSON.parse(this.localStorageStore.getState().dids);
   }
 
   vaultExists(): boolean {
@@ -90,7 +145,10 @@ export class VaultService {
 
     return false;
   }
-
+  
+  /**
+  * @deprecated method.
+  */
   importKeysFromJsonFile(file: string, filePassword: string, vaultPassword: string): Observable<ImportResultModel> {
     return defer(async() => {
       try {
@@ -115,6 +173,9 @@ export class VaultService {
     });
   }
 
+  /**
+  * @deprecated method.
+  */
   importKeysFromPrivateKey(alias: string, type: string, privateKey: string, vaultPassword: string): Observable<ImportResultModel> {
     return defer(async () => {
       try {
@@ -128,6 +189,9 @@ export class VaultService {
     });
   }
 
+  /**
+  * @deprecated method.
+  */
   private async importKeys(keys: ImportKeyModel[], vaultPassword: string): Promise<ImportResultModel> {
     try {
       const vault = this.encryptedVault;
@@ -172,6 +236,9 @@ export class VaultService {
     }
   }
 
+  /**
+  * @deprecated method.
+  */
   private getImportKeyModel(alias: string, type: string, privateKey: string): ImportKeyModel {
     if (type === SignatureType.EdDSA) {
       const keyPair = nacl.sign.keyPair.fromSecretKey(base58.decode(privateKey));
@@ -196,6 +263,9 @@ export class VaultService {
     }
   }
 
+  /**
+  * @deprecated method.
+  */
   private extractEncryptedKeys(file: string): string {
     const parsedFile = JSON.parse(file);
     const keysFile: any = { };

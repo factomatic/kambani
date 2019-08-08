@@ -2,45 +2,26 @@ declare const Buffer;
 import * as nacl from 'tweetnacl/nacl-fast';
 import * as base58 from 'bs58';
 import * as elliptic from 'elliptic';
-import * as encryptor from 'browser-passworder';
 import { defer, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { Store, select } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 
 import { AddManagementKey, AddDidKey } from '../../store/form/form.actions';
 import { AppState } from '../../store/app.state';
+import { DidKeyModel } from '../../models/did-key.model';
 import { DIDService } from '../did/did.service';
 import { exportPemKeys } from '../../utils/helpers';
 import { KeyPairModel } from '../../models/key-pair.model';
-import { SignatureType } from '../../enums/signature-type';
 import { ManagementKeyModel } from '../../models/management-key.model';
-import { DidKeyModel } from '../../models/did-key.model';
 import { PurposeType } from '../../enums/purpose-type';
+import { SignatureType } from '../../enums/signature-type';
 
 @Injectable()
 export class KeysService {
-  private keys;
 
   constructor(
     private didService: DIDService,
     private store: Store<AppState>) {
-    this.store
-      .pipe(select(state => state.form))
-      .subscribe(form => {
-        const managementKeys = form.managementKeys.map(key => ({
-          alias: key.alias,
-          type: key.type,
-          privateKey: key.privateKey
-        }));
-
-        const didKeys = form.didKeys.map(key => ({
-          alias: key.alias,
-          type: key.type,
-          privateKey: key.privateKey
-        }));
-
-        this.keys = managementKeys.concat(didKeys);
-      });
   } 
 
   generateKeyPair(type: SignatureType): Observable<KeyPairModel> {
@@ -82,13 +63,6 @@ export class KeysService {
     );
 
     this.store.dispatch(new AddDidKey(didKey));
-  }
-
-  encryptKeys(password: string): Observable<string> {
-    return defer(async () => {
-      const encryptedFile = await encryptor.encrypt(password, JSON.stringify(this.keys));
-      return encryptedFile;
-    });
   }
 
   private generateEdDSAKeyPair(): KeyPairModel {

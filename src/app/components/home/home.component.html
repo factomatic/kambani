@@ -3,18 +3,17 @@
     <div class="col-xs-12 col-sm-12 col-md-12">
       <div class="page-content">
         <h1 class="page-title text-center">
-          Available Keys
+          Available DIDs
         </h1>
         <div class="row">
-          <div class="mt-4 list-group col-md-4 offset-md-4 mt-3" *ngIf="availableKeys.length > 0">
-            <div class="list-group-item list-group-item-action" *ngFor="let keyViewModel of availableKeys">
-              <h5 class="text-center font-italic text-info">{{keyViewModel.alias}}</h5>
-              <p class="text-center">{{keyViewModel.publicKey}}</p>
+          <div class="mt-4 list-group col-md-4 offset-md-4 mt-3" *ngIf="didIds.length > 0">
+            <div class="list-group-item list-group-item-action" *ngFor="let didId of didIds">
+              <h5 class="text-center font-italic text-info">{{didId}}</h5>
             </div>
           </div>
-          <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!availableKeys || availableKeys.length === 0">
-            <p class="text-warning text-center">You have not imported any keys yet</p>
-            <button class="btn btn-success mt-2" routerLink="/vault/import">Import Keys</button>
+          <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!didIds || didIds.length === 0">
+            <p class="text-warning text-center">You have not created any DIDs yet</p>
+            <button class="btn btn-success mt-2" routerLink="/dids/manage">Create DID</button>
           </div>
         </div>
       </div>
