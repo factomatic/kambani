@@ -163,22 +163,24 @@ export class DIDService {
     let keyEntryObject = this.buildKeyEntryObject(key);
     keyEntryObject['purpose'] = key.purpose;
 
-    if (key.priorityRequirement) {
-      keyEntryObject['priorityRequirement'] = key.priorityRequirement;
-    }
-
     return keyEntryObject;
   }
 
   private buildKeyEntryObject(key): {} {
     const publicKeyProperty = key.type == SignatureType.RSA ? 'publicKeyPem' : 'publicKeyBase58';
 
-    return {
+    const keyEntryObject = {
       id: `${this.id}#${key.alias}`,
       type: `${key.type}${this.VerificationKeySuffix}`,
       controller: key.controller,
       [publicKeyProperty]: key.publicKey
     };
+
+    if (key.priorityRequirement) {
+      keyEntryObject['priorityRequirement'] = key.priorityRequirement;
+    }
+
+    return keyEntryObject;
   }
 
   private buildServiceEntryObject(service: ServiceModel): {} {
@@ -301,7 +303,9 @@ export class DIDService {
       k.priority,
       k.type,
       k.controller,
-      k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem
+      k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem,
+      undefined,
+      k.priorityRequirement
     ));
   }
 
