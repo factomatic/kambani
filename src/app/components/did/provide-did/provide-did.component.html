@@ -3,25 +3,15 @@
     <div class="col-xs-12 col-sm-12 col-md-12">
       <div class="page-content">
         <h1 class="page-title text-center">
-          Provide DID
+          Select DID to Update
         </h1>
         <div class="row">
           <div class="col-xs-12 offset-sm-3 col-sm-6">
             <form [formGroup]="provideForm">
               <div class="form-group">
-                <label class="control-label" for="didId">Enter DID Id</label>
-                <input
-                  type="text"
-                  class="form-control input-md"
-                  formControlName="didId"
-                  id="didId"
-                  placeholder="DID Id"
-                  pattern="^did:factom:[abcdef0-9]{64}$"
-                  [ngClass]="{ 'is-invalid': didId.touched && didId.errors }" />
-                <div *ngIf="didId.errors" class="invalid-feedback">
-                  <div *ngIf="didId.errors['required']">DID Id is required!</div>
-                  <div *ngIf="didId.errors['pattern']">DID Id must be a valid DID!</div>
-                </div>
+                <select class="form-control" formControlName="didId" id="didId">
+                  <option [value]="didId" *ngFor="let didId of didIds">{{didId}}</option>
+                </select>
               </div>
             </form>
             <div class="button-holder mt-4">
