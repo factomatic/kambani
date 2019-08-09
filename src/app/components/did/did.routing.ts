@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { DidKeysComponent } from './did-keys/did-keys.component';
-import { EncryptKeysComponent } from './encrypt-keys/encrypt-keys.component';
 import { FinalComponent } from './final/final.component';
 import { FinalComponentGuard } from 'src/app/core/guards/final-component.guard';
 import { ManagementKeysComponent } from './management-keys/management-keys.component';
@@ -14,7 +13,6 @@ import { UpdateActionGuard } from 'src/app/core/guards/update-action.guard';
 const didRoutes: Routes = [
   { path: 'provide-did', component: ProvideDidComponent, canActivate: [ UpdateActionGuard ] },
   { path: 'keys/did', component: DidKeysComponent },
-  { path: 'keys/encrypt', component: EncryptKeysComponent },
   { path: 'keys/management', component: ManagementKeysComponent },
   { path: 'services', component: ServicesComponent },
   { path: 'summary', component: SummaryComponent },

@@ -9,13 +9,11 @@ const actionRoutes = {
     CreateRoutes.ManagementKeys,
     CreateRoutes.DidKeys,
     CreateRoutes.Services,
-    CreateRoutes.EncryptKeys,
     CreateRoutes.Summary,
     CreateRoutes.Final
   ],
   [ActionType.CreateBasic]: [
     SharedRoutes.ManageDids,
-    CreateRoutes.EncryptKeys,
     CreateRoutes.Summary,
     CreateRoutes.Final
   ],
@@ -25,7 +23,6 @@ const actionRoutes = {
     UpdateRoutes.ManagementKeys,
     UpdateRoutes.DidKeys,
     UpdateRoutes.Services,
-    UpdateRoutes.EncryptKeys,
     UpdateRoutes.Summary,
     UpdateRoutes.Final
   ]
