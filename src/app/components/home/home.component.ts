@@ -13,7 +13,7 @@ export class HomeComponent implements OnInit {
   constructor(private vaultService: VaultService) { }
 
   ngOnInit() {
-    const dids = this.vaultService.getDIDs();
-    this.didIds = Object.keys(dids);
+    const didDocuments = this.vaultService.getAllDIDDocuments();
+    this.didIds = Object.keys(didDocuments);
   }
 }

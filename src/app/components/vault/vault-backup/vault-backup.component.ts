@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
@@ -12,8 +13,7 @@ export class VaultBackupComponent implements OnInit {
   constructor(private vaultService: VaultService) { }
 
   ngOnInit() {
-    const dids = this.vaultService.getDIDs();
-    this.didsAny = Object.keys(dids).length > 0;
+    this.didsAny = this.vaultService.didDocumentsAny();
   }
 
   downloadJSONFile() {

@@ -8,6 +8,7 @@ import { defer, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import LocalStorageStore from 'obs-store/lib/localStorage';
 
+import { DIDDocument } from '../../interfaces/did-document';
 import { DidKeyModel } from '../../models/did-key.model';
 import { environment } from 'src/environments/environment';
 import { ImportKeyModel } from '../../models/import-key.model'
@@ -15,7 +16,6 @@ import { ImportResultModel } from '../../models/import-result.model';
 import { ManagementKeyModel } from '../../models/management-key.model';
 import { modifyPemPrefixAndSuffix } from '../../utils/helpers';
 import { ResultModel } from '../../models/result.model';
-import { ServiceModel } from '../../models/service.model';
 import { SignatureType} from '../../enums/signature-type';
 
 @Injectable()
@@ -39,7 +39,7 @@ export class VaultService {
 
       this.localStorageStore.putState({
         vault: encryptedVault,
-        dids: JSON.stringify({})
+        didDocuments: JSON.stringify({})
       });
 
       this.encryptedVault = encryptedVault;
@@ -48,37 +48,22 @@ export class VaultService {
 
   saveDIDToVault(
     didId: string,
+    didDocument: DIDDocument,
     managementKeys: ManagementKeyModel[],
     didKeys: DidKeyModel[],
-    services: ServiceModel[],
     vaultPassword: string): Observable<ResultModel> {
       return defer(async () => {
         try {
           const decryptedVault = await encryptor.decrypt(vaultPassword, this.encryptedVault);
 
           const managementKeysVaultDict = {};
-          const managementKeysPublicInfoDict = {};
           for (const managementKey of managementKeys) {
             managementKeysVaultDict[managementKey.alias] = managementKey.privateKey;
-            managementKeysPublicInfoDict[managementKey.alias] = {
-              type: managementKey.type,
-              controller: managementKey.controller,
-              publicKey: managementKey.publicKey,
-              priority: managementKey.priority
-            };
           }
 
           const didKeysVaultDict = {};
-          const didKeysPublicInfoDict = {};
           for (const didKey of didKeys) {
             didKeysVaultDict[didKey.alias] = didKey.privateKey;
-            didKeysPublicInfoDict[didKey.alias] = {
-              type: didKey.type,
-              controller: didKey.controller,
-              purpose: didKey.purpose,
-              publicKey: didKey.publicKey,
-              priorityRequirement: didKey.priorityRequirement
-            };
           }
 
           decryptedVault[didId] = {
@@ -89,16 +74,12 @@ export class VaultService {
           const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
           this.encryptedVault = encryptedVault;
 
-          const dids = this.getDIDs();
-          dids[didId] = {
-            managementKeys: managementKeysPublicInfoDict,
-            didKeys: didKeysPublicInfoDict,
-            services: services
-          };
+          const didDocuments = this.getAllDIDDocuments();
+          didDocuments[didId] = didDocument;
 
           this.localStorageStore.putState({
             vault: encryptedVault,
-            dids: JSON.stringify(dids)
+            didDocuments: JSON.stringify(didDocuments)
           });
 
           return new ResultModel(true, 'DID was successfully saved');
@@ -113,7 +94,7 @@ export class VaultService {
       try {
         this.localStorageStore.putState({
           vault: encryptedVault,
-          dids: JSON.stringify({})
+          didDocuments: JSON.stringify({})
         });
 
         this.encryptedVault = encryptedVault;
@@ -130,12 +111,38 @@ export class VaultService {
     this.encryptedVault = undefined;
   }
 
+  canDecryptVault(vaultPassword: string): Observable<ResultModel> {
+    return defer(async () => {
+      try {
+        await encryptor.decrypt(vaultPassword, this.encryptedVault);
+        return new ResultModel(true, 'Correct vault password');
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
   getVault(): string {
     return this.encryptedVault;
   }
 
-  getDIDs(): object{
-    return JSON.parse(this.localStorageStore.getState().dids);
+  getAllDIDDocuments(): object {
+    return JSON.parse(this.localStorageStore.getState().didDocuments);
+  }
+
+  getAllDIDIds(): string[] {
+    const didDocuments = this.getAllDIDDocuments();
+    return Object.keys(didDocuments);
+  }
+
+  getDIDDocument(didId: string) {
+    const dids = this.getAllDIDDocuments();
+    return dids[didId];
+  }
+
+  didDocumentsAny(): boolean {
+    const didDocuments = this.getAllDIDDocuments();
+    return Object.keys(didDocuments).length > 0;
   }
 
   vaultExists(): boolean {
