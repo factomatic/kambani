@@ -15,6 +15,7 @@ import { ManagementKeyModel } from '../../models/management-key.model';
 import { ServiceModel } from '../../models/service.model';
 import { SignatureType } from '../../enums/signature-type';
 import { toHexString, calculateChainId, calculateSha512 } from '../../utils/helpers';
+import { VaultService } from '../vault/vault.service';
 
 @Injectable()
 export class DIDService {
@@ -33,7 +34,8 @@ export class DIDService {
 
   constructor(
     private http: HttpClient,
-    private store: Store<AppState>) {
+    private store: Store<AppState>,
+    private vaultService: VaultService) {
     this.store
       .pipe(select(state => state.form))
       .subscribe(form => {
@@ -54,7 +56,7 @@ export class DIDService {
     return this.id;
   }
 
-  generateEntry(entryType: string): {} {
+  generateEntry(entryType: string): DIDDocument | {} {
     if (entryType === EntryType.UpdateDIDEntry) {
       return this.generateUpdateEntry();
     }
@@ -85,12 +87,9 @@ export class DIDService {
     return this.http.post(this.apiUrl, data, httpOptions);
   }
 
-  upload(didId: string) {
-    // call resolver to get did document
-    // tslint:disable-next-line:max-line-length
-    const response = `{"@context":"https://w3id.org/did/v1","id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","managementKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myfirstkey","type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"GtRQwPQ6a8Qe9DbzBCTmBERovZ4URh7BvwziQMURRaEQ","priority":0},{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mysecondkey","type":"ECDSASecp256k1VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"eeK7Saop24d3hej7r4BNgyna6pXrCEbgCTZYHj7ApkRh","priority":2}],"didKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mythirdkey","purpose":["publicKey"],"type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"2reWgag62C9ryZcCmheyzDVvQE5j9j1HCgVMbJBmoPvx"}],"service":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myservice","type":"PhotoStreamService","serviceEndpoint":"https://example.org/photos/379283"}]}`;
+  loadDIDForUpdate(didId: string) {
     this.id = didId;
-    const didDocument: DIDDocument = JSON.parse(response);
+    const didDocument: DIDDocument = this.vaultService.getDIDDocument(didId);
     this.parseDocument(didDocument);
   }
 
@@ -289,12 +288,17 @@ export class DIDService {
 
   private parseDocument(didDocument: DIDDocument) {
     const managementKeys = this.extractManagementKeys(didDocument.managementKey);
-    const didKeys = this.extractDidKeys(didDocument.didKey);
-    const services = this.extractServices(didDocument.service);
-
     this.store.dispatch(new AddOriginalManagementKeys(managementKeys));
-    this.store.dispatch(new AddOriginalDidKeys(didKeys));
-    this.store.dispatch(new AddOriginalServices(services));
+
+    if (didDocument.didKey) {
+      const didKeys = this.extractDidKeys(didDocument.didKey);
+      this.store.dispatch(new AddOriginalDidKeys(didKeys));
+    }
+
+    if (didDocument.service) {
+      const services = this.extractServices(didDocument.service);
+      this.store.dispatch(new AddOriginalServices(services));
+    }
   }
 
   private extractManagementKeys(documentManagementKeys: any[]): ManagementKeyModel[] {
