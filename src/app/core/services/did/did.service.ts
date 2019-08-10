@@ -93,13 +93,6 @@ export class DIDService {
     this.parseDocument(didDocument);
   }
 
-  sendUpdateEntryForSigning(entry: {}) {
-    this.nonce = toHexString(nacl.randomBytes(32));
-    const dataHash = calculateSha512(`${this.nonce}${JSON.stringify(entry)}`);
-    const event = new CustomEvent('ContentToSign', { detail: dataHash });
-    window.dispatchEvent(event);
-  }
-
   clearData() {
     this.id = undefined;
     this.nonce = undefined;
