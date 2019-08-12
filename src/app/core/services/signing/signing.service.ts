@@ -7,13 +7,19 @@ import { Buffer } from 'buffer/';
 import { defer, Observable } from 'rxjs';
 import { Injectable, Output, EventEmitter } from '@angular/core';
 
-import { arrayBufferToBase64String, convertPemToBinary } from '../../utils/helpers';
+import { arrayBufferToBase64String, convertPemToBinary, calculateDoubleSha256 } from '../../utils/helpers';
+import { EntryType } from '../../enums/entry-type';
+import { environment } from 'src/environments/environment';
+import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
 import { SignatureDataModel } from '../../models/signature-data.model';
+import { SignatureResultModel } from '../../models/signature-result.model';
 import { SignatureType } from '../../enums/signature-type';
+import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
 import { VaultService } from '../vault/vault.service';
 
 @Injectable()
 export class SigningService {
+  private entrySchemaVersion = environment.entrySchemaVersion;
   private pendingRequestsCount: number;
   @Output() change: EventEmitter<number> = new EventEmitter();
 
@@ -32,6 +38,22 @@ export class SigningService {
         return new SignatureDataModel(data, signatureType, publicKey, signature);
       } catch {
         return undefined;
+      }
+    });
+  }
+
+  signUpdateEntry(didId: string, selectedManagementKey: ManagementKeyEntryModel, entry: UpdateEntryDocument, vaultPassword: string): Observable<SignatureResultModel> {
+    return defer(async () => {
+      try {
+        const vault = this.vaultService.getVault();
+        const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
+        const privateKey = decryptedVault[didId][selectedManagementKey.id.split('#')[1]];
+        const contentToSignDoubleSha256Hash = calculateDoubleSha256(EntryType.UpdateDIDEntry.concat(this.entrySchemaVersion, selectedManagementKey.id, JSON.stringify(entry)));
+        const signatureBase64 = await this.getSignature(Buffer.from(contentToSignDoubleSha256Hash, 'utf8'), selectedManagementKey.type as SignatureType, privateKey);
+
+        return new SignatureResultModel(true, 'Successfully signed the entry', signatureBase64);
+      } catch {
+        return new SignatureResultModel(false, 'Incorrect vault password');
       }
     });
   }

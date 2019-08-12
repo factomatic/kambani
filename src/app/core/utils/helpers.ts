@@ -94,6 +94,12 @@ function calculateSha512(content: string): string {
   return hash.hex();
 }
 
+function calculateDoubleSha256(content: string) {
+  const hash = sha256.update(content);
+  const hash2 = sha256.update(hash.digest());
+  return hash2.hex();
+}
+
 async function exportPemKeys(keys) {
   const pubKey = await exportRSAPublicKey(keys);
   const privKey = await exportRSAPrivateKey(keys);
@@ -138,6 +144,7 @@ export {
   toHexString,
   calculateChainId,
   calculateSha512,
+  calculateDoubleSha256,
   capitalize,
   exportPemKeys
 };
