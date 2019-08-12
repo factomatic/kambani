@@ -89,7 +89,7 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
       controller: [this.didId, [Validators.required]],
       alias: ['', [Validators.required,
       CustomValidators.uniqueKeyAlias(this.componentKeys.map(key => key.keyModel) as ManagementKeyModel[], this.didKeys)]],
-      priority: ['', [Validators.required, Validators.min(1), Validators.max(100)]]
+      priority: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
     });
 
     this.cd.detectChanges();

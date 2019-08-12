@@ -88,7 +88,7 @@ export class DIDService {
   upload(didId: string) {
     // call resolver to get did document
     // tslint:disable-next-line:max-line-length
-    const response = `{"@context":"https://w3id.org/did/v1","id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","managementKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myfirstkey","type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"GtRQwPQ6a8Qe9DbzBCTmBERovZ4URh7BvwziQMURRaEQ","priority":1},{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mysecondkey","type":"ECDSASecp256k1VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"eeK7Saop24d3hej7r4BNgyna6pXrCEbgCTZYHj7ApkRh","priority":2}],"didKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mythirdkey","purpose":["publicKey"],"type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"2reWgag62C9ryZcCmheyzDVvQE5j9j1HCgVMbJBmoPvx"}],"service":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myservice","type":"PhotoStreamService","serviceEndpoint":"https://example.org/photos/379283"}]}`;
+    const response = `{"@context":"https://w3id.org/did/v1","id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","managementKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myfirstkey","type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"GtRQwPQ6a8Qe9DbzBCTmBERovZ4URh7BvwziQMURRaEQ","priority":0},{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mysecondkey","type":"ECDSASecp256k1VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"eeK7Saop24d3hej7r4BNgyna6pXrCEbgCTZYHj7ApkRh","priority":2}],"didKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mythirdkey","purpose":["publicKey"],"type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"2reWgag62C9ryZcCmheyzDVvQE5j9j1HCgVMbJBmoPvx"}],"service":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myservice","type":"PhotoStreamService","serviceEndpoint":"https://example.org/photos/379283"}]}`;
     this.id = didId;
     const didDocument: DIDDocument = JSON.parse(response);
     this.parseDocument(didDocument);
@@ -163,22 +163,24 @@ export class DIDService {
     let keyEntryObject = this.buildKeyEntryObject(key);
     keyEntryObject['purpose'] = key.purpose;
 
-    if (key.priorityRequirement) {
-      keyEntryObject['priorityRequirement'] = key.priorityRequirement;
-    }
-
     return keyEntryObject;
   }
 
   private buildKeyEntryObject(key): {} {
     const publicKeyProperty = key.type == SignatureType.RSA ? 'publicKeyPem' : 'publicKeyBase58';
 
-    return {
+    const keyEntryObject = {
       id: `${this.id}#${key.alias}`,
       type: `${key.type}${this.VerificationKeySuffix}`,
       controller: key.controller,
       [publicKeyProperty]: key.publicKey
     };
+
+    if (key.priorityRequirement) {
+      keyEntryObject['priorityRequirement'] = key.priorityRequirement;
+    }
+
+    return keyEntryObject;
   }
 
   private buildServiceEntryObject(service: ServiceModel): {} {
@@ -301,7 +303,9 @@ export class DIDService {
       k.priority,
       k.type,
       k.controller,
-      k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem
+      k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem,
+      undefined,
+      k.priorityRequirement
     ));
   }
 

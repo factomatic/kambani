@@ -39,7 +39,7 @@ export class KeysService {
   autoGenerateKeys(): void {
     let keyPair = this.generateEdDSAKeyPair();
     const managementKeyAlias = 'default-management-key';
-    const managementKeyPriority = 1;
+    const managementKeyPriority = 0;
     const managementKey = new ManagementKeyModel(
       managementKeyAlias,
       managementKeyPriority,
