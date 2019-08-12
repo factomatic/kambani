@@ -77,19 +77,24 @@ export class DIDService {
     );
   }
 
-  recordCreateEntryOnChain(entry: DIDDocument, entryType: string): Observable<Object> {
+  recordCreateEntryOnChain(entry: DIDDocument): Observable<Object> {
     const data = JSON.stringify([
-      [entryType, this.entrySchemaVersion, this.nonce],
+      [EntryType.CreateDIDEntry, this.entrySchemaVersion, this.nonce],
       entry
     ]);
 
-    const httpOptions = {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json'
-      })
-    };
+    return this.http.post(this.apiUrl, data);
+  }
 
-    return this.http.post(this.apiUrl, data, httpOptions);
+  recordUpdateEntryOnChain(entry: UpdateEntryDocument, managementKeyId: string, signature: string): Observable<Object> {
+    const data = JSON.stringify([
+      [EntryType.UpdateDIDEntry, this.entrySchemaVersion, managementKeyId, signature],
+      entry
+    ]);
+    
+    // change the api url with update endpoint
+    const updateApiUrl = '';
+    return this.recordEntry(updateApiUrl, data);
   }
 
   loadDIDForUpdate(didId: string): void {
@@ -101,6 +106,16 @@ export class DIDService {
   clearData(): void {
     this.id = undefined;
     this.nonce = undefined;
+  }
+
+  private recordEntry(apiUrl: string, data: string) {
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      })
+    };
+    
+    return this.http.post(apiUrl, data, httpOptions);
   }
 
   private generateDocument(): DIDDocument {
@@ -198,8 +213,7 @@ export class DIDService {
     return serviceEntryObject;
   }
 
-  private getNew(original: Set<ManagementKeyModel> | Set<DidKeyModel> | Set<ServiceModel>,
-    current: ManagementKeyModel[] | DidKeyModel[] | ServiceModel[]): ManagementKeyModel[] | DidKeyModel[] | ServiceModel[] {
+  private getNew(original, current) {
     const _new = [];
 
     current.forEach(obj => {
@@ -211,8 +225,7 @@ export class DIDService {
     return _new;
   }
 
-  private getRevoked(original: Set<ManagementKeyModel> | Set<DidKeyModel> | Set<ServiceModel>,
-    current: Set<ManagementKeyModel> | Set<DidKeyModel> | Set<ServiceModel>): RevokeModel[] {
+  private getRevoked(original, current): RevokeModel[] {
     const revoked: RevokeModel[] = [];
 
     original.forEach(obj => {
