@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Store, select } from '@ngrx/store';
 import { Subscription } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 import { ActionType } from 'src/app/core/enums/action-type';
 import { AddManagementKey, RemoveManagementKey, UpdateManagementKey } from 'src/app/core/store/form/form.actions';
@@ -51,6 +52,7 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
     private store: Store<AppState>,
     private keysService: KeysService,
     private didService: DIDService,
+    private toastr: ToastrService,
     private workflowService: WorkflowService) {
     super();
   }
@@ -113,6 +115,10 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
 
         this.store.dispatch(new AddManagementKey(generatedKey));
         this.createForm();
+
+        if (this.selectedAction === ActionType.Update && generatedKey.priority === 0) {
+          this.toastr.warning('Warning! If you keep the newly created key, the key that you are going to use for the signing of the entry will be automatically revoked.');
+        }
       });
   }
 
@@ -147,6 +153,13 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
   }
 
   goToNext() {
+    if (this.selectedAction === ActionType.CreateAdvanced) {
+      if (!this.managementKeys.find(mk => mk.priority === 0)) {
+        this.toastr.warning('Warning! You must have at least one management key created at priority 0 before continuing.');
+        return;
+      }
+    }
+
     this.workflowService.moveToNextStep();
   }
 
