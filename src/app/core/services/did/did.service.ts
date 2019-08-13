@@ -83,7 +83,7 @@ export class DIDService {
       entry
     ]);
 
-    return this.http.post(this.apiUrl, data);
+    return this.recordEntry(this.apiUrl, data);
   }
 
   recordUpdateEntryOnChain(entry: UpdateEntryDocument, managementKeyId: string, signature: string): Observable<Object> {
@@ -230,7 +230,7 @@ export class DIDService {
 
     original.forEach(obj => {
       if (!current.has(obj)) {
-        revoked.push({ id: obj.alias });
+        revoked.push({ id: `${this.id}#${obj.alias}` });
       }
     });
 
