@@ -62,9 +62,88 @@ export class SigningService {
     });
   }
 
+  getAvailableManagementKeysForSigning(didId: string, entry: UpdateEntryDocument): ManagementKeyEntryModel[] {
+    const didDocument = this.vaultService.getDIDDocument(didId);
+    const managementKeys = didDocument.managementKey;
+    let requiredPriorityObject = { value: 101 };
+
+    if (entry.revoke) {
+      const revokeObject = entry.revoke;
+
+      if (revokeObject.managementKey) {
+        for (const revokeManagementKeyObject of revokeObject.managementKey) {
+          const managementKey = managementKeys.find(mk => mk.id === revokeManagementKeyObject.id);
+          if (managementKey.priority < requiredPriorityObject.value) {
+            requiredPriorityObject.value = managementKey.priority;
+          }
+
+          this.checkPriorityRequirement(managementKey, requiredPriorityObject);
+        }
+      }
+
+      if (revokeObject.didKey) {
+        const didKeys = didDocument.didKey;
+
+        for (const revokeDidKeyObject of revokeObject.didKey) {
+          const didKey = didKeys.find(dk => dk.id === revokeDidKeyObject.id);
+          this.checkPriorityRequirement(didKey, requiredPriorityObject);
+        }
+      }
+
+      if (revokeObject.service) {
+        const services = didDocument.service;
+
+        for (const revokeServiceObject of revokeObject.service) {
+          const service = services.find(s => s.id === revokeServiceObject.id);
+          this.checkPriorityRequirement(service, requiredPriorityObject);
+        }
+      }
+    }
+
+    if (entry.add) {
+      const addObject = entry.add;
+
+      if (addObject.managementKey) {
+        for (const addManagementKeyObject of addObject.managementKey) {
+          let requiredPriorityForTheKey = addManagementKeyObject.priority;
+
+          if (requiredPriorityForTheKey > 0) {
+            requiredPriorityForTheKey--;
+          }
+          
+          if (requiredPriorityForTheKey < requiredPriorityObject.value) {
+            requiredPriorityObject.value = requiredPriorityForTheKey;
+          }
+
+          this.checkPriorityRequirement(addManagementKeyObject, requiredPriorityObject);
+        }
+      }
+
+      if (addObject.didKey) {
+        for (const addDidKeyObject of addObject.didKey) {
+          this.checkPriorityRequirement(addDidKeyObject, requiredPriorityObject);
+        }
+      }
+
+      if (addObject.service) {
+        for (const addServiceObject of addObject.service) {
+          this.checkPriorityRequirement(addServiceObject, requiredPriorityObject);
+        }
+      }
+    }
+
+    return didDocument.managementKey.filter(mk => mk.priority <= requiredPriorityObject.value);
+  }
+
   updatePendingRequestsCount(pendingRequestsCount: number) {
     this.pendingRequestsCount = pendingRequestsCount;
     this.change.emit(this.pendingRequestsCount);
+  }
+
+  private checkPriorityRequirement(object: any, requiredPriorityObject: any) {
+    if (object.priorityRequirement != undefined && object.priorityRequirement < requiredPriorityObject.value) {
+      requiredPriorityObject.value = object.priorityRequirement;
+    }
   }
 
   private async getSignature(dataToSign: Buffer, type: SignatureType, privateKey: string): Promise<string> {
