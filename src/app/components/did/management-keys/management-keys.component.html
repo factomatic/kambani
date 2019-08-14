@@ -168,6 +168,22 @@
                     </div>
                   </div>
 
+                  <div class="form-group">
+                    <label class="control-label" for="priorityRequirement">
+                      Priority Requirement
+                    </label>
+                    <input
+                      type="number"
+                      class="form-control input-md"
+                      formControlName="priorityRequirement"
+                      id="priorityRequirement"
+                      [ngClass]="{ 'is-invalid': priorityRequirement.touched && priorityRequirement.errors }" />
+                    <div *ngIf="priorityRequirement.errors" class="invalid-feedback">
+                      <div *ngIf="priorityRequirement['errors'].min">Priority requirement must be a positive number!</div>
+                      <div *ngIf="priorityRequirement['errors'].max">Priority requirement must not be bigger than 100!</div>
+                    </div>
+                  </div>
+
                   <div class="form-group text-center">
                     <input type="submit" mdbBtn color="success" mdbWavesEffect value="Generate key" [disabled]="keyForm.invalid" />
                   </div>

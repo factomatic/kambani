@@ -91,7 +91,8 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
       controller: [this.didId, [Validators.required]],
       alias: ['', [Validators.required,
       CustomValidators.uniqueKeyAlias(this.componentKeys.map(key => key.keyModel) as ManagementKeyModel[], this.didKeys)]],
-      priority: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
+      priority: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      priorityRequirement: [undefined, [Validators.min(0), Validators.max(100)]]
     });
 
     this.cd.detectChanges();
@@ -110,7 +111,8 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
           this.type.value,
           this.controller.value,
           keyPair.publicKey,
-          keyPair.privateKey
+          keyPair.privateKey,
+          this.priorityRequirement.value
         );
 
         this.store.dispatch(new AddManagementKey(generatedKey));
@@ -180,6 +182,10 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
   }
 
   get priority() {
-    return this.keyForm.get('priority')
+    return this.keyForm.get('priority');
+  }
+
+  get priorityRequirement() {
+    return this.keyForm.get('priorityRequirement');
   }
 }
