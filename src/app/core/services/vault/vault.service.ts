@@ -17,6 +17,8 @@ import { ManagementKeyModel } from '../../models/management-key.model';
 import { modifyPemPrefixAndSuffix } from '../../utils/helpers';
 import { ResultModel } from '../../models/result.model';
 import { SignatureType} from '../../enums/signature-type';
+import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
+import { RevokeModel } from '../../interfaces/revoke-model';
 
 @Injectable()
 export class VaultService {
@@ -89,6 +91,104 @@ export class VaultService {
       });
   }
 
+  saveDIDChangesToVault(
+    didId: string,
+    entry: UpdateEntryDocument,
+    managementKeys: ManagementKeyModel[],
+    didKeys: DidKeyModel[],
+    vaultPassword: string): Observable<ResultModel> {
+      return defer(async () => {
+        try {
+          const decryptedVault = await encryptor.decrypt(vaultPassword, this.encryptedVault);
+          const didDocument = this.getDIDDocument(didId);
+          const revokeObject = entry.revoke;
+          const addObject = entry.add;
+
+          const anyRevokedManagementKeys = revokeObject != undefined && revokeObject.managementKey != undefined;
+          const anyAddedManagementKeys = addObject != undefined && addObject.managementKey != undefined;
+
+          if (anyRevokedManagementKeys || anyAddedManagementKeys) {
+            let managementKeysStore = {
+              keysVaultDict: decryptedVault[didId].managementKeys,
+              keysInDocument: didDocument.managementKey
+            };
+
+            if (anyRevokedManagementKeys) {
+              this.removeKeys(revokeObject.managementKey, managementKeysStore);
+            }
+
+            if (anyAddedManagementKeys) {
+              this.addKeys(addObject.managementKey, managementKeys, managementKeysStore);
+            }
+
+            decryptedVault[didId].managementKeys = managementKeysStore.keysVaultDict;
+            didDocument.managementKey = managementKeysStore.keysInDocument;
+          }
+
+          const anyRevokedDidKeys = revokeObject != undefined && revokeObject.didKey != undefined;
+          const anyAddedDidKeys = addObject != undefined && addObject.didKey != undefined;
+
+          if (anyRevokedDidKeys || anyAddedDidKeys) {
+            let didKeysStore = {
+              keysVaultDict: decryptedVault[didId].didKeys,
+              keysInDocument: didDocument.didKey
+            };
+
+            if (anyRevokedDidKeys) {
+              this.removeKeys(revokeObject.didKey, didKeysStore);
+            }
+
+            if (anyAddedDidKeys) {
+              this.addKeys(addObject.didKey, didKeys, didKeysStore);
+            }
+
+            decryptedVault[didId].didKeys = didKeysStore.keysVaultDict;
+            didDocument.didKey = didKeysStore.keysInDocument;
+          }
+
+          const anyRevokedServices = revokeObject != undefined && revokeObject.service != undefined;
+          const anyAddedServices = addObject != undefined && addObject.service != undefined;
+
+          if (anyRevokedServices || anyAddedServices) {
+            let servicesInDocument = didDocument.service;
+
+            if (anyRevokedServices) {
+              for (const revokeServiceObject of revokeObject.service) {
+                servicesInDocument = servicesInDocument.filter(s => s.id != revokeServiceObject.id);
+              }
+            }
+
+            if (anyAddedServices) {
+              if (!servicesInDocument) {
+                servicesInDocument = [];
+              }
+
+              for (const serviceEntryModel of addObject.service) {
+                servicesInDocument.push(serviceEntryModel);
+              }
+            }
+
+            didDocument.service = servicesInDocument;
+          }
+
+          const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
+          this.encryptedVault = encryptedVault;
+
+          const allDidDocuments = this.getAllDIDDocuments();
+          allDidDocuments[didId] = didDocument;
+
+          this.localStorageStore.putState({
+            vault: encryptedVault,
+            didDocuments: JSON.stringify(allDidDocuments)
+          });
+
+          return new ResultModel(true, 'Vault state was successfully updated');
+        } catch {
+          return new ResultModel(false, 'Incorrect vault password');
+        }
+      });
+  }
+
   restoreVault(encryptedVault: string, password: string): Observable<ResultModel> {
     return defer(async () => {
       try {
@@ -135,7 +235,7 @@ export class VaultService {
     return Object.keys(didDocuments);
   }
 
-  getDIDDocument(didId: string) {
+  getDIDDocument(didId: string): DIDDocument {
     const dids = this.getAllDIDDocuments();
     return dids[didId];
   }
@@ -151,6 +251,26 @@ export class VaultService {
     }
 
     return false;
+  }
+
+  private removeKeys(revokeKeys: RevokeModel[], keysStore: any) {
+    for (const revokeKeyObject of revokeKeys) {
+      const keyAlias = revokeKeyObject.id.split('#')[1];
+      delete keysStore.keysVaultDict[keyAlias];
+      keysStore.keysInDocument = keysStore.keysInDocument.filter(k => k.id != revokeKeyObject.id);
+    }
+  }
+
+  private addKeys(keyEntryModels: any[], keys: any[], keysStore: any) {
+    if (!keysStore.keysInDocument) {
+      keysStore.keysInDocument = [];
+    }
+
+    for (const keyEntryModel of keyEntryModels) {
+      const keyModel = keys.find(k => k.alias === keyEntryModel.id.split('#')[1]);
+      keysStore.keysVaultDict[keyModel.alias] = keyModel.privateKey;
+      keysStore.keysInDocument.push(keyEntryModel);
+    }
   }
   
   /**
