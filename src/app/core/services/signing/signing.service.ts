@@ -47,9 +47,13 @@ export class SigningService {
       try {
         const vault = this.vaultService.getVault();
         const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
-        const privateKey = decryptedVault[didId][selectedManagementKey.id.split('#')[1]];
+        const managementKeys = decryptedVault[didId].managementKeys;
+        const privateKey = managementKeys[selectedManagementKey.id.split('#')[1]];
         const contentToSignDoubleSha256Hash = calculateDoubleSha256(EntryType.UpdateDIDEntry.concat(this.entrySchemaVersion, selectedManagementKey.id, JSON.stringify(entry)));
-        const signatureBase64 = await this.getSignature(Buffer.from(contentToSignDoubleSha256Hash, 'utf8'), selectedManagementKey.type as SignatureType, privateKey);
+        const signatureBase64 = await this.getSignature(
+          Buffer.from(contentToSignDoubleSha256Hash, 'utf8'),
+          selectedManagementKey.type.replace('VerificationKey', '') as SignatureType,
+          privateKey);
 
         return new SignatureResultModel(true, 'Successfully signed the entry', signatureBase64);
       } catch {
