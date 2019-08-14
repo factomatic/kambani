@@ -2,7 +2,7 @@ declare const Buffer;
 import * as nacl from 'tweetnacl/nacl-fast';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { Store, select } from '@ngrx/store';
 
 import { AddOriginalManagementKeys, AddOriginalDidKeys, AddOriginalServices } from '../../store/form/form.actions';
@@ -69,15 +69,17 @@ export class DIDService {
     return this.generateDocument();
   }
 
-  getEntrySize(entry: DIDDocument | UpdateEntryDocument, entryType: string): number {
-    return this.calculateEntrySize(
+  recordCreateEntryOnChain(entry: DIDDocument): Observable<Object> {
+    const entrySize = this.calculateEntrySize(
       [this.nonce],
-      [entryType, this.entrySchemaVersion],
+      [EntryType.CreateDIDEntry, this.entrySchemaVersion],
       JSON.stringify(entry)
     );
-  }
 
-  recordCreateEntryOnChain(entry: DIDDocument): Observable<Object> {
+    if (entrySize > environment.entrySizeLimit) {
+      return of({error: true, message: 'You have exceeded the entry size limit! Please remove some of your keys or services.'});
+    }
+
     const data = JSON.stringify([
       [EntryType.CreateDIDEntry, this.entrySchemaVersion, this.nonce],
       entry
@@ -87,14 +89,26 @@ export class DIDService {
   }
 
   recordUpdateEntryOnChain(entry: UpdateEntryDocument, managementKeyId: string, signature: string): Observable<Object> {
+    const entrySize = this.calculateEntrySize(
+      [],
+      [EntryType.UpdateDIDEntry, this.entrySchemaVersion, managementKeyId, signature],
+      JSON.stringify(entry)
+    );
+
+    if (entrySize > environment.entrySizeLimit) {
+      return of({error: true, message: 'You have exceeded the entry size limit! Please remove some of your keys or services.'});
+    }
+
     const data = JSON.stringify([
       [EntryType.UpdateDIDEntry, this.entrySchemaVersion, managementKeyId, signature],
       entry
     ]);
     
     // change the api url with update endpoint
-    const updateApiUrl = '';
-    return this.recordEntry(updateApiUrl, data);
+    // const updateApiUrl = '';
+    // return this.recordEntry(updateApiUrl, data);
+
+    return of({data: ''});
   }
 
   loadDIDForUpdate(didId: string): void {
@@ -168,7 +182,7 @@ export class DIDService {
     let keyEntryObject = this.buildKeyEntryObject(key);
     keyEntryObject['priority'] = key.priority;
 
-    if (key.priorityRequirement) {
+    if (key.priorityRequirement !== null) {
       keyEntryObject['priorityRequirement'] = key.priorityRequirement;
     }
 
@@ -179,7 +193,7 @@ export class DIDService {
     let keyEntryObject = this.buildKeyEntryObject(key);
     keyEntryObject['purpose'] = key.purpose;
 
-    if (key.priorityRequirement) {
+    if (key.priorityRequirement !== null) {
       keyEntryObject['priorityRequirement'] = key.priorityRequirement;
     }
 
@@ -206,7 +220,7 @@ export class DIDService {
       serviceEndpoint: service.endpoint
     };
 
-    if (service.priorityRequirement) {
+    if (service.priorityRequirement !== null) {
       serviceEntryObject['priorityRequirement'] = service.priorityRequirement;
     }
 
