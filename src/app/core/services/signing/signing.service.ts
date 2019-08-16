@@ -8,9 +8,12 @@ import { defer, Observable } from 'rxjs';
 import { Injectable, Output, EventEmitter } from '@angular/core';
 
 import { arrayBufferToBase64String, convertPemToBinary, calculateDoubleSha256 } from '../../utils/helpers';
+import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { EntryType } from '../../enums/entry-type';
 import { environment } from 'src/environments/environment';
 import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
+import { RevokeModel } from '../../interfaces/revoke-model';
+import { ServiceEntryModel } from '../../interfaces/service-entry';
 import { SignatureDataModel } from '../../models/signature-data.model';
 import { SignatureResultModel } from '../../models/signature-result.model';
 import { SignatureType } from '../../enums/signature-type';
@@ -65,37 +68,31 @@ export class SigningService {
   getAvailableManagementKeysForSigning(didId: string, entry: UpdateEntryDocument): ManagementKeyEntryModel[] {
     const didDocument = this.vaultService.getDIDDocument(didId);
     const managementKeys = didDocument.managementKey;
-    let requiredPriorityObject = { value: 101 };
+    let requiredPriority = 101;
 
     if (entry.revoke) {
       const revokeObject = entry.revoke;
 
       if (revokeObject.managementKey) {
-        for (const revokeManagementKeyObject of revokeObject.managementKey) {
-          const managementKey = managementKeys.find(mk => mk.id === revokeManagementKeyObject.id);
-          if (managementKey.priority < requiredPriorityObject.value) {
-            requiredPriorityObject.value = managementKey.priority;
-          }
-
-          this.checkPriorityRequirement(managementKey, requiredPriorityObject);
+        const revokedManagementKeysRequiredPriority = this.getRevokedManagementKeysRequiredPriority(revokeObject.managementKey, managementKeys);
+        if (revokedManagementKeysRequiredPriority < requiredPriority) {
+          requiredPriority = revokedManagementKeysRequiredPriority;
         }
       }
 
       if (revokeObject.didKey) {
         const didKeys = didDocument.didKey;
-
-        for (const revokeDidKeyObject of revokeObject.didKey) {
-          const didKey = didKeys.find(dk => dk.id === revokeDidKeyObject.id);
-          this.checkPriorityRequirement(didKey, requiredPriorityObject);
+        const revokedDidKeysRequiredPriority = this.getRevokedDidKeysRequiredPriority(revokeObject.didKey, didKeys);
+        if (revokedDidKeysRequiredPriority < requiredPriority) {
+          requiredPriority = revokedDidKeysRequiredPriority;
         }
       }
 
       if (revokeObject.service) {
         const services = didDocument.service;
-
-        for (const revokeServiceObject of revokeObject.service) {
-          const service = services.find(s => s.id === revokeServiceObject.id);
-          this.checkPriorityRequirement(service, requiredPriorityObject);
+        const revokedServicesRequiredPriority = this.getRevokedServicesRequiredPriority(revokeObject.service, services);
+        if (revokedServicesRequiredPriority < requiredPriority) {
+          requiredPriority = revokedServicesRequiredPriority;
         }
       }
     }
@@ -104,35 +101,28 @@ export class SigningService {
       const addObject = entry.add;
 
       if (addObject.managementKey) {
-        for (const addManagementKeyObject of addObject.managementKey) {
-          let requiredPriorityForTheKey = addManagementKeyObject.priority;
-
-          if (requiredPriorityForTheKey > 0) {
-            requiredPriorityForTheKey--;
-          }
-          
-          if (requiredPriorityForTheKey < requiredPriorityObject.value) {
-            requiredPriorityObject.value = requiredPriorityForTheKey;
-          }
-
-          this.checkPriorityRequirement(addManagementKeyObject, requiredPriorityObject);
+        const addedManagementKeysRequiredPriority = this.getAddedManagementKeysRequiredPriority(addObject.managementKey);
+        if (addedManagementKeysRequiredPriority < requiredPriority) {
+          requiredPriority = addedManagementKeysRequiredPriority;
         }
       }
 
       if (addObject.didKey) {
-        for (const addDidKeyObject of addObject.didKey) {
-          this.checkPriorityRequirement(addDidKeyObject, requiredPriorityObject);
+        const addedDidKeysRequiredPriority = this.getAddedDidKeysRequiredPriority(addObject.didKey);
+        if (addedDidKeysRequiredPriority < requiredPriority) {
+          requiredPriority = addedDidKeysRequiredPriority;
         }
       }
 
       if (addObject.service) {
-        for (const addServiceObject of addObject.service) {
-          this.checkPriorityRequirement(addServiceObject, requiredPriorityObject);
+        const addedServicesRequiredPriority = this.getAddedServicesRequiredPriority(addObject.service);
+        if (addedServicesRequiredPriority < requiredPriority) {
+          requiredPriority = addedServicesRequiredPriority;
         }
       }
     }
 
-    return didDocument.managementKey.filter(mk => mk.priority <= requiredPriorityObject.value);
+    return didDocument.managementKey.filter(mk => mk.priority <= requiredPriority);
   }
 
   updatePendingRequestsCount(pendingRequestsCount: number) {
@@ -140,10 +130,95 @@ export class SigningService {
     this.change.emit(this.pendingRequestsCount);
   }
 
-  private checkPriorityRequirement(object: any, requiredPriorityObject: any) {
-    if (object.priorityRequirement != undefined && object.priorityRequirement < requiredPriorityObject.value) {
-      requiredPriorityObject.value = object.priorityRequirement;
+  private getRevokedManagementKeysRequiredPriority(revokedManagementKeys: RevokeModel[], managementKeys: ManagementKeyEntryModel[]): number {
+    let requiredPriority = 101;
+
+    for (const revokeManagementKeyObject of revokedManagementKeys) {
+      const managementKey = managementKeys.find(mk => mk.id === revokeManagementKeyObject.id);
+      if (managementKey.priority < requiredPriority) {
+        requiredPriority = managementKey.priority;
+      }
+
+      if (managementKey.priorityRequirement != undefined && managementKey.priorityRequirement < requiredPriority) {
+        requiredPriority = managementKey.priorityRequirement;
+      }
     }
+
+    return requiredPriority;
+  }
+
+  private getRevokedDidKeysRequiredPriority(revokedDidKeys: RevokeModel[], didKeys: DidKeyEntryModel[]): number {
+    let requiredPriority = 101;
+
+    for (const revokeDidKeyObject of revokedDidKeys) {
+      const didKey = didKeys.find(dk => dk.id === revokeDidKeyObject.id);
+
+      if (didKey.priorityRequirement != undefined && didKey.priorityRequirement < requiredPriority) {
+        requiredPriority = didKey.priorityRequirement;
+      }
+    }
+
+    return requiredPriority;
+  }
+
+  private getRevokedServicesRequiredPriority(revokedServices: RevokeModel[], services: ServiceEntryModel[]): number {
+    let requiredPriority = 101;
+
+    for (const revokeServiceObject of revokedServices) {
+      const service = services.find(dk => dk.id === revokeServiceObject.id);
+
+      if (service.priorityRequirement != undefined && service.priorityRequirement < requiredPriority) {
+        requiredPriority = service.priorityRequirement;
+      }
+    }
+
+    return requiredPriority;
+  }
+
+  private getAddedManagementKeysRequiredPriority(addedManagementKeys: ManagementKeyEntryModel[]): number {
+    let requiredPriority = 101;
+
+    for (const addManagementKeyObject of addedManagementKeys) {
+      let requiredPriorityForTheKey = addManagementKeyObject.priority;
+
+      if (requiredPriorityForTheKey > 0) {
+        requiredPriorityForTheKey--;
+      }
+      
+      if (requiredPriorityForTheKey < requiredPriority) {
+        requiredPriority = requiredPriorityForTheKey;
+      }
+
+      if (addManagementKeyObject.priorityRequirement != undefined && addManagementKeyObject.priorityRequirement < requiredPriority) {
+        requiredPriority = addManagementKeyObject.priorityRequirement;
+      }
+    }
+
+    return requiredPriority;
+  }
+
+  private getAddedDidKeysRequiredPriority(addedDidKeys: DidKeyEntryModel[]): number {
+    let requiredPriority = 101;
+
+    for (const addDidKeyObject of addedDidKeys) {
+      if (addDidKeyObject.priorityRequirement != undefined && addDidKeyObject.priorityRequirement < requiredPriority) {
+        requiredPriority = addDidKeyObject.priorityRequirement;
+      }
+    }
+
+    return requiredPriority;
+  }
+
+  private getAddedServicesRequiredPriority(addedServices: ServiceEntryModel[]): number {
+    let requiredPriority = 101;
+
+    for (const addServiceObject of addedServices) {
+      if (addServiceObject.priorityRequirement != undefined && addServiceObject.priorityRequirement < requiredPriority) {
+        requiredPriority = addServiceObject.priorityRequirement;
+      }
+    }
+
+    return requiredPriority;
   }
 
   private async getSignature(dataToSign: Buffer, type: SignatureType, privateKey: string): Promise<string> {
