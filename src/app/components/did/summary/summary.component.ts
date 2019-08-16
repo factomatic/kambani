@@ -43,6 +43,7 @@ export class SummaryComponent extends BaseComponent implements OnInit {
   public recordOnChainButtonName = 'Record on-chain';
   public selectedAction: string;
   public selectedManagementKeyId: string;
+  public anyDIDChangesMade: boolean = false;
   
   constructor(
     private deviceService: DeviceDetectorService,
@@ -78,8 +79,15 @@ export class SummaryComponent extends BaseComponent implements OnInit {
     this.entryPretified = JSON.stringify(this.entry, null, 2);
     
     if (this.entryType == EntryType.UpdateDIDEntry) {
-      this.availableManagementKeys = this.signingService.getAvailableManagementKeysForSigning(this.didService.getId(), this.entry as UpdateEntryDocument);
-      this.selectedManagementKeyId = this.availableManagementKeys[0].id;
+      if (Object.keys(this.entry).length > 0)
+      {
+        this.anyDIDChangesMade = true;
+        this.availableManagementKeys = this.signingService.getAvailableManagementKeysForSigning(this.didService.getId(), this.entry as UpdateEntryDocument);
+
+        if (this.availableManagementKeys.length > 0) {
+          this.selectedManagementKeyId = this.availableManagementKeys[0].id;
+        }
+      }
     }
   }
 
@@ -144,57 +152,59 @@ export class SummaryComponent extends BaseComponent implements OnInit {
 
   recordUpdateEntryOnChain() {
     const selectedManagementKey = this.availableManagementKeys.find(k => k.id === this.selectedManagementKeyId);
-    const dialogMessage = 'Enter your vault password to sign the entry and save any new key(s) before recording the entry on-chain';
+    if (selectedManagementKey) {
+      const dialogMessage = 'Enter your vault password to sign the entry and save any new key(s) before recording the entry on-chain';
 
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
-      .subscribe((vaultPassword: string) => {
-        if (vaultPassword) {
-          this.spinner.show();
-          this.signingService
-            .signUpdateEntry(this.didService.getId(), selectedManagementKey, this.entry as UpdateEntryDocument, vaultPassword)
-            .subscribe((result: SignatureResultModel) => {
-              if (result.success) {
-                this.didService
-                  .recordUpdateEntryOnChain(
-                    this.entry as UpdateEntryDocument,
-                    this.selectedManagementKeyId,
-                    result.signatureBase64)
-                  .subscribe((recordResult: any) => {
-                    if (recordResult.error) {
-                      this.spinner.hide();
-                      this.toastr.error(recordResult.message);
-                    } else {
-                      this.vaultService
-                        .saveDIDChangesToVault(
-                          this.didService.getId(),
-                          this.entry as UpdateEntryDocument,
-                          this.managementKeys,
-                          this.didKeys,
-                          vaultPassword)
-                        .subscribe((result: ResultModel) => {
-                          this.spinner.hide();
-
-                          if (result.success) {
-                            const didId = this.didService.getId();
-                            this.didService.clearData();
-                            this.workflowService.moveToNextStep({ queryParams: { url: recordResult.url, didId: didId } });
-                          } else {
-                            /**
-                            * this should never happen
-                            */
-                            this.toastr.error('A problem occurred! Please, try to create a new DID.');
-                            this.router.navigate([SharedRoutes.ManageDids]);
-                          }
-                        });
-                    }        
-                  });
-              } else {
-                this.spinner.hide();
-                this.toastr.error(result.message);
-              }
-            });
-        }
-    });
+      this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
+        .subscribe((vaultPassword: string) => {
+          if (vaultPassword) {
+            this.spinner.show();
+            this.signingService
+              .signUpdateEntry(this.didService.getId(), selectedManagementKey, this.entry as UpdateEntryDocument, vaultPassword)
+              .subscribe((result: SignatureResultModel) => {
+                if (result.success) {
+                  this.didService
+                    .recordUpdateEntryOnChain(
+                      this.entry as UpdateEntryDocument,
+                      this.selectedManagementKeyId,
+                      result.signatureBase64)
+                    .subscribe((recordResult: any) => {
+                      if (recordResult.error) {
+                        this.spinner.hide();
+                        this.toastr.error(recordResult.message);
+                      } else {
+                        this.vaultService
+                          .saveDIDChangesToVault(
+                            this.didService.getId(),
+                            this.entry as UpdateEntryDocument,
+                            this.managementKeys,
+                            this.didKeys,
+                            vaultPassword)
+                          .subscribe((result: ResultModel) => {
+                            this.spinner.hide();
+  
+                            if (result.success) {
+                              const didId = this.didService.getId();
+                              this.didService.clearData();
+                              this.workflowService.moveToNextStep({ queryParams: { url: recordResult.url, didId: didId } });
+                            } else {
+                              /**
+                              * this should never happen
+                              */
+                              this.toastr.error('A problem occurred! Please, try to create a new DID.');
+                              this.router.navigate([SharedRoutes.ManageDids]);
+                            }
+                          });
+                      }        
+                    });
+                } else {
+                  this.spinner.hide();
+                  this.toastr.error(result.message);
+                }
+              });
+          }
+      });
+    }
   }
 
   onSelectChange(selectedManagementKeyId: string) {
