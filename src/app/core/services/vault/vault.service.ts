@@ -9,16 +9,18 @@ import { Injectable } from '@angular/core';
 import LocalStorageStore from 'obs-store/lib/localStorage';
 
 import { DIDDocument } from '../../interfaces/did-document';
+import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { DidKeyModel } from '../../models/did-key.model';
 import { environment } from 'src/environments/environment';
 import { ImportKeyModel } from '../../models/import-key.model'
 import { ImportResultModel } from '../../models/import-result.model';
+import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
 import { ManagementKeyModel } from '../../models/management-key.model';
 import { modifyPemPrefixAndSuffix } from '../../utils/helpers';
 import { ResultModel } from '../../models/result.model';
 import { SignatureType} from '../../enums/signature-type';
+import { ServiceEntryModel } from '../../interfaces/service-entry';
 import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
-import { RevokeModel } from '../../interfaces/revoke-model';
 
 @Injectable()
 export class VaultService {
@@ -104,71 +106,21 @@ export class VaultService {
           const revokeObject = entry.revoke;
           const addObject = entry.add;
 
-          const anyRevokedManagementKeys = revokeObject != undefined && revokeObject.managementKey != undefined;
-          const anyAddedManagementKeys = addObject != undefined && addObject.managementKey != undefined;
-
-          if (anyRevokedManagementKeys || anyAddedManagementKeys) {
-            let managementKeysStore = {
-              keysVaultDict: decryptedVault[didId].managementKeys,
-              keysInDocument: didDocument.managementKey
-            };
-
-            if (anyRevokedManagementKeys) {
-              this.removeKeys(revokeObject.managementKey, managementKeysStore);
-            }
-
-            if (anyAddedManagementKeys) {
-              this.addKeys(addObject.managementKey, managementKeys, managementKeysStore);
-            }
-
-            decryptedVault[didId].managementKeys = managementKeysStore.keysVaultDict;
-            didDocument.managementKey = managementKeysStore.keysInDocument;
+          const updateManagementKeysResult = this.updateManagementKeys(revokeObject, addObject, managementKeys, decryptedVault[didId].managementKeys, didDocument.managementKey);
+          if (updateManagementKeysResult.anyChanges) {
+            decryptedVault[didId].managementKeys = updateManagementKeysResult.managementKeysVaultDict;
+            didDocument.managementKey = updateManagementKeysResult.managementKeysInDocument;
           }
 
-          const anyRevokedDidKeys = revokeObject != undefined && revokeObject.didKey != undefined;
-          const anyAddedDidKeys = addObject != undefined && addObject.didKey != undefined;
-
-          if (anyRevokedDidKeys || anyAddedDidKeys) {
-            let didKeysStore = {
-              keysVaultDict: decryptedVault[didId].didKeys,
-              keysInDocument: didDocument.didKey
-            };
-
-            if (anyRevokedDidKeys) {
-              this.removeKeys(revokeObject.didKey, didKeysStore);
-            }
-
-            if (anyAddedDidKeys) {
-              this.addKeys(addObject.didKey, didKeys, didKeysStore);
-            }
-
-            decryptedVault[didId].didKeys = didKeysStore.keysVaultDict;
-            didDocument.didKey = didKeysStore.keysInDocument;
+          const updateDidKeysResult = this.updateDidKeys(revokeObject, addObject, didKeys, decryptedVault[didId].didKeys, didDocument.didKey);
+          if (updateDidKeysResult.anyChanges) {
+            decryptedVault[didId].didKeys = updateDidKeysResult.didKeysVaultDict;
+            didDocument.didKey = updateDidKeysResult.didKeysInDocument;
           }
 
-          const anyRevokedServices = revokeObject != undefined && revokeObject.service != undefined;
-          const anyAddedServices = addObject != undefined && addObject.service != undefined;
-
-          if (anyRevokedServices || anyAddedServices) {
-            let servicesInDocument = didDocument.service;
-
-            if (anyRevokedServices) {
-              for (const revokeServiceObject of revokeObject.service) {
-                servicesInDocument = servicesInDocument.filter(s => s.id != revokeServiceObject.id);
-              }
-            }
-
-            if (anyAddedServices) {
-              if (!servicesInDocument) {
-                servicesInDocument = [];
-              }
-
-              for (const serviceEntryModel of addObject.service) {
-                servicesInDocument.push(serviceEntryModel);
-              }
-            }
-
-            didDocument.service = servicesInDocument;
+          const updateServicesResult = this.updateServices(revokeObject, addObject, didDocument.service);
+          if (updateServicesResult.anyChanges) {
+            didDocument.service = updateServicesResult.servicesInDocument;
           }
 
           const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
@@ -253,24 +205,123 @@ export class VaultService {
     return false;
   }
 
-  private removeKeys(revokeKeys: RevokeModel[], keysStore: any) {
-    for (const revokeKeyObject of revokeKeys) {
-      const keyAlias = revokeKeyObject.id.split('#')[1];
-      delete keysStore.keysVaultDict[keyAlias];
-      keysStore.keysInDocument = keysStore.keysInDocument.filter(k => k.id != revokeKeyObject.id);
-    }
+  private updateManagementKeys(
+    revokeObject: any,
+    addObject: any,
+    managementKeys: ManagementKeyModel[],
+    managementKeysVaultDict: object,
+    managementKeysInDocument: ManagementKeyEntryModel[]) {
+      const anyRevokedManagementKeys = revokeObject != undefined && revokeObject.managementKey != undefined;
+      const anyAddedManagementKeys = addObject != undefined && addObject.managementKey != undefined;
+
+      if (anyRevokedManagementKeys || anyAddedManagementKeys) {
+        if (anyRevokedManagementKeys) {
+          for (const revokeKeyObject of revokeObject.managementKey) {
+            const keyAlias = revokeKeyObject.id.split('#')[1];
+            delete managementKeysVaultDict[keyAlias];
+            managementKeysInDocument = managementKeysInDocument.filter(k => k.id != revokeKeyObject.id);
+          }
+        }
+
+        if (anyAddedManagementKeys) {
+          if (!managementKeysInDocument) {
+            managementKeysInDocument = [];
+          }
+      
+          for (const keyEntryModel of addObject.managementKey) {
+            const keyModel = managementKeys.find(k => k.alias === keyEntryModel.id.split('#')[1]);
+            managementKeysVaultDict[keyModel.alias] = keyModel.privateKey;
+            managementKeysInDocument.push(keyEntryModel);
+          }
+        }
+
+        return {
+          anyChanges: true,
+          managementKeysVaultDict,
+          managementKeysInDocument
+        };
+      }
+      
+      return {
+        anyChanges: false
+      };
   }
 
-  private addKeys(keyEntryModels: any[], keys: any[], keysStore: any) {
-    if (!keysStore.keysInDocument) {
-      keysStore.keysInDocument = [];
-    }
+  private updateDidKeys(
+    revokeObject: any,
+    addObject: any,
+    didKeys: DidKeyModel[],
+    didKeysVaultDict: object,
+    didKeysInDocument: DidKeyEntryModel[]) {
+      const anyRevokedDidKeys = revokeObject != undefined && revokeObject.didKey != undefined;
+      const anyAddedDidKeys = addObject != undefined && addObject.didKey != undefined;
 
-    for (const keyEntryModel of keyEntryModels) {
-      const keyModel = keys.find(k => k.alias === keyEntryModel.id.split('#')[1]);
-      keysStore.keysVaultDict[keyModel.alias] = keyModel.privateKey;
-      keysStore.keysInDocument.push(keyEntryModel);
-    }
+      if (anyRevokedDidKeys || anyAddedDidKeys) {
+        if (anyRevokedDidKeys) {
+          for (const revokeKeyObject of revokeObject.didKey) {
+            const keyAlias = revokeKeyObject.id.split('#')[1];
+            delete didKeysVaultDict[keyAlias];
+            didKeysInDocument = didKeysInDocument.filter(k => k.id != revokeKeyObject.id);
+          }
+        }
+
+        if (anyAddedDidKeys) {
+          if (!didKeysInDocument) {
+            didKeysInDocument = [];
+          }
+      
+          for (const keyEntryModel of addObject.didKey) {
+            const keyModel = didKeys.find(k => k.alias === keyEntryModel.id.split('#')[1]);
+            didKeysVaultDict[keyModel.alias] = keyModel.privateKey;
+            didKeysInDocument.push(keyEntryModel);
+          }
+        }
+
+        return {
+          anyChanges: true,
+          didKeysVaultDict,
+          didKeysInDocument
+        };
+      }
+      
+      return {
+        anyChanges: false
+      };
+  }
+
+  private updateServices(
+    revokeObject: any,
+    addObject: any,
+    servicesInDocument: ServiceEntryModel[]) {
+      const anyRevokedServices = revokeObject != undefined && revokeObject.service != undefined;
+      const anyAddedServices = addObject != undefined && addObject.service != undefined;
+
+      if (anyRevokedServices || anyAddedServices) {
+        if (anyRevokedServices) {
+          for (const revokeServiceObject of revokeObject.service) {
+            servicesInDocument = servicesInDocument.filter(s => s.id != revokeServiceObject.id);
+          }
+        }
+
+        if (anyAddedServices) {
+          if (!servicesInDocument) {
+            servicesInDocument = [];
+          }
+
+          for (const serviceEntryModel of addObject.service) {
+            servicesInDocument.push(serviceEntryModel);
+          }
+        }
+
+        return {
+          anyChanges: true,
+          servicesInDocument
+        };
+      }
+
+      return {
+        anyChanges: false
+      };
   }
   
   /**
