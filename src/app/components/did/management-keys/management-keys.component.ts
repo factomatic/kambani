@@ -32,7 +32,7 @@ const DOWN_POSITION = 'down';
 })
 export class ManagementKeysComponent extends BaseComponent implements OnInit, AfterViewInit {
   @ViewChildren(CollapseComponent) collapses: CollapseComponent[];
-  private subscription$: Subscription;
+  private subscription: Subscription;
   private didId: string;
   private managementKeys: ManagementKeyModel[] = [];
   private didKeys: DidKeyModel[] = [];
@@ -58,7 +58,7 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
   }
 
   ngOnInit() {
-    this.subscription$ = this.store
+    this.subscription = this.store
       .pipe(select(state => state))
       .subscribe(state => {
         this.componentKeys = state.form.managementKeys.map(key => new ComponentKeyModel(Object.assign({}, key), DOWN_POSITION, true));
@@ -69,7 +69,7 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
         this.selectedAction = state.action.selectedAction;
       });
 
-    this.subscriptions.push(this.subscription$);
+    this.subscriptions.push(this.subscription);
 
     this.didId = this.didService.getId();
     this.createForm();

@@ -26,7 +26,7 @@ const DOWN_POSITION = 'down';
 })
 export class ServicesComponent extends BaseComponent implements OnInit, AfterViewInit {
   @ViewChildren(CollapseComponent) collapses: CollapseComponent[];
-  private subscription$: Subscription;
+  private subscription: Subscription;
   public services: ComponentServiceModel[] = [];
   public serviceForm: FormGroup;
   public actionType = ActionType;
@@ -46,7 +46,7 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
   }
 
   ngOnInit() {
-    this.subscription$ = this.store
+    this.subscription = this.store
       .pipe(select(state => state))
       .subscribe(state => {
         this.services = state.form.services.map(service => new ComponentServiceModel(service, DOWN_POSITION));
@@ -54,7 +54,7 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
         this.selectedAction = state.action.selectedAction;
       });
 
-    this.subscriptions.push(this.subscription$);
+    this.subscriptions.push(this.subscription);
     this.createForm();
   }
 

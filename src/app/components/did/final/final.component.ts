@@ -11,7 +11,7 @@ import { SharedRoutes } from 'src/app/core/enums/shared-routes';
   styleUrls: ['./final.component.scss']
 })
 export class FinalComponent extends BaseComponent implements OnInit {
-  private subscription$: Subscription;
+  private subscription: Subscription;
   public externalLink: string;
   public didId: string;
 
@@ -22,12 +22,12 @@ export class FinalComponent extends BaseComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.subscription$ = this.route.queryParams.subscribe(params => {
+    this.subscription = this.route.queryParams.subscribe(params => {
       this.externalLink = params.url;
       this.didId = params.didId;
     });
 
-    this.subscriptions.push(this.subscription$);
+    this.subscriptions.push(this.subscription);
   }
 
   chooseAnotherAction() {

@@ -32,7 +32,7 @@ import { WorkflowService } from 'src/app/core/services/workflow/workflow.service
   styleUrls: ['./summary.component.scss']
 })
 export class SummaryComponent extends BaseComponent implements OnInit {
-  private subscription$: Subscription;
+  private subscription: Subscription;
   private didKeys: DidKeyModel[];
   private managementKeys: ManagementKeyModel[];
   public actionType = ActionType;
@@ -59,14 +59,14 @@ export class SummaryComponent extends BaseComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.subscription$ = this.store
+    this.subscription = this.store
       .pipe(select(state => state.form))
       .subscribe(form => {
         this.managementKeys = form.managementKeys;
         this.didKeys = form.didKeys;
       });
 
-    this.subscriptions.push(this.subscription$);
+    this.subscriptions.push(this.subscription);
 
     if (this.deviceService.isMobile()) {
       this.recordOnChainButtonName = 'Record';

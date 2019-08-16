@@ -31,7 +31,7 @@ const DOWN_POSITION = 'down';
 })
 export class DidKeysComponent extends BaseComponent implements OnInit, AfterViewInit {
   @ViewChildren(CollapseComponent) collapses: CollapseComponent[];
-  private subscription$: Subscription;
+  private subscription: Subscription;
   private didId: string;
   public keyForm: FormGroup;
   public actionType = ActionType;
@@ -54,7 +54,7 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
   }
 
   ngOnInit() {
-    this.subscription$ = this.store
+    this.subscription = this.store
       .pipe(select(state => state))
       .subscribe(state => {
         this.componentKeys = state.form.didKeys
@@ -66,7 +66,7 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
         this.selectedAction = state.action.selectedAction;
       });
 
-    this.subscriptions.push(this.subscription$);
+    this.subscriptions.push(this.subscription);
 
     this.didId = this.didService.getId();
     this.createForm();
