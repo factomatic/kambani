@@ -100,7 +100,7 @@ export class SummaryComponent extends BaseComponent implements OnInit {
   }
 
   recordCreateEntryOnChain() {
-    const dialogMessage = 'Enter your vault password to save your key(s) before recording the DID on-chain';
+    const dialogMessage = 'Enter your vault password to save your key(s)';
 
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
@@ -153,7 +153,7 @@ export class SummaryComponent extends BaseComponent implements OnInit {
   recordUpdateEntryOnChain() {
     const selectedManagementKey = this.availableManagementKeys.find(k => k.id === this.selectedManagementKeyId);
     if (selectedManagementKey) {
-      const dialogMessage = 'Enter your vault password to sign the entry and save any new key(s) before recording the entry on-chain';
+      const dialogMessage = 'Enter your vault password to sign the entry and update any key(s)';
 
       this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
         .subscribe((vaultPassword: string) => {
