@@ -72,7 +72,8 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
     this.serviceForm = this.fb.group({
       type: ['', [Validators.required]],
       endpoint: ['', [Validators.required]],
-      alias: ['', [Validators.required, CustomValidators.uniqueServiceAlias(this.services.map(s => s.serviceModel))]]
+      alias: ['', [Validators.required, CustomValidators.uniqueServiceAlias(this.services.map(s => s.serviceModel))]],
+      priorityRequirement: [undefined, [Validators.min(0), Validators.max(100)]]
     });
   }
 
@@ -84,7 +85,8 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
     const service = new ServiceModel(
       this.type.value,
       this.endpoint.value,
-      this.alias.value
+      this.alias.value,
+      this.priorityRequirement.value
     );
 
     this.store.dispatch(new AddService(service));
@@ -124,5 +126,9 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
 
   get endpoint () {
     return this.serviceForm.get('endpoint');
+  }
+
+  get priorityRequirement() {
+    return this.serviceForm.get('priorityRequirement');
   }
 }

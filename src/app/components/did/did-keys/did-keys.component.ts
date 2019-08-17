@@ -93,7 +93,8 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
           this.managementKeys,
           this.componentKeys.map(key => key.keyModel) as DidKeyModel[]
         )
-      ]]
+      ]],
+      priorityRequirement: [undefined, [Validators.min(0), Validators.max(100)]]
     });
 
     this.cd.detectChanges();
@@ -112,7 +113,8 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
           this.type.value,
           this.controller.value,
           keyPair.publicKey,
-          keyPair.privateKey
+          keyPair.privateKey,
+          this.priorityRequirement.value
         );
 
         this.store.dispatch(new AddDidKey(generatedKey));
@@ -172,5 +174,9 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
 
   get purpose() {
     return this.keyForm.get('purpose');
+  }
+
+  get priorityRequirement() {
+    return this.keyForm.get('priorityRequirement');
   }
 }
