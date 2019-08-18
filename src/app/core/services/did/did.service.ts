@@ -117,6 +117,28 @@ export class DIDService {
     this.parseDocument(didDocument);
   }
 
+  revokeSigningKey(managementKeyId: string, updateEntry: UpdateEntryDocument): UpdateEntryDocument {
+    let revokedManagementKeys: RevokeModel[] = [];
+    if (updateEntry.revoke && updateEntry.revoke.managementKey) {
+      revokedManagementKeys = updateEntry.revoke.managementKey;
+    }
+
+    if (!revokedManagementKeys.some(rm => rm.id === managementKeyId)) {
+      revokedManagementKeys.push({ id: managementKeyId });
+
+      let revokeObject = {};
+      if (updateEntry.revoke) {
+        revokeObject = updateEntry.revoke;
+      }
+
+      revokeObject['managementKey'] = revokedManagementKeys;
+      updateEntry.revoke = revokeObject;
+      return updateEntry;
+    }
+
+    return updateEntry;
+  }
+
   clearData(): void {
     this.id = undefined;
     this.nonce = undefined;
