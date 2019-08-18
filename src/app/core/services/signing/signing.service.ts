@@ -125,6 +125,17 @@ export class SigningService {
     return didDocument.managementKey.filter(mk => mk.priority <= requiredPriority);
   }
 
+  checkIfSigningKeyNeedsToBeRevoked(selectedManagementKey: ManagementKeyEntryModel, updateEntry: UpdateEntryDocument): boolean {
+    if (updateEntry.add && updateEntry.add.managementKey) {
+      const addedManagementKeys = updateEntry.add.managementKey;
+      if (addedManagementKeys.some(mk => mk.priority === selectedManagementKey.priority)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   updatePendingRequestsCount(pendingRequestsCount: number) {
     this.pendingRequestsCount = pendingRequestsCount;
     this.change.emit(this.pendingRequestsCount);
@@ -179,14 +190,8 @@ export class SigningService {
     let requiredPriority = 101;
 
     for (const addManagementKeyObject of addedManagementKeys) {
-      let requiredPriorityForTheKey = addManagementKeyObject.priority;
-
-      if (requiredPriorityForTheKey > 0) {
-        requiredPriorityForTheKey--;
-      }
-      
-      if (requiredPriorityForTheKey < requiredPriority) {
-        requiredPriority = requiredPriorityForTheKey;
+      if (addManagementKeyObject.priority < requiredPriority) {
+        requiredPriority = addManagementKeyObject.priority;
       }
 
       if (addManagementKeyObject.priorityRequirement != undefined && addManagementKeyObject.priorityRequirement < requiredPriority) {
