@@ -153,6 +153,10 @@ export class SummaryComponent extends BaseComponent implements OnInit {
   recordUpdateEntryOnChain() {
     const selectedManagementKey = this.availableManagementKeys.find(k => k.id === this.selectedManagementKeyId);
     if (selectedManagementKey) {
+      if (this.signingService.checkIfSigningKeyNeedsToBeRevoked(selectedManagementKey, this.entry as UpdateEntryDocument)) {
+        this.entry = this.didService.revokeSigningKey(selectedManagementKey.id, this.entry as UpdateEntryDocument);
+      }
+
       const dialogMessage = 'Enter your vault password to sign the entry and update any key(s)';
 
       this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
