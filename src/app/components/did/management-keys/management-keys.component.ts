@@ -117,10 +117,6 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
 
         this.store.dispatch(new AddManagementKey(generatedKey));
         this.createForm();
-
-        if (this.selectedAction === ActionType.Update && generatedKey.priority === 0) {
-          this.toastr.warning('Warning! If you keep the newly created key, the key that you are going to use for the signing of the entry will be automatically revoked.');
-        }
       });
   }
 
