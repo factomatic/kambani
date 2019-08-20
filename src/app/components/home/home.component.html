@@ -8,7 +8,8 @@
         <div class="row">
           <div class="mt-4 list-group col-md-4 offset-md-4 mt-3" *ngIf="didIds.length > 0">
             <div class="list-group-item list-group-item-action" *ngFor="let didId of didIds">
-              <h5 class="text-center font-italic text-info">{{didId}}</h5>
+              <h5 class="text-center font-italic text-info">{{didId.substring(0, 20)}}...</h5>
+              <button class="btn btn-warning" (click)="backupDid(didId)">Backup</button>
             </div>
           </div>
           <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!didIds || didIds.length === 0">
