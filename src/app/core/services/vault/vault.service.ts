@@ -8,6 +8,7 @@ import { defer, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import LocalStorageStore from 'obs-store/lib/localStorage';
 
+import { BackupResultModel } from '../../models/backup-result.model';
 import { DIDDocument } from '../../interfaces/did-document';
 import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { DidKeyModel } from '../../models/did-key.model';
@@ -170,6 +171,20 @@ export class VaultService {
         return new ResultModel(true, 'Correct vault password');
       } catch {
         return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
+  backupSingleDIDFromVault(didId: string, vaultPassword: string) {
+    return defer(async () => {
+      try {
+        const decryptedVault = await encryptor.decrypt(vaultPassword, this.encryptedVault);
+        const didKeys = decryptedVault[didId];
+        const didKeysBackup = await encryptor.encrypt(vaultPassword, didKeys);
+
+        return new BackupResultModel(true, 'Successful DID backup', didKeysBackup);
+      } catch {
+        return new BackupResultModel(false, 'Incorrect vault password');
       }
     });
   }
