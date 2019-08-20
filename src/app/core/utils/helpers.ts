@@ -136,6 +136,19 @@ function convertBinaryToPem(binaryData, label) {
   return pemCert;
 }
 
+function downloadFile(fileContent: string, fileName: string) {
+  const downloader = document.createElement('a');
+  document.body.appendChild(downloader);
+
+  const blob = new Blob([fileContent], { type: 'text/json' });
+  const url = window.URL;
+  const fileUrl = url.createObjectURL(blob);
+
+  downloader.setAttribute('href', fileUrl);
+  downloader.setAttribute('download', fileName);
+  downloader.click();
+}
+
 export {
   minifyPublicKey,
   modifyPemPrefixAndSuffix,
@@ -146,5 +159,6 @@ export {
   calculateSha512,
   calculateDoubleSha256,
   capitalize,
-  exportPemKeys
+  exportPemKeys,
+  downloadFile
 };
