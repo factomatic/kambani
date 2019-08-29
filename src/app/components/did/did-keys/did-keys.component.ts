@@ -31,7 +31,7 @@ const DOWN_POSITION = 'down';
 })
 export class DidKeysComponent extends BaseComponent implements OnInit, AfterViewInit {
   @ViewChildren(CollapseComponent) collapses: CollapseComponent[];
-  private subscription$: Subscription;
+  private subscription: Subscription;
   private didId: string;
   public keyForm: FormGroup;
   public actionType = ActionType;
@@ -54,7 +54,7 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
   }
 
   ngOnInit() {
-    this.subscription$ = this.store
+    this.subscription = this.store
       .pipe(select(state => state))
       .subscribe(state => {
         this.componentKeys = state.form.didKeys
@@ -66,7 +66,7 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
         this.selectedAction = state.action.selectedAction;
       });
 
-    this.subscriptions.push(this.subscription$);
+    this.subscriptions.push(this.subscription);
 
     this.didId = this.didService.getId();
     this.createForm();
@@ -93,7 +93,8 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
           this.managementKeys,
           this.componentKeys.map(key => key.keyModel) as DidKeyModel[]
         )
-      ]]
+      ]],
+      priorityRequirement: [undefined, [Validators.min(0), Validators.max(100)]]
     });
 
     this.cd.detectChanges();
@@ -112,7 +113,8 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
           this.type.value,
           this.controller.value,
           keyPair.publicKey,
-          keyPair.privateKey
+          keyPair.privateKey,
+          this.priorityRequirement.value
         );
 
         this.store.dispatch(new AddDidKey(generatedKey));
@@ -172,5 +174,9 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
 
   get purpose() {
     return this.keyForm.get('purpose');
+  }
+
+  get priorityRequirement() {
+    return this.keyForm.get('priorityRequirement');
   }
 }

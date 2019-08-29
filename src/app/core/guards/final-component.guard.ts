@@ -15,8 +15,8 @@ import { WorkflowService } from '../services/workflow/workflow.service';
  providedIn: 'root'
 })
 export class FinalComponentGuard implements CanActivate {
-  private CreateAdvancedFinalStepIndex = 6;
-  private CreateBasicFinalStepIndex = 3;
+  private CreateAdvancedFinalStepIndex = 5;
+  private CreateBasicFinalStepIndex = 2;
 
   constructor(
     private router: Router,

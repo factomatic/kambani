@@ -2,6 +2,9 @@
   <div class="row">
     <div class="col-xs-12 col-sm-12 col-md-12">
       <div class="page-content">
+        <div class="alert alert-warning" role="alert" *ngIf="selectedAction === actionType.Update">
+          Warning! If you create a management key with the same priority as the key that you are going to use for the signing of the entry, the aforementioned key will be automatically revoked.
+        </div>
         <h1 class="page-title text-center" *ngIf="selectedAction === actionType.CreateAdvanced">Create management keys</h1>
         <h1 class="page-title text-center" *ngIf="selectedAction === actionType.Update">Update management keys</h1>
         <div class="row">
@@ -165,6 +168,22 @@
                       <div *ngIf="priority['errors'].required">Priority is required!</div>
                       <div *ngIf="priority['errors'].min">Priority must be a positive number!</div>
                       <div *ngIf="priority['errors'].max">Priority must not be bigger than 100!</div>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label" for="priorityRequirement">
+                      Priority Requirement
+                    </label>
+                    <input
+                      type="number"
+                      class="form-control input-md"
+                      formControlName="priorityRequirement"
+                      id="priorityRequirement"
+                      [ngClass]="{ 'is-invalid': priorityRequirement.touched && priorityRequirement.errors }" />
+                    <div *ngIf="priorityRequirement.errors" class="invalid-feedback">
+                      <div *ngIf="priorityRequirement['errors'].min">Priority requirement must be a positive number!</div>
+                      <div *ngIf="priorityRequirement['errors'].max">Priority requirement must not be bigger than 100!</div>
                     </div>
                   </div>
 

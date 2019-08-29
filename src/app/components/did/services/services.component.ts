@@ -26,7 +26,7 @@ const DOWN_POSITION = 'down';
 })
 export class ServicesComponent extends BaseComponent implements OnInit, AfterViewInit {
   @ViewChildren(CollapseComponent) collapses: CollapseComponent[];
-  private subscription$: Subscription;
+  private subscription: Subscription;
   public services: ComponentServiceModel[] = [];
   public serviceForm: FormGroup;
   public actionType = ActionType;
@@ -46,7 +46,7 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
   }
 
   ngOnInit() {
-    this.subscription$ = this.store
+    this.subscription = this.store
       .pipe(select(state => state))
       .subscribe(state => {
         this.services = state.form.services.map(service => new ComponentServiceModel(service, DOWN_POSITION));
@@ -54,7 +54,7 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
         this.selectedAction = state.action.selectedAction;
       });
 
-    this.subscriptions.push(this.subscription$);
+    this.subscriptions.push(this.subscription);
     this.createForm();
   }
 
@@ -72,7 +72,8 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
     this.serviceForm = this.fb.group({
       type: ['', [Validators.required]],
       endpoint: ['', [Validators.required]],
-      alias: ['', [Validators.required, CustomValidators.uniqueServiceAlias(this.services.map(s => s.serviceModel))]]
+      alias: ['', [Validators.required, CustomValidators.uniqueServiceAlias(this.services.map(s => s.serviceModel))]],
+      priorityRequirement: [undefined, [Validators.min(0), Validators.max(100)]]
     });
   }
 
@@ -84,7 +85,8 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
     const service = new ServiceModel(
       this.type.value,
       this.endpoint.value,
-      this.alias.value
+      this.alias.value,
+      this.priorityRequirement.value
     );
 
     this.store.dispatch(new AddService(service));
@@ -124,5 +126,9 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
 
   get endpoint () {
     return this.serviceForm.get('endpoint');
+  }
+
+  get priorityRequirement() {
+    return this.serviceForm.get('priorityRequirement');
   }
 }

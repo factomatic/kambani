@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+
+import { downloadFile } from 'src/app/core/utils/helpers';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
@@ -12,24 +14,29 @@ export class VaultBackupComponent implements OnInit {
   constructor(private vaultService: VaultService) { }
 
   ngOnInit() {
-    const dids = this.vaultService.getDIDs();
-    this.didsAny = Object.keys(dids).length > 0;
+    this.didsAny = this.vaultService.didDocumentsAny();
   }
 
-  downloadJSONFile() {
-    const vault = this.vaultService.getVault();
+  backupVault() {
+    const vault = this.postProcessEncryptedVaultFile(this.vaultService.getVault());
     if (vault) {
-      const downloader = document.createElement('a');
-      document.body.appendChild(downloader);
-
-      const blob = new Blob([vault], { type: 'text/json' });
-      const url = window.URL;
-      const fileUrl = url.createObjectURL(blob);
-
-      downloader.setAttribute('href', fileUrl);
       const date = new Date();
-      downloader.setAttribute('download', `vault-backup-UTC--${date.toISOString()}.txt`);
-      downloader.click();
+      downloadFile(vault, `vault-backup-UTC--${date.toISOString()}.txt`);
     }
+  }
+
+  private postProcessEncryptedVaultFile(encryptedFile: string) {
+    const parsedFile = JSON.parse(encryptedFile);
+    const newKeysFile: any = { };
+
+    newKeysFile.data = parsedFile.data;
+    newKeysFile.encryptionAlgo = {
+      name: 'AES-GCM',
+      iv: parsedFile.iv,
+      salt: parsedFile.salt,
+      tagLength: 128
+    };
+
+    return JSON.stringify(newKeysFile, null, 2);
   }
 }

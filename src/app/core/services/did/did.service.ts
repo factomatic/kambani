@@ -2,19 +2,25 @@ declare const Buffer;
 import * as nacl from 'tweetnacl/nacl-fast';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { Store, select } from '@ngrx/store';
 
 import { AddOriginalManagementKeys, AddOriginalDidKeys, AddOriginalServices } from '../../store/form/form.actions';
 import { AppState } from '../../store/app.state';
 import { DIDDocument } from '../../interfaces/did-document';
+import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { DidKeyModel } from '../../models/did-key.model';
 import { EntryType } from '../../enums/entry-type';
 import { environment } from 'src/environments/environment';
+import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
 import { ManagementKeyModel } from '../../models/management-key.model';
+import { RevokeModel } from '../../interfaces/revoke-model';
+import { ServiceEntryModel } from '../../interfaces/service-entry';
 import { ServiceModel } from '../../models/service.model';
 import { SignatureType } from '../../enums/signature-type';
-import { toHexString, calculateChainId, calculateSha512 } from '../../utils/helpers';
+import { toHexString, calculateChainId } from '../../utils/helpers';
+import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
+import { VaultService } from '../vault/vault.service';
 
 @Injectable()
 export class DIDService {
@@ -33,7 +39,8 @@ export class DIDService {
 
   constructor(
     private http: HttpClient,
-    private store: Store<AppState>) {
+    private store: Store<AppState>,
+    private vaultService: VaultService) {
     this.store
       .pipe(select(state => state.form))
       .subscribe(form => {
@@ -54,7 +61,7 @@ export class DIDService {
     return this.id;
   }
 
-  generateEntry(entryType: string): {} {
+  generateEntry(entryType: string): DIDDocument | UpdateEntryDocument {
     if (entryType === EntryType.UpdateDIDEntry) {
       return this.generateUpdateEntry();
     }
@@ -62,48 +69,89 @@ export class DIDService {
     return this.generateDocument();
   }
 
-  getEntrySize(entry: {}, entryType: string): number {
-    return this.calculateEntrySize(
+  recordCreateEntryOnChain(entry: DIDDocument): Observable<Object> {
+    const entrySize = this.calculateEntrySize(
       [this.nonce],
-      [entryType, this.entrySchemaVersion],
+      [EntryType.CreateDIDEntry, this.entrySchemaVersion],
       JSON.stringify(entry)
     );
-  }
 
-  recordOnChain(entry: {}, entryType: string): Observable<Object> {
+    if (entrySize > environment.entrySizeLimit) {
+      return of({error: true, message: 'You have exceeded the entry size limit! Please remove some of your keys or services.'});
+    }
+
     const data = JSON.stringify([
-      [entryType, this.entrySchemaVersion, this.nonce],
+      [EntryType.CreateDIDEntry, this.entrySchemaVersion, this.nonce],
       entry
     ]);
 
+    return this.recordEntry(this.apiUrl, data);
+  }
+
+  recordUpdateEntryOnChain(entry: UpdateEntryDocument, managementKeyId: string, signature: string): Observable<Object> {
+    const entrySize = this.calculateEntrySize(
+      [],
+      [EntryType.UpdateDIDEntry, this.entrySchemaVersion, managementKeyId, signature],
+      JSON.stringify(entry)
+    );
+
+    if (entrySize > environment.entrySizeLimit) {
+      return of({error: true, message: 'You have exceeded the entry size limit! Please remove some of your keys or services.'});
+    }
+
+    const data = JSON.stringify([
+      [EntryType.UpdateDIDEntry, this.entrySchemaVersion, managementKeyId, signature],
+      entry
+    ]);
+    
+    // change the api url with update endpoint
+    // const updateApiUrl = '';
+    // return this.recordEntry(updateApiUrl, data);
+
+    return of({data: ''});
+  }
+
+  loadDIDForUpdate(didId: string): void {
+    this.id = didId;
+    const didDocument: DIDDocument = this.vaultService.getDIDDocument(didId);
+    this.parseDocument(didDocument);
+  }
+
+  revokeSigningKey(managementKeyId: string, updateEntry: UpdateEntryDocument): UpdateEntryDocument {
+    let revokedManagementKeys: RevokeModel[] = [];
+    if (updateEntry.revoke && updateEntry.revoke.managementKey) {
+      revokedManagementKeys = updateEntry.revoke.managementKey;
+    }
+
+    if (!revokedManagementKeys.some(rm => rm.id === managementKeyId)) {
+      revokedManagementKeys.push({ id: managementKeyId });
+
+      let revokeObject = {};
+      if (updateEntry.revoke) {
+        revokeObject = updateEntry.revoke;
+      }
+
+      revokeObject['managementKey'] = revokedManagementKeys;
+      updateEntry.revoke = revokeObject;
+      return updateEntry;
+    }
+
+    return updateEntry;
+  }
+
+  clearData(): void {
+    this.id = undefined;
+    this.nonce = undefined;
+  }
+
+  private recordEntry(apiUrl: string, data: string) {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type': 'application/json'
       })
     };
-
-    return this.http.post(this.apiUrl, data, httpOptions);
-  }
-
-  upload(didId: string) {
-    // call resolver to get did document
-    // tslint:disable-next-line:max-line-length
-    const response = `{"@context":"https://w3id.org/did/v1","id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","managementKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myfirstkey","type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"GtRQwPQ6a8Qe9DbzBCTmBERovZ4URh7BvwziQMURRaEQ","priority":0},{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mysecondkey","type":"ECDSASecp256k1VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"eeK7Saop24d3hej7r4BNgyna6pXrCEbgCTZYHj7ApkRh","priority":2}],"didKey":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#mythirdkey","purpose":["publicKey"],"type":"Ed25519VerificationKey","controller":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c","publicKeyBase58":"2reWgag62C9ryZcCmheyzDVvQE5j9j1HCgVMbJBmoPvx"}],"service":[{"id":"did:factom:f7a3860023452c7db222c7fd9d0e055b9ba3f9f9db02692b2eec8351c71b8e5c#myservice","type":"PhotoStreamService","serviceEndpoint":"https://example.org/photos/379283"}]}`;
-    this.id = didId;
-    const didDocument: DIDDocument = JSON.parse(response);
-    this.parseDocument(didDocument);
-  }
-
-  sendUpdateEntryForSigning(entry: {}) {
-    this.nonce = toHexString(nacl.randomBytes(32));
-    const dataHash = calculateSha512(`${this.nonce}${JSON.stringify(entry)}`);
-    const event = new CustomEvent('ContentToSign', { detail: dataHash });
-    window.dispatchEvent(event);
-  }
-
-  clearData() {
-    this.id = undefined;
-    this.nonce = undefined;
+    
+    return this.http.post(apiUrl, data, httpOptions);
   }
 
   private generateDocument(): DIDDocument {
@@ -127,7 +175,7 @@ export class DIDService {
     return didDocument;
   }
 
-  private generateUpdateEntry(): {} {
+  private generateUpdateEntry(): UpdateEntryDocument {
     const newManagementKeys = this.getNew(this.originalManagementKeys, this.formManagementKeys);
     const newDidKeys = this.getNew(this.originalDidKeys, this.formDidKeys);
     const newServices = this.getNew(this.originalServices, this.formServices);
@@ -135,7 +183,7 @@ export class DIDService {
     const revokedDidKeys = this.getRevoked(this.originalDidKeys, new Set(this.formDidKeys));
     const revokedServices = this.getRevoked(this.originalServices, new Set(this.formServices));
 
-    const updateEntry = {};
+    const updateEntry: UpdateEntryDocument = {};
 
     if (newManagementKeys.length > 0 || newDidKeys.length > 0 || newServices.length > 0) {
       updateEntry['add'] = this.constructAddObject(
@@ -152,21 +200,29 @@ export class DIDService {
     return updateEntry;
   }
 
-  private buildManagementKeyEntryObject(key: ManagementKeyModel): {} {
+  private buildManagementKeyEntryObject(key: ManagementKeyModel): ManagementKeyEntryModel {
     let keyEntryObject = this.buildKeyEntryObject(key);
     keyEntryObject['priority'] = key.priority;
 
+    if (key.priorityRequirement !== null) {
+      keyEntryObject['priorityRequirement'] = key.priorityRequirement;
+    }
+
     return keyEntryObject;
   }
 
-  private buildDidKeyEntryObject(key: DidKeyModel): {} {
+  private buildDidKeyEntryObject(key: DidKeyModel): DidKeyEntryModel {
     let keyEntryObject = this.buildKeyEntryObject(key);
     keyEntryObject['purpose'] = key.purpose;
 
+    if (key.priorityRequirement !== null) {
+      keyEntryObject['priorityRequirement'] = key.priorityRequirement;
+    }
+
     return keyEntryObject;
   }
 
-  private buildKeyEntryObject(key): {} {
+  private buildKeyEntryObject(key: ManagementKeyModel | DidKeyModel): ManagementKeyEntryModel | DidKeyEntryModel {
     const publicKeyProperty = key.type == SignatureType.RSA ? 'publicKeyPem' : 'publicKeyBase58';
 
     const keyEntryObject = {
@@ -176,28 +232,24 @@ export class DIDService {
       [publicKeyProperty]: key.publicKey
     };
 
-    if (key.priorityRequirement) {
-      keyEntryObject['priorityRequirement'] = key.priorityRequirement;
-    }
-
     return keyEntryObject;
   }
 
-  private buildServiceEntryObject(service: ServiceModel): {} {
+  private buildServiceEntryObject(service: ServiceModel): ServiceEntryModel {
     let serviceEntryObject = {
       id: `${this.id}#${service.alias}`,
       type: service.type,
       serviceEndpoint: service.endpoint
     };
 
-    if (service.priorityRequirement) {
+    if (service.priorityRequirement !== null) {
       serviceEntryObject['priorityRequirement'] = service.priorityRequirement;
     }
 
     return serviceEntryObject;
   }
 
-  private getNew(original, current): Array<{}> {
+  private getNew(original, current) {
     const _new = [];
 
     current.forEach(obj => {
@@ -209,12 +261,12 @@ export class DIDService {
     return _new;
   }
 
-  private getRevoked(original, current): string[] {
-    const revoked: string[] = [];
+  private getRevoked(original, current): RevokeModel[] {
+    const revoked: RevokeModel[] = [];
 
     original.forEach(obj => {
       if (!current.has(obj)) {
-        revoked.push(obj.alias);
+        revoked.push({ id: `${this.id}#${obj.alias}` });
       }
     });
 
@@ -239,7 +291,7 @@ export class DIDService {
     return add;
   }
 
-  private constructRevokeObject(revokedManagementKeys: string[], revokedDidKeys: string[], revokedServices: string[]): {} {
+  private constructRevokeObject(revokedManagementKeys: RevokeModel[], revokedDidKeys: RevokeModel[], revokedServices: RevokeModel[]): {} {
     const revoke = {};
 
     if (revokedManagementKeys.length > 0) {
@@ -287,17 +339,22 @@ export class DIDService {
     return Buffer.byteLength(string, 'utf8');
   }
 
-  private parseDocument(didDocument: DIDDocument) {
+  private parseDocument(didDocument: DIDDocument): void {
     const managementKeys = this.extractManagementKeys(didDocument.managementKey);
-    const didKeys = this.extractDidKeys(didDocument.didKey);
-    const services = this.extractServices(didDocument.service);
-
     this.store.dispatch(new AddOriginalManagementKeys(managementKeys));
-    this.store.dispatch(new AddOriginalDidKeys(didKeys));
-    this.store.dispatch(new AddOriginalServices(services));
+
+    if (didDocument.didKey) {
+      const didKeys = this.extractDidKeys(didDocument.didKey);
+      this.store.dispatch(new AddOriginalDidKeys(didKeys));
+    }
+
+    if (didDocument.service) {
+      const services = this.extractServices(didDocument.service);
+      this.store.dispatch(new AddOriginalServices(services));
+    }
   }
 
-  private extractManagementKeys(documentManagementKeys: any[]): ManagementKeyModel[] {
+  private extractManagementKeys(documentManagementKeys: ManagementKeyEntryModel[]): ManagementKeyModel[] {
     return documentManagementKeys.map(k => new ManagementKeyModel(
       k.id.split('#')[1],
       k.priority,
@@ -309,7 +366,7 @@ export class DIDService {
     ));
   }
 
-  private extractDidKeys(documentDidKeys: any[]): DidKeyModel[] {
+  private extractDidKeys(documentDidKeys: DidKeyEntryModel[]): DidKeyModel[] {
     return documentDidKeys.map(k => new DidKeyModel(
       k.id.split('#')[1],
       k.purpose,
@@ -321,7 +378,7 @@ export class DIDService {
     ));
   }
 
-  private extractServices(documentServices: any[]): ServiceModel[] {
+  private extractServices(documentServices: ServiceEntryModel[]): ServiceModel[] {
     return documentServices.map(s => new ServiceModel(
       s.type,
       s.serviceEndpoint,

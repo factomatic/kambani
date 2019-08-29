@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Store, select } from '@ngrx/store';
 import { Subscription } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 import { ActionType } from 'src/app/core/enums/action-type';
 import { AddManagementKey, RemoveManagementKey, UpdateManagementKey } from 'src/app/core/store/form/form.actions';
@@ -31,7 +32,7 @@ const DOWN_POSITION = 'down';
 })
 export class ManagementKeysComponent extends BaseComponent implements OnInit, AfterViewInit {
   @ViewChildren(CollapseComponent) collapses: CollapseComponent[];
-  private subscription$: Subscription;
+  private subscription: Subscription;
   private didId: string;
   private managementKeys: ManagementKeyModel[] = [];
   private didKeys: DidKeyModel[] = [];
@@ -51,12 +52,13 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
     private store: Store<AppState>,
     private keysService: KeysService,
     private didService: DIDService,
+    private toastr: ToastrService,
     private workflowService: WorkflowService) {
     super();
   }
 
   ngOnInit() {
-    this.subscription$ = this.store
+    this.subscription = this.store
       .pipe(select(state => state))
       .subscribe(state => {
         this.componentKeys = state.form.managementKeys.map(key => new ComponentKeyModel(Object.assign({}, key), DOWN_POSITION, true));
@@ -67,7 +69,7 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
         this.selectedAction = state.action.selectedAction;
       });
 
-    this.subscriptions.push(this.subscription$);
+    this.subscriptions.push(this.subscription);
 
     this.didId = this.didService.getId();
     this.createForm();
@@ -89,7 +91,8 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
       controller: [this.didId, [Validators.required]],
       alias: ['', [Validators.required,
       CustomValidators.uniqueKeyAlias(this.componentKeys.map(key => key.keyModel) as ManagementKeyModel[], this.didKeys)]],
-      priority: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
+      priority: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      priorityRequirement: [undefined, [Validators.min(0), Validators.max(100)]]
     });
 
     this.cd.detectChanges();
@@ -108,7 +111,8 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
           this.type.value,
           this.controller.value,
           keyPair.publicKey,
-          keyPair.privateKey
+          keyPair.privateKey,
+          this.priorityRequirement.value
         );
 
         this.store.dispatch(new AddManagementKey(generatedKey));
@@ -147,6 +151,13 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
   }
 
   goToNext() {
+    if (this.selectedAction === ActionType.CreateAdvanced) {
+      if (!this.managementKeys.find(mk => mk.priority === 0)) {
+        this.toastr.warning('Warning! You must have at least one management key created at priority 0 before continuing.');
+        return;
+      }
+    }
+
     this.workflowService.moveToNextStep();
   }
 
@@ -167,6 +178,10 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
   }
 
   get priority() {
-    return this.keyForm.get('priority')
+    return this.keyForm.get('priority');
+  }
+
+  get priorityRequirement() {
+    return this.keyForm.get('priorityRequirement');
   }
 }
