@@ -2,28 +2,64 @@
   <div class="row">
     <div class="col-xs-12 col-sm-12 col-md-12">
       <div class="page-content">
-        <h1 class="page-title text-center">Choose an action</h1>
-        <form class="manage-dids-form" #actionForm="ngForm">
-          <div class="form-group">
-            <label>
-              <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="create-basic">
-              Create Paper DID (Basic Mode)
-            </label>
+        <div class="page-header">
+          <h1 class="page-title pull-left">
+            Available DIDs
+          </h1>
+          <a class="btn btn-success pull-right" routerLink="/dids/manage"><i class="fa fa-plus"></i> Create new</a>
+          <div class="clearfix"></div>
+        </div>
+        <div class="table-holder" *ngIf="didIds.length > 0">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>DID</th>
+                <th>Nickname</th>
+                <th class="text-center">M Keys</th>
+                <th class="text-center">D Keys</th>
+                <th class="text-center">Services</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let didId of didIds">
+                <td><span>{{didId}}</span></td>
+                <td>MyFirstDID</td>
+                <td class="text-center">
+                  <a href="" class="counter-label">{{didDocuments[didId].managementKey ? didDocuments[didId].managementKey.length : 0}}</a>
+                </td>
+                <td class="text-center">
+                  <a href="" class="counter-label">{{didDocuments[didId].didKey ? didDocuments[didId].didKey.length : 0}}</a>
+                </td>
+                <td class="text-center">
+                  <a href="" class="counter-label">{{didDocuments[didId].service ? didDocuments[didId].service.length : 0}}</a>
+                </td>
+                <td class="text-right">
+                  <a href="javascript:;" class="btn btn-xs btn-primary"><i class="fa fa-search"></i></a>
+                  <a (click)="backupDid(didId)" class="btn btn-xs btn-success"><i class="fa fa-download"></i></a>
+                  <a href="javascript:;" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i></a>
+                  <a href="javascript:;" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row" *ngIf="didIds.length > 0">
+          <div class="col-6">
+            <div class="paginator">
+              <a href="javascript:;" class="disabled">Prev</a>
+              <a href="javascript:;" class="">Next</a>
+            </div>
           </div>
-          <div class="form-group">
-            <label>
-              <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="create-advanced">
-              Create Paper DID (Advanced Mode)
-            </label>
+          <div class="col-6 text-right">
+            1 - 10 from 30
           </div>
-          <div class="form-group">
-            <label>
-              <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="update">
-              Update Existing DID
-            </label>
+        </div>
+        <div class="row">
+          <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!didIds || didIds.length === 0">
+            <p class="text-warning text-center">You have not created any DIDs yet</p>
           </div>
-            <button class="btn btn-primary btn-block" mdbBtn type="button" color="primary" mdbWavesEffect [disabled]="!actionForm.valid" (click)="goToNext()"> Start </button>
-        </form>
+        </div>
       </div>
     </div>
   </div>

@@ -1,14 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Store } from '@ngrx/store';
+import { ToastrService } from 'ngx-toastr';
 
-import { ActionType } from 'src/app/core/enums/action-type';
-import { AppState } from 'src/app/core/store/app.state';
-import { ClearForm, SelectAction } from 'src/app/core/store/action/action.actions';
-import { CreateAdvancedInfoModalComponent } from '../../modals/create-advanced-info-modal/create-advanced-info-modal.component';
-import { CreateBasicInfoModalComponent } from '../../modals/create-basic-info-modal/create-basic-info-modal.component';
-import { KeysService } from 'src/app/core/services/keys/keys.service';
-import { WorkflowService } from 'src/app/core/services/workflow/workflow.service';
+import { BackupResultModel } from 'src/app/core/models/backup-result.model';
+import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
+import { downloadFile } from 'src/app/core/utils/helpers';
+import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
+import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
+import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
   selector: 'app-manage-dids',
@@ -16,37 +14,53 @@ import { WorkflowService } from 'src/app/core/services/workflow/workflow.service
   styleUrls: ['./manage-dids.component.scss']
 })
 export class ManageDidsComponent implements OnInit {
-  public actionType = ActionType.CreateBasic;
-  public infoModals = { };
+  public didIds: string[] = [];
+  public didDocuments: object;
 
   constructor(
-    private keysService: KeysService,
-    private modalService: NgbModal,
-    private store: Store<AppState>,
-    private workflowService: WorkflowService) { }
+    private dialogsService: DialogsService,
+    private toastr: ToastrService,
+    private vaultService: VaultService) { }
 
   ngOnInit() {
-    this.store.dispatch(new ClearForm());
-    this.registerInfoModals();
+    this.didDocuments = this.vaultService.getAllDIDDocuments();
+    this.didIds = Object.keys(this.didDocuments);
   }
 
-  goToNext() {
-    this.store.dispatch(new SelectAction(this.actionType));
+  backupDid(didId: string) {
+    const dialogMessage = 'Enter your vault password to open the vault and encrypt your DID';
 
-    if (this.actionType === ActionType.CreateBasic) {
-      this.keysService.autoGenerateKeys();
-    }
-
-    this.workflowService.moveToNextStep();
-    setTimeout(() => this.openInfoModal());
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
+      .subscribe((vaultPassword: string) => {
+        if (vaultPassword) {
+          this.vaultService
+            .backupSingleDIDFromVault(didId, vaultPassword)
+            .subscribe((result: BackupResultModel) => {
+              if (result.success) {
+                const date = new Date();
+                const didBackupFile = this.postProcessDidBackupFile(result.backup, didId);
+                downloadFile(didBackupFile, `paper-did-UTC--${date.toISOString()}.txt`);
+              } else {
+                this.toastr.error(result.message);
+              }
+            });
+        }
+      });
   }
 
-  openInfoModal() {
-    this.modalService.open(this.infoModals[this.actionType], {size: 'lg'});
-  }
+  private postProcessDidBackupFile(encryptedFile: string, didId: string) {
+    const parsedFile = JSON.parse(encryptedFile);
+    const newKeysFile: any = { };
 
-  private registerInfoModals() {
-    this.infoModals[ActionType.CreateAdvanced] = CreateAdvancedInfoModalComponent;
-    this.infoModals[ActionType.CreateBasic] = CreateBasicInfoModalComponent;
+    newKeysFile.data = parsedFile.data;
+    newKeysFile.encryptionAlgo = {
+      name: 'AES-GCM',
+      iv: parsedFile.iv,
+      salt: parsedFile.salt,
+      tagLength: 128
+    };
+    newKeysFile.did = didId;
+
+    return JSON.stringify(newKeysFile, null, 2);
   }
 }
