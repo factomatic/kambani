@@ -10,22 +10,6 @@ function minifyPublicKey(publicKey: string) {
   return publicKey;
 }
 
-function modifyPemPrefixAndSuffix(pem: string): string {
-  const RSA = 'RSA';
-  const BEGIN = 'BEGIN';
-  const END = 'END';
-  const indexOfBegin = pem.indexOf(BEGIN);
-  const indexOfEnd = pem.indexOf(END);
-
-  return [
-    pem.slice(0, indexOfBegin + BEGIN.length + 1),
-    RSA,
-    pem.slice(indexOfBegin + BEGIN.length, indexOfEnd + END.length + 1),
-    RSA,
-    pem.slice(indexOfEnd + END.length)
-  ].join('');
-}
-
 function capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -35,10 +19,10 @@ function convertPemToBinary(pem) {
   var encoded = '';
   for(var i = 0;i < lines.length;i++) {
     if (lines[i].trim().length > 0 &&
-        lines[i].indexOf('-BEGIN RSA PRIVATE KEY-') < 0 &&
-        lines[i].indexOf('-BEGIN RSA PUBLIC KEY-') < 0 &&
-        lines[i].indexOf('-END RSA PRIVATE KEY-') < 0 &&
-        lines[i].indexOf('-END RSA PUBLIC KEY-') < 0) {
+        lines[i].indexOf('-BEGIN PRIVATE KEY-') < 0 &&
+        lines[i].indexOf('-BEGIN PUBLIC KEY-') < 0 &&
+        lines[i].indexOf('-END PRIVATE KEY-') < 0 &&
+        lines[i].indexOf('-END PUBLIC KEY-') < 0) {
       encoded += lines[i].trim();
     }
   }
@@ -109,12 +93,12 @@ async function exportPemKeys(keys) {
 
 async function exportRSAPublicKey(keys) {
   const spki = await window.crypto.subtle.exportKey('spki', keys.publicKey);
-  return convertBinaryToPem(spki, "RSA PUBLIC KEY");
+  return convertBinaryToPem(spki, "PUBLIC KEY");
 }
 
 async function exportRSAPrivateKey(keys) {
   const pkcs8 = await window.crypto.subtle.exportKey('pkcs8', keys.privateKey);
-  return convertBinaryToPem(pkcs8, "RSA PRIVATE KEY");
+  return convertBinaryToPem(pkcs8, "PRIVATE KEY");
 }
 
 function convertBinaryToPem(binaryData, label) {
@@ -151,7 +135,6 @@ function downloadFile(fileContent: string, fileName: string) {
 
 export {
   minifyPublicKey,
-  modifyPemPrefixAndSuffix,
   convertPemToBinary,
   arrayBufferToBase64String,
   toHexString,
