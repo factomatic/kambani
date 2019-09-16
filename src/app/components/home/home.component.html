@@ -1,15 +1,55 @@
 <div class="container">
   <div class="row">
     <div class="col-xs-12 col-sm-12 col-md-12">
-      <div class="page-content">
-          <div class="page-header">
-                <h1 class="page-title pull-left">
-                    Available DIDs
-                </h1>
-                <a href="javascript:;" class="btn btn-success pull-right"><i class="fa fa-plus"></i> Create new</a>
-                <div class="clearfix"></div>
-          </div>
-        <div class="table-holder">
+        <div class="row card-holder">
+            <div class="col-12 col-sm-4">
+                <div class="card-item">
+                    <div class="icon-holder">
+                        <i class="fas fa-fingerprint fa-2x"></i>
+                    </div>
+                    <div class="text-holder">
+                        <span class="title">Your DIDs</span>
+                        <span class="number">7</span>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-4">
+                <div class="card-item">
+                    <div class="icon-holder">
+                        <i class="fas fa-key fa-2x"></i>
+                    </div>
+                    <div class="text-holder">
+                        <span class="title">Keys</span>
+                        <span class="number">15</span>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-4">
+                <div class="card-item">
+                    <div class="icon-holder">
+                        <i class="fas fa-bolt fa-2x"></i>
+                    </div>
+                    <div class="text-holder">
+                        <span class="title">Services</span>
+                        <span class="number">3</span>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+      <div class="page-content graph-panel">
+            <div class="page-header">
+                    <h1 class="page-title">
+                        Signing Requests
+                    </h1>
+              </div>
+          <div class="graph-holder"><canvas #signingRequests></canvas></div> 
+            
+
+          
+        <div class="table-holder" style="display: none">
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -44,7 +84,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="row">
+        <div class="row" style="display: none">
             <div class="col-6">
                 <div class="paginator">
                     <a href="javascript:;" class="disabled">Prev</a>
@@ -55,7 +95,7 @@
                 1 - 10 from 30
             </div>
         </div>
-        <div class="row">
+        <div class="row" style="display: none">
           <!-- <div class="mt-4 list-group col-md-4 offset-md-4 mt-3" *ngIf="didIds.length > 0">
             <div class="list-group-item list-group-item-action" *ngFor="let didId of didIds">
               <h5 class="text-center font-italic text-info">{{didId.substring(0, 20)}}...</h5>

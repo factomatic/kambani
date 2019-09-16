@@ -4,6 +4,7 @@ import { ManageDidsComponent } from './manage-dids/manage-dids.component';
 import { ManagementKeysComponent } from './management-keys/management-keys.component';
 import { ProvideDidComponent } from './provide-did/provide-did.component';
 import { ServicesComponent } from './services/services.component';
+import { PreviewDidComponent } from './preview-did/preview.did.component';
 import { SummaryComponent } from './summary/summary.component';
 
 export const didComponents = [
@@ -13,5 +14,6 @@ export const didComponents = [
   ManagementKeysComponent,
   ProvideDidComponent,
   ServicesComponent,
-  SummaryComponent
+  SummaryComponent,
+  PreviewDidComponent
 ];
