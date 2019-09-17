@@ -85,17 +85,17 @@ export class ImportKeysComponent implements OnInit {
 
         if (vaultPassword) {
           this.spinner.show();
-          this.vaultService
-            .importKeysFromJsonFile(this.file, filePassword, vaultPassword)
-            .subscribe(result => {
-              this.spinner.hide();
-              if (result.success) {
-                this.toastr.success(result.message);
-                this.router.navigate(['home']);
-              } else {
-                this.toastr.error(result.message);
-              }
-            });
+          // this.vaultService
+          //   .importKeysFromJsonFile(this.file, filePassword, vaultPassword)
+          //   .subscribe(result => {
+          //     this.spinner.hide();
+          //     if (result.success) {
+          //       this.toastr.success(result.message);
+          //       this.router.navigate(['home']);
+          //     } else {
+          //       this.toastr.error(result.message);
+          //     }
+          //   });
 
           this.createJsonFilePasswordForm();
         }
@@ -112,17 +112,17 @@ export class ImportKeysComponent implements OnInit {
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {
           this.spinner.show();
-          this.vaultService
-            .importKeysFromPrivateKey(this.alias.value, this.type.value, this.privateKey.value, vaultPassword)
-            .subscribe(result => {
-              this.spinner.hide();
-              if (result.success) {
-                this.toastr.success(result.message);
-                this.router.navigate(['home']);
-              } else {
-                this.toastr.error(result.message);
-              }
-            });
+          // this.vaultService
+          //   .importKeysFromPrivateKey(this.alias.value, this.type.value, this.privateKey.value, vaultPassword)
+          //   .subscribe(result => {
+          //     this.spinner.hide();
+          //     if (result.success) {
+          //       this.toastr.success(result.message);
+          //       this.router.navigate(['home']);
+          //     } else {
+          //       this.toastr.error(result.message);
+          //     }
+          //   });
 
           this.createPrivateKeyForm();
         }
