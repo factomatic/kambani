@@ -5,7 +5,7 @@ import { UpdateRoutes } from './update-routes';
 
 const actionRoutes = {
   [ActionType.CreateAdvanced]: [
-    SharedRoutes.ManageDids,
+    SharedRoutes.Action,
     CreateRoutes.ManagementKeys,
     CreateRoutes.DidKeys,
     CreateRoutes.Services,
@@ -13,12 +13,12 @@ const actionRoutes = {
     CreateRoutes.Final
   ],
   [ActionType.CreateBasic]: [
-    SharedRoutes.ManageDids,
+    SharedRoutes.Action,
     CreateRoutes.Summary,
     CreateRoutes.Final
   ],
   [ActionType.Update]: [
-    SharedRoutes.ManageDids,
+    SharedRoutes.Action,
     UpdateRoutes.Provide,
     UpdateRoutes.ManagementKeys,
     UpdateRoutes.DidKeys,

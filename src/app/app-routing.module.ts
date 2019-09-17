@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
+import { ActionComponent } from './components/did/action/action.component';
 import { CreateActionGuard } from './core/guards/create-action.guard';
 import { HomeComponent } from './components/home/home.component';
 import { ManageDidsComponent } from './components/did/manage-dids/manage-dids.component';
@@ -13,6 +14,7 @@ const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [VaultGuard] },
   { path: 'signer', component: SignerComponent, canActivate: [VaultGuard] },
   { path: 'vault', loadChildren: './components/vault/vault.module#VaultModule' },
+  { path: 'dids/action', component: ActionComponent, canActivate: [VaultGuard] },
   { path: 'dids/manage', component: ManageDidsComponent, canActivate: [VaultGuard] },
   { path: 'dids/create', loadChildren: './components/did/did.module#DIDModule', canActivate: [ CreateActionGuard ] },
   { path: 'dids/update', loadChildren: './components/did/did.module#DIDModule', canActivate: [ UpdateActionGuard ] }
