@@ -1,112 +1,51 @@
 <div class="container">
   <div class="row">
     <div class="col-xs-12 col-sm-12 col-md-12">
-        <div class="row card-holder">
-            <div class="col-12 col-sm-4">
-                <div class="card-item">
-                    <div class="icon-holder">
-                        <i class="fas fa-fingerprint fa-2x"></i>
-                    </div>
-                    <div class="text-holder">
-                        <span class="title">Your DIDs</span>
-                        <span class="number">7</span>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
+      <div class="row card-holder">
+        <div class="col-12 col-sm-4">
+          <div class="card-item">
+            <div class="icon-holder">
+              <i class="fas fa-fingerprint fa-2x"></i>
             </div>
-            <div class="col-12 col-sm-4">
-                <div class="card-item">
-                    <div class="icon-holder">
-                        <i class="fas fa-key fa-2x"></i>
-                    </div>
-                    <div class="text-holder">
-                        <span class="title">Keys</span>
-                        <span class="number">15</span>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
+            <div class="text-holder">
+              <span class="title">Your DIDs</span>
+              <span class="number">{{didsCount}}</span>
             </div>
-            <div class="col-12 col-sm-4">
-                <div class="card-item">
-                    <div class="icon-holder">
-                        <i class="fas fa-bolt fa-2x"></i>
-                    </div>
-                    <div class="text-holder">
-                        <span class="title">Services</span>
-                        <span class="number">3</span>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
-            </div>
-        </div>
-      <div class="page-content graph-panel">
-            <div class="page-header">
-                    <h1 class="page-title">
-                        Signing Requests
-                    </h1>
-              </div>
-          <div class="graph-holder"><canvas #signingRequests></canvas></div> 
-            
-
-          
-        <div class="table-holder" style="display: none">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>DID</th>
-                        <th>Nickname</th>
-                        <th class="text-center">M Keys</th>
-                        <th class="text-center">D Keys</th>
-                        <th class="text-center">Services</th>
-                        <th class="text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let key of  [1,2,3,4,5,6,7,8,9,10]">
-                        <td><span>did:factom:65ad5a534fbdefea22c5f80687b09dd5cb0730b518dd2fcc4e7c048769af23b9</span></td>
-                        <td>MyFirstDID</td>
-                        <td class="text-center">
-                            <a href="" class="counter-label">5</a>
-                        </td>
-                        <td class="text-center">
-                            <a href="" class="counter-label">7</a>
-                        </td>
-                        <td class="text-center">
-                            <a href="" class="counter-label">9</a>
-                        </td>
-                        <td class="text-right">
-                            <a href="javascript:;" class="btn btn-xs btn-primary"><i class="fa fa-search"></i></a>
-                            <a href="javascript:;" class="btn btn-xs btn-success"><i class="fa fa-download"></i></a>
-                            <a href="javascript:;" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i></a>
-                            <a href="javascript:;" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="row" style="display: none">
-            <div class="col-6">
-                <div class="paginator">
-                    <a href="javascript:;" class="disabled">Prev</a>
-                    <a href="javascript:;" class="">Next</a>
-                </div>
-            </div>
-            <div class="col-6 text-right">
-                1 - 10 from 30
-            </div>
-        </div>
-        <div class="row" style="display: none">
-          <!-- <div class="mt-4 list-group col-md-4 offset-md-4 mt-3" *ngIf="didIds.length > 0">
-            <div class="list-group-item list-group-item-action" *ngFor="let didId of didIds">
-              <h5 class="text-center font-italic text-info">{{didId.substring(0, 20)}}...</h5>
-              <button class="btn btn-warning" (click)="backupDid(didId)">Backup</button>
-            </div>
-          </div> -->
-          <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!didIds || didIds.length === 0">
-            <p class="text-warning text-center">You have not created any DIDs yet</p>
-            <button class="btn btn-success mt-2" routerLink="/dids/manage">Create DID</button>
+            <div class="clearfix"></div>
           </div>
         </div>
+        <div class="col-12 col-sm-4">
+          <div class="card-item">
+            <div class="icon-holder">
+              <i class="fas fa-key fa-2x"></i>
+            </div>
+            <div class="text-holder">
+              <span class="title">Signed Requests</span>
+              <span class="number">{{signedRequestsCount}}</span>
+            </div>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-4">
+          <div class="card-item">
+            <div class="icon-holder">
+              <i class="fas fa-bolt fa-2x"></i>
+            </div>
+            <div class="text-holder">
+              <span class="title">Pending Requests</span>
+              <span class="number">{{pendingRequestsCount}}</span>
+            </div>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+      <div class="page-content graph-panel">
+        <div class="page-header">
+          <h1 class="page-title">
+            Signing Requests
+          </h1>
+        </div>
+        <div class="graph-holder"><canvas #signingRequests></canvas></div> 
       </div>
     </div>
   </div>
