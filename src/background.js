@@ -3,6 +3,7 @@
 const NEW_TAB_OPEN = 'newTabOpen';
 const IMPORT_KEYS_REQUEST = 'importKeysRequest';
 const RESTORE_VAULT_REQUEST = 'restoreVaultRequest';
+const MANAGE_DIDS_REQUEST = 'manageDidsRequest';
 const CHECK_REQUESTS = 'checkRequests';
 const PENDING_REQUESTS_COUNT = 'pendingRequestsCount';
 const GET_CONTENT_TO_SIGN = 'getContentToSign';
@@ -17,6 +18,7 @@ const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
   let currentRequestedContentIndex = -1;
   let importKeysRequested = false;
   let restoreVaultRequested = false;
+  let manageDidsRequested = false;
 
   chrome.browserAction.setBadgeText({text: "0"});
 
@@ -30,15 +32,21 @@ const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
         restoreVaultRequested = true;
         response({success: true});
         break;
+      case MANAGE_DIDS_REQUEST:
+        manageDidsRequested = true;
+        response({success: true});
+        break;
       case CHECK_REQUESTS:
         response({
           importKeysRequested: importKeysRequested,
-          restoreVaultRequested: restoreVaultRequested
+          restoreVaultRequested: restoreVaultRequested,
+          manageDidsRequested: manageDidsRequested
         });
         break;
       case NEW_TAB_OPEN:
         importKeysRequested = false;
         restoreVaultRequested = false;
+        manageDidsRequested = false;
         break;
       case RECEIVE_CONTENT_TO_SIGN:
         if (msg.content) {

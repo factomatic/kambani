@@ -1,6 +1,9 @@
+/// <reference types="chrome" />
+
 import { Component, OnInit } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 
+import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { BackupResultModel } from 'src/app/core/models/backup-result.model';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { downloadFile } from 'src/app/core/utils/helpers';
@@ -23,6 +26,23 @@ export class ManageDidsComponent implements OnInit {
     private vaultService: VaultService) { }
 
   ngOnInit() {
+    chrome.tabs.getCurrent(function(tab) {
+      if (tab === undefined) {
+        chrome.runtime.sendMessage({type: ChromeMessageType.ManageDidsRequest}, (response) => {
+          if (response.success) {
+            const popup_url = chrome.runtime.getURL('index.html');
+            chrome.tabs.create({'url': popup_url});
+          }
+        });
+      } else {
+        chrome.runtime.sendMessage({type: ChromeMessageType.CheckRequests}, (response) => {
+          if (response.manageDidsRequested) {
+            chrome.runtime.sendMessage({type: ChromeMessageType.NewTabOpen});
+          }
+        });
+      }
+    });
+
     this.didDocuments = this.vaultService.getAllDIDDocuments();
     this.didIds = Object.keys(this.didDocuments);
   }
