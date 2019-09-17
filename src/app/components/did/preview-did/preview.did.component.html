@@ -1,111 +1,124 @@
 <div class="container">
-    <div class="row">
-        <div class="col-xs-12 col-sm-12 col-md-12">
-            <div class="page-content">
-                <div class="row">
-                    <div class="col-12 col-sm-8 col-md-9">
-                        <h1 class="head">
-                            did:factom:65ad5a534fbdefea22c5f80687b09dd5cb0730b518dd2fcc4e7c048769af23b9
-                        </h1>
-                        <div class="info-box">
-                            <div class="info-row">
-                                <div class="label">Nickname</div>
-                                <div class="value">MyFirstDid</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-4 col-md-3 text-md-right text-sm-right text-lg-right">
-                        <a class="btn btn-outline-success backup-btn action-btn" href="javascript:;"><i class="fa fa-download"></i></a>
-                        <a class="btn btn-outline-warning action-btn" href="javascript:;"><i class="fa fa-edit"></i></a>
-                        <a class="btn btn-outline-danger action-btn" href="javascript:;"><i class="fa fa-trash"></i></a>
-                        <div class="clearfix"></div>
-                    </div>
-                </div>
-                <nav class="info-tables">
-                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                        <a class="nav-item nav-link active" id="nav-services-tab" data-toggle="tab" href="#nav-services" role="tab" aria-controls="nav-services" aria-selected="true">Services</a>
-                        <a class="nav-item nav-link" id="nav-mkeys-tab" data-toggle="tab" href="#nav-mkeys" role="tab" aria-controls="nav-mkeys" aria-selected="false">M Keys</a>
-                        <a class="nav-item nav-link" id="nav-dkeys-tab" data-toggle="tab" href="#nav-dkeys" role="tab" aria-controls="nav-dkeys" aria-selected="false">D Keys</a>
-                    </div>
-                </nav>
-                <div class="tab-content" id="nav-tabContent">
-                    <div class="tab-pane fade show active" id="nav-services" role="tabpanel" aria-labelledby="nav-services-tab">
-                        <div class="row service-row">
-                            <div class="col-12 col-sm-6">
-                                <div class="info-box">
-                                    <div class="info-row">
-                                        <div class="label">Service type</div>
-                                        <div class="value">MessagingHUB</div>
-                                    </div>
-                                    <div class="info-row">
-                                        <div class="label">Alias</div>
-                                        <div class="value">MyMessagingHUBService</div>
-                                    </div>
-                                    <div class="info-row">
-                                        <div class="label">Service endpoint</div>
-                                        <div class="value">https://messaginghub.com/provider</div>
-                                    </div>
-                                    <div class="info-row">
-                                        <div class="label">Priority</div>
-                                        <div class="value">10</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-6">
-                                <div class="info-box">
-                                    <div class="info-row">
-                                        <div class="label">Service type</div>
-                                        <div class="value">MessagingHUB</div>
-                                    </div>
-                                    <div class="info-row">
-                                        <div class="label">Alias</div>
-                                        <div class="value">MyMessagingHUBService</div>
-                                    </div>
-                                    <div class="info-row">
-                                        <div class="label">Service endpoint</div>
-                                        <div class="value">https://messaginghub.com/provider</div>
-                                    </div>
-                                    <div class="info-row">
-                                        <div class="label">Priority</div>
-                                        <div class="value">10</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- <div class="table-holder">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Service type</th>
-                                        <th>Service endpoint</th>
-                                        <th>Alias</th>
-                                        <th>Priority requirement</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr *ngFor="let key of  [1,2,3,4,5,6,7,8,9,10]">
-                                        <td>MessagingHUB</td>
-                                        <td>https://messaginghub.com/provider</td>
-                                        <td>MyMessagingHUBService</td>
-                                        <td><span class="label label-primary">10</span></td>
-                                        <td>
-                                            <a href="javascript:;" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i></a>
-                                            <a href="javascript:;" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div> -->
-                    </div>
-                    <div class="tab-pane fade" id="nav-mkeys" role="tabpanel" aria-labelledby="nav-mkeys-tab">
-
-                    </div>
-                    <div class="tab-pane fade" id="nav-dkeys" role="tabpanel" aria-labelledby="nav-dkeys-tab">
-
-                    </div>
-                </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12">
+      <div class="page-content">
+        <div class="row">
+          <div class="col-12 col-sm-8 col-md-9">
+            <h1 class="head">
+              {{didId}}
+            </h1>
+            <div class="info-box">
+              <div class="info-row">
+                <div class="label">Nickname</div>
+                <div class="value">MyFirstDid</div>
+              </div>
             </div>
+          </div>
+          <div class="col-12 col-sm-4 col-md-3 text-md-right text-sm-right text-lg-right">
+            <a class="btn btn-outline-success backup-btn action-btn" href="javascript:;"><i class="fa fa-download"></i></a>
+            <a class="btn btn-outline-warning action-btn" href="javascript:;"><i class="fa fa-edit"></i></a>
+            <a class="btn btn-outline-danger action-btn" href="javascript:;"><i class="fa fa-trash"></i></a>
+            <div class="clearfix"></div>
+          </div>
         </div>
+        <nav class="info-tables">
+          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a *ngIf="managementKeys.length > 0" class="nav-item nav-link active" id="nav-mkeys-tab" data-toggle="tab" href="#nav-mkeys" role="tab" aria-controls="nav-mkeys" aria-selected="true">MGMT Keys</a>
+            <a *ngIf="didKeys.length > 0" class="nav-item nav-link" id="nav-dkeys-tab" data-toggle="tab" href="#nav-dkeys" role="tab" aria-controls="nav-dkeys" aria-selected="false">DID Keys</a>
+            <a *ngIf="services.length > 0" class="nav-item nav-link" id="nav-services-tab" data-toggle="tab" href="#nav-services" role="tab" aria-controls="nav-services" aria-selected="false">Services</a>
+          </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+          <div class="tab-pane fade show active" id="nav-mkeys" role="tabpanel" aria-labelledby="nav-mkeys-tab">
+            <div class="row key-row">
+              <div class="col-12 col-sm-6" *ngFor="let managementKey of managementKeys">
+                <div class="info-box">
+                  <div class="info-row">
+                    <div class="label">Alias</div>
+                    <div class="value">{{managementKey.id.split('#')[1]}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Type</div>
+                    <div class="value">{{managementKey.type}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Controller</div>
+                    <div class="value">{{minDid(managementKey.controller)}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Public Key</div>
+                    <div class="value">{{managementKey.publicKeyBase58 ? minKey(managementKey.publicKeyBase58) : minKey(managementKey.publicKeyPem)}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Priority</div>
+                    <div class="value">{{managementKey.priority}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Priority Requirement</div>
+                    <div class="value">{{managementKey.priorityRequirement ? managementKey.priorityRequirement : 'N/A'}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="nav-dkeys" role="tabpanel" aria-labelledby="nav-dkeys-tab">
+            <div class="row key-row">
+              <div class="col-12 col-sm-6" *ngFor="let didKey of didKeys">
+                <div class="info-box">
+                  <div class="info-row">
+                    <div class="label">Alias</div>
+                    <div class="value">{{didKey.id.split('#')[1]}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Purpose</div>
+                    <div class="value">{{didKey.purpose.join(', ')}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Type</div>
+                    <div class="value">{{didKey.type}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Controller</div>
+                    <div class="value">{{minDid(didKey.controller)}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Public Key</div>
+                    <div class="value">{{didKey.publicKeyBase58 ? minKey(didKey.publicKeyBase58) : minKey(didKey.publicKeyPem)}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Priority Requirement</div>
+                    <div class="value">{{didKey.priorityRequirement ? didKey.priorityRequirement : 'N/A'}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="nav-services" role="tabpanel" aria-labelledby="nav-services-tab">
+            <div class="row service-row">
+              <div class="col-12 col-sm-6" *ngFor="let service of services">
+                <div class="info-box">
+                  <div class="info-row">
+                    <div class="label">Service type</div>
+                    <div class="value">{{service.type}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Alias</div>
+                    <div class="value">{{service.id.split('#')[1]}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Service endpoint</div>
+                    <div class="value">{{service.serviceEndpoint}}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="label">Priority Requirement</div>
+                    <div class="value">{{service.priorityRequirement ? service.priorityRequirement : 'N/A'}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>

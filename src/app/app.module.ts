@@ -18,7 +18,6 @@ import { appReducers } from './core/store/app.reducers';
 import { AppRoutingModule } from './app-routing.module';
 import { AppState } from './core/store/app.state';
 import { DialogsModule } from './components/dialogs/dialogs.module';
-import { DIDModule } from './components/did/did.module';
 import { environment } from '../environments/environment';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
 import { GuardsModule } from './core/guards/guards.module';
@@ -54,7 +53,6 @@ export const metaReducers: MetaReducer<AppState>[] = environment.production || e
     BrowserModule,
     DeviceDetectorModule.forRoot(),
     DialogsModule,
-    DIDModule,
     FormsModule,
     GuardsModule,
     HighlightJsModule.forRoot({

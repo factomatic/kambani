@@ -2,12 +2,16 @@ import { sha256 } from 'js-sha256';
 import { sha512 } from 'js-sha512';
 
 function minifyPublicKey(publicKey: string) {
-  if (publicKey.length > 30) {
-    publicKey = publicKey.substring(0, 20) + '...' + publicKey.substring(publicKey.length - 10);
+  if (publicKey.length > 40) {
+    publicKey = publicKey.substring(0, 30) + '...' + publicKey.substring(publicKey.length - 10);
     return publicKey;
   }
 
   return publicKey;
+}
+
+function minifyDid(didId: string) {
+  return didId.substring(0, 30) + '...' + didId.substring(didId.length - 10);
 }
 
 function capitalize(string: string) {
@@ -135,6 +139,7 @@ function downloadFile(fileContent: string, fileName: string) {
 
 export {
   minifyPublicKey,
+  minifyDid,
   convertPemToBinary,
   arrayBufferToBase64String,
   toHexString,

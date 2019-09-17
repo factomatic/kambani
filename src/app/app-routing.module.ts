@@ -5,6 +5,7 @@ import { ActionComponent } from './components/did/action/action.component';
 import { CreateActionGuard } from './core/guards/create-action.guard';
 import { HomeComponent } from './components/home/home.component';
 import { ManageDidsComponent } from './components/did/manage-dids/manage-dids.component';
+import { PreviewDidComponent } from './components/did/preview-did/preview.did.component';
 import { SignerComponent } from './components/signer/signer.component';
 import { UpdateActionGuard } from './core/guards/update-action.guard';
 import { VaultGuard } from './core/guards/vault.guard';
@@ -16,6 +17,7 @@ const routes: Routes = [
   { path: 'vault', loadChildren: './components/vault/vault.module#VaultModule' },
   { path: 'dids/action', component: ActionComponent, canActivate: [VaultGuard] },
   { path: 'dids/manage', component: ManageDidsComponent, canActivate: [VaultGuard] },
+  { path: 'dids/preview/:id', component: PreviewDidComponent, canActivate: [VaultGuard] },
   { path: 'dids/create', loadChildren: './components/did/did.module#DIDModule', canActivate: [ CreateActionGuard ] },
   { path: 'dids/update', loadChildren: './components/did/did.module#DIDModule', canActivate: [ UpdateActionGuard ] }
 ];
