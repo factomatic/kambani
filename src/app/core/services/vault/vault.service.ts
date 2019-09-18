@@ -193,6 +193,10 @@ export class VaultService {
     return Object.keys(didDocuments);
   }
 
+  getDIDsCount(): number {
+    return Object.keys(this.getAllDIDDocuments()).length;
+  }
+
   getDIDDocument(didId: string): DIDDocument {
     const dids = this.getAllDIDDocuments();
     return dids[didId];

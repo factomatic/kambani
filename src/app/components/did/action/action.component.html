@@ -1,0 +1,30 @@
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12">
+      <div class="page-content">
+        <h1 class="page-title text-center">Choose an action</h1>
+        <form class="action-form" #actionForm="ngForm">
+          <div class="form-group">
+            <label>
+              <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="create-basic">
+              Create Paper DID (Basic Mode)
+            </label>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="create-advanced">
+              Create Paper DID (Advanced Mode)
+            </label>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="update">
+              Update Existing DID
+            </label>
+          </div>
+          <button class="btn btn-primary btn-block" mdbBtn type="button" color="primary" mdbWavesEffect [disabled]="!actionForm.valid" (click)="goToNext()"> Start </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

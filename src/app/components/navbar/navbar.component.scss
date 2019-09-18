@@ -47,6 +47,9 @@ $mainColor: #253992;
           right: 7px;
           position: absolute;
         }
+        @media only screen and (max-width: 768px){
+            display: none;
+        }
       }
       &:hover {
         .close-hint {
@@ -64,12 +67,16 @@ $mainColor: #253992;
       overflow: hidden;
       width: 100%;
       margin-bottom: 0px;
-      @media only screen and (min-width: 768px){
+    //   @media only screen and (min-width: 768px){
         position: relative;
         li {
           float: left;
           &:not(:last-child){
-            margin-right: 25px;
+            margin-right: 15px;
+            @media only screen and (min-width: 768px){
+                margin-right: 25px;
+            }
+
           }
           a {
             color: $mainColor;
@@ -96,7 +103,7 @@ $mainColor: #253992;
             }
           }
         }
-      }
+    //   }
     }
   }
 }

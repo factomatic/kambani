@@ -1,1 +1,21 @@
 @import url('https://fonts.googleapis.com/css?family=Montserrat:500,600,700,800&display=swap');
+
+#main-footer {
+  text-align: center;
+  .powered-by {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #353535;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .powered-by-logos {
+    img {
+      max-width: 49%;
+      width: 200px;
+      &:first-child {
+        margin-right: 2%;
+      }
+    }
+  }
+}

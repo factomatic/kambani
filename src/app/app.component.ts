@@ -28,6 +28,10 @@ export class AppComponent implements OnInit {
         this.zone.run(() => {
           this.router.navigate(['/vault/restore']);
         });
+      } else if (checkRequestsResponse.manageDidsRequested) {
+        this.zone.run(() => {
+          this.router.navigate(['/dids/manage']);
+        });
       } else {
         chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (pendingRequestsResponse) => {
           this.zone.run(() => {

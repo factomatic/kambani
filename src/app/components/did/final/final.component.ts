@@ -31,6 +31,6 @@ export class FinalComponent extends BaseComponent implements OnInit {
   }
 
   chooseAnotherAction() {
-    this.router.navigate([SharedRoutes.ManageDids]);
+    this.router.navigate([SharedRoutes.Action]);
   }
 }

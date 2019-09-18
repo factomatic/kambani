@@ -6,7 +6,7 @@
           <h1 class="page-title pull-left">
             Available DIDs
           </h1>
-          <a class="btn btn-success pull-right" routerLink="/dids/manage"><i class="fa fa-plus"></i> Create new</a>
+          <a class="btn btn-success pull-right" routerLink="/dids/action"><i class="fa fa-plus"></i> Create new</a>
           <div class="clearfix"></div>
         </div>
         <div class="table-holder" *ngIf="didIds.length > 0">
@@ -35,7 +35,7 @@
                   <a href="" class="counter-label">{{didDocuments[didId].service ? didDocuments[didId].service.length : 0}}</a>
                 </td>
                 <td class="text-right">
-                  <a href="javascript:;" class="btn btn-xs btn-primary"><i class="fa fa-search"></i></a>
+                  <a routerLink="/dids/preview/{{didId}}" class="btn btn-xs btn-primary"><i class="fa fa-search"></i></a>
                   <a (click)="backupDid(didId)" class="btn btn-xs btn-success"><i class="fa fa-download"></i></a>
                   <a href="javascript:;" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i></a>
                   <a href="javascript:;" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
