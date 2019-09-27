@@ -6,7 +6,7 @@
           <h1 class="page-title pull-left">
             Available DIDs
           </h1>
-          <a class="btn btn-success pull-right" routerLink="/dids/action"><i class="fa fa-plus"></i> Create new</a>
+          <a class="btn btn-success pull-right" routerLink="/dids/manage/action" (click)="isListing = false"><i class="fa fa-plus"></i> Create new</a>
           <div class="clearfix"></div>
         </div>
         <div class="table-holder" *ngIf="didIds.length > 0">
@@ -58,6 +58,15 @@
         <div class="row">
           <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!didIds || didIds.length === 0">
             <p class="text-warning text-center">You have not created any DIDs yet</p>
+          </div>
+        </div>
+      </div>
+      <div class="formScreen" [ngClass]="{'active': isListing!=true}">
+        <a class="closeForm" routerLink="/dids/manage" (click)="isListing = true"></a>
+        <div class="formContent">
+          <div class="scrollArea">
+            <h1>Create DID</h1>
+            <router-outlet></router-outlet>
           </div>
         </div>
       </div>

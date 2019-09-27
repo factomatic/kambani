@@ -1,173 +1,169 @@
-<div class="container">
-  <div class="row">
-    <div class="col-xs-12 col-sm-12 col-md-12">
-      <div class="page-content">
-        <h1 class="page-title text-center" *ngIf="selectedAction === actionType.CreateAdvanced">Create DID keys</h1>
-        <h1 class="page-title text-center" *ngIf="selectedAction === actionType.Update">Update DID keys</h1>
-        <div class="row">
-          <div class="col-xs-12 offset-sm-3 col-sm-6">
-            <fieldset class="collapsible collapsed mb-5" *ngFor="let key of componentKeys">
-              <legend (click)="collapse.toggle(); toggleKey(key.keyModel);">
-                {{key.keyModel.alias}}
-                <i class="fas fa-caret-{{key.iconPosition}} text-primary"></i>
-                <button class="btn btn-sm btn-danger pull-right" (click)="removeKey(key.keyModel)">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </legend>
-              <div mdbCollapse #collapse="bs-collapse">
-                <div class="form-group">
-                  <label class="control-label" for="purpose">Purpose type</label>
-                  <input 
-                    type="text"
-                    class="form-control input-md"
-                    id="purpose"
-                    value="{{key.keyModel.purpose}}"
-                    disabled />
-                </div>
+<div class="steper">
+  <a class="">1</a>
+  <a class="">2</a>
+  <a class="active">3</a>
+  <a class="">4</a>
+</div>
+<div class="steps-content">
+  <h3 *ngIf="selectedAction === actionType.CreateAdvanced">Create DID keys</h3>
+  <h3 *ngIf="selectedAction === actionType.Update">Update DID keys</h3>
+  <div class="collapsible collapsed mb-5" *ngFor="let key of componentKeys">
+    <h3 (click)="collapse.toggle(); toggleKey(key.keyModel);" class="withoutPlus">
+      <span>{{key.keyModel.alias}}</span>
+      <i class="fas fa-caret-{{key.iconPosition}} text-primary"></i>
+      <button class="btn btn-sm btn-danger pull-right" (click)="removeKey(key.keyModel)">
+        <i class="fas fa-trash"></i>
+      </button>
+    </h3>
+    <div mdbCollapse #collapse="bs-collapse">
+      <div class="form-group">
+        <label class="control-label" for="purpose">Purpose type</label>
+        <input
+          type="text"
+          class="form-control input-md"
+          id="purpose"
+          value="{{key.keyModel.purpose}}"
+          disabled />
+      </div>
 
-                <div class="form-group">
-                  <label class="control-label" for="type">Signature type</label>
-                  <input 
-                    type="text" 
-                    class="form-control input-md" 
-                    id="type" 
-                    value="{{key.keyModel.type}}" 
-                    disabled />
-                </div>
+      <div class="form-group">
+        <label class="control-label" for="type">Signature type</label>
+        <input
+          type="text"
+          class="form-control input-md"
+          id="type"
+          value="{{key.keyModel.type}}"
+          disabled />
+      </div>
 
-                <div class="form-group">
-                  <label class="control-label" for="keyController">Key controller</label>
-                  <input
-                    type="text"
-                    class="form-control input-md"
-                    id="keyController"
-                    #keyController="ngModel"
-                    [(ngModel)]="key.keyModel.controller"
-                    pattern="^did:factom:[abcdef0-9]{64}$"
-                    [ngClass]="{ 'invalid-border': keyController.invalid, 'disabled': key.disabled }"
-                    required />
-                  <div class="invalid-alert" *ngIf="keyController.errors && (keyController.dirty || keyController.touched)">
-                    <p *ngIf="keyController?.errors.required">Key controller is required!</p>
-                    <p *ngIf="keyController?.errors.pattern">Key controller must be a valid DID!</p>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="control-label" for="keyAlias">Alias</label>
-                  <input
-                    type="text"
-                    class="form-control input-md"
-                    id="keyAlias"
-                    #keyAlias="ngModel"
-                    [(ngModel)]="key.keyModel.alias"
-                    pattern="^[a-z0-9-]{1,32}$"
-                    [ngClass]="{ 'invalid-border': keyAlias.invalid, 'disabled': key.disabled }"
-                    aliasvalidator
-                    required />
-                  <div class="invalid-alert" *ngIf="keyAlias.errors && (keyAlias.dirty || keyAlias.touched)">
-                    <p *ngIf="keyAlias?.errors.required">Alias is required!</p>
-                    <p *ngIf="keyAlias?.errors.pattern">Alias must not be more than 32 characters long and must contain only lower-case letters, digits and hyphens!</p>
-                    <p *ngIf="keyAlias?.errors.aliasvalidator">You have already used this alias!</p>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="control-label" for="controller">Key (Base58)</label>
-                  <input type="text" class="form-control input-md" id="controller" value="{{key.keyModel.publicKey}}" disabled />
-                </div>
-
-                <div class="form-group text-center">
-                  <button type="button" mdbBtn color="warning" mdbWavesEffect (click)="edit(key)" *ngIf="key.disabled">
-                    <span class="glyphicon glyphicon-pencil"></span>
-                  </button>
-                  <button type="button" mdbBtn color="success" mdbWavesEffect (click)="confirm(key)" *ngIf="!key.disabled" [disabled]="keyController.invalid || keyAlias.invalid">
-                    <i class="fas fa-check"></i>
-                  </button>
-                </div>
-              </div>
-            </fieldset>
-            <fieldset class="collapsible collapsed">
-              <legend (click)="collapse.toggle()">Generate DID Key</legend>
-              <div mdbCollapse #collapse="bs-collapse">
-                <form [formGroup]="keyForm" (ngSubmit)="generateKey()">
-                  <div class="form-group">
-                    <label class="control-label" for="purpose">Purpose type</label>
-                    <select class="form-control" formControlName="purpose" id="purpose">
-                      <option value="publicKey">Public Key</option>
-                      <option value="authentication">Authentication Key</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group">
-                    <label class="control-label" for="type">Signature type</label>
-                    <select class="form-control" formControlName="type" id="type">
-                      <option value="Ed25519">Ed25519</option>
-                      <option value="ECDSASecp256k1">ECDSASecp256k1</option>
-                      <option value="RSA">RSA</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group">
-                    <label class="control-label" for="controller">Key controller</label>
-                    <input
-                      type="text"
-                      class="form-control input-md"
-                      formControlName="controller"
-                      id="controller"
-                      placeholder="Key controller"
-                      pattern="^did:factom:[abcdef0-9]{64}$"
-                      [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
-                    <div *ngIf="controller.errors" class="invalid-feedback">
-                      <div *ngIf="controller['errors'].required">Key controller is required!</div>
-                      <div *ngIf="controller['errors'].pattern">Key controller must be a valid DID!</div>
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label class="control-label" for="alias">Alias</label>
-                    <input
-                      type="text"
-                      class="form-control input-md"
-                      formControlName="alias" id="alias"
-                      placeholder="Alias"
-                      pattern="^[a-z0-9-]{1,32}$"
-                      [ngClass]="{ 'is-invalid': alias.touched && alias.errors }" />
-                    <div *ngIf="alias.errors" class="invalid-feedback">
-                      <div *ngIf="alias['errors'].required">Alias is required!</div>
-                      <div *ngIf="alias['errors'].pattern">Alias must not be more than 32 characters long and must contain only lower-case letters, digits and hyphens!</div>
-                      <div *ngIf="alias['errors'].taken">You have already used this alias!</div>
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label class="control-label" for="priorityRequirement">
-                      Priority Requirement
-                    </label>
-                    <input
-                      type="number"
-                      class="form-control input-md"
-                      formControlName="priorityRequirement"
-                      id="priorityRequirement"
-                      [ngClass]="{ 'is-invalid': priorityRequirement.touched && priorityRequirement.errors }" />
-                    <div *ngIf="priorityRequirement.errors" class="invalid-feedback">
-                      <div *ngIf="priorityRequirement['errors'].min">Priority requirement must be a positive number!</div>
-                      <div *ngIf="priorityRequirement['errors'].max">Priority requirement must not be bigger than 100!</div>
-                    </div>
-                  </div>
-
-                  <div class="form-group text-center">
-                    <input type="submit" mdbBtn color="success" mdbWavesEffect value="Generate key" [disabled]="keyForm.invalid" />
-                  </div>
-                </form>
-              </div>
-            </fieldset>
-            <div class="button-holder mt-4">
-              <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()">Back</button>
-              <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToNext()">{{continueButtonText}}</button>
-            </div>
-          </div>
+      <div class="form-group">
+        <label class="control-label" for="keyController">Key controller</label>
+        <input
+          type="text"
+          class="form-control input-md"
+          id="keyController"
+          #keyController="ngModel"
+          [(ngModel)]="key.keyModel.controller"
+          pattern="^did:factom:[abcdef0-9]{64}$"
+          [ngClass]="{ 'invalid-border': keyController.invalid, 'disabled': key.disabled }"
+          required />
+        <div class="invalid-alert" *ngIf="keyController.errors && (keyController.dirty || keyController.touched)">
+          <p *ngIf="keyController?.errors.required">Key controller is required!</p>
+          <p *ngIf="keyController?.errors.pattern">Key controller must be a valid DID!</p>
         </div>
+      </div>
+
+      <div class="form-group">
+        <label class="control-label" for="keyAlias">Alias</label>
+        <input
+          type="text"
+          class="form-control input-md"
+          id="keyAlias"
+          #keyAlias="ngModel"
+          [(ngModel)]="key.keyModel.alias"
+          pattern="^[a-z0-9-]{1,32}$"
+          [ngClass]="{ 'invalid-border': keyAlias.invalid, 'disabled': key.disabled }"
+          aliasvalidator
+          required />
+        <div class="invalid-alert" *ngIf="keyAlias.errors && (keyAlias.dirty || keyAlias.touched)">
+          <p *ngIf="keyAlias?.errors.required">Alias is required!</p>
+          <p *ngIf="keyAlias?.errors.pattern">Alias must not be more than 32 characters long and must contain only lower-case letters, digits and hyphens!</p>
+          <p *ngIf="keyAlias?.errors.aliasvalidator">You have already used this alias!</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="control-label" for="controller">Key (Base58)</label>
+        <input type="text" class="form-control input-md" id="controller" value="{{key.keyModel.publicKey}}" disabled />
+      </div>
+
+      <div class="form-group text-center">
+        <button type="button" mdbBtn color="warning" mdbWavesEffect (click)="edit(key)" *ngIf="key.disabled">
+          <span class="glyphicon glyphicon-pencil"></span>
+        </button>
+        <button type="button" mdbBtn color="success" mdbWavesEffect (click)="confirm(key)" *ngIf="!key.disabled" [disabled]="keyController.invalid || keyAlias.invalid">
+          <i class="fas fa-check"></i>
+        </button>
       </div>
     </div>
   </div>
+  <div class="collapsible collapsed">
+    <h3 (click)="collapse.toggle()">Generate DID Key</h3>
+    <div mdbCollapse #collapse="bs-collapse">
+      <form [formGroup]="keyForm" (ngSubmit)="generateKey()">
+        <div class="form-group">
+          <label class="control-label" for="purpose">Purpose type</label>
+          <select class="form-control" formControlName="purpose" id="purpose">
+            <option value="publicKey">Public Key</option>
+            <option value="authentication">Authentication Key</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label" for="type">Signature type</label>
+          <select class="form-control" formControlName="type" id="type">
+            <option value="Ed25519">Ed25519</option>
+            <option value="ECDSASecp256k1">ECDSASecp256k1</option>
+            <option value="RSA">RSA</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label" for="controller">Key controller</label>
+          <input
+            type="text"
+            class="form-control input-md"
+            formControlName="controller"
+            id="controller"
+            placeholder="Key controller"
+            pattern="^did:factom:[abcdef0-9]{64}$"
+            [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
+          <div *ngIf="controller.errors" class="invalid-feedback">
+            <div *ngIf="controller['errors'].required">Key controller is required!</div>
+            <div *ngIf="controller['errors'].pattern">Key controller must be a valid DID!</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label" for="alias">Alias</label>
+          <input
+            type="text"
+            class="form-control input-md"
+            formControlName="alias" id="alias"
+            placeholder="Alias"
+            pattern="^[a-z0-9-]{1,32}$"
+            [ngClass]="{ 'is-invalid': alias.touched && alias.errors }" />
+          <div *ngIf="alias.errors" class="invalid-feedback">
+            <div *ngIf="alias['errors'].required">Alias is required!</div>
+            <div *ngIf="alias['errors'].pattern">Alias must not be more than 32 characters long and must contain only lower-case letters, digits and hyphens!</div>
+            <div *ngIf="alias['errors'].taken">You have already used this alias!</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label" for="priorityRequirement">
+            Priority Requirement
+          </label>
+          <input
+            type="number"
+            class="form-control input-md"
+            formControlName="priorityRequirement"
+            id="priorityRequirement"
+            [ngClass]="{ 'is-invalid': priorityRequirement.touched && priorityRequirement.errors }" />
+          <div *ngIf="priorityRequirement.errors" class="invalid-feedback">
+            <div *ngIf="priorityRequirement['errors'].min">Priority requirement must be a positive number!</div>
+            <div *ngIf="priorityRequirement['errors'].max">Priority requirement must not be bigger than 100!</div>
+          </div>
+        </div>
+
+        <div class="form-group text-center">
+          <input type="submit" mdbBtn color="success" class="btn btn-block" mdbWavesEffect value="Generate key" [disabled]="keyForm.invalid" />
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="button-footer">
+  <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()">Back</button>
+  <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToNext()">{{continueButtonText}}</button>
 </div>

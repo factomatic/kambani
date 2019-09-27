@@ -1,26 +1,14 @@
-<div class="container">
-  <div class="row">
-    <div class="col-xs-12 col-sm-12 col-md-12">
-      <div class="page-content">
-        <h1 class="page-title text-center">
-          Select DID to Update
-        </h1>
-        <div class="row">
-          <div class="col-xs-12 offset-sm-3 col-sm-6">
-            <form [formGroup]="provideForm">
-              <div class="form-group">
-                <select class="form-control" formControlName="didId" id="didId">
-                  <option [value]="didId" *ngFor="let didId of didIds">{{didId}}</option>
-                </select>
-              </div>
-            </form>
-            <div class="button-holder mt-4">
-              <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()">Back</button>
-              <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToNext()" [disabled]="!didId.valid">Next</button>
-            </div>
-          </div>
-        </div>
+<div class="steps-content">
+    <h3>Select DID to Update</h3>
+    <form [formGroup]="provideForm">
+      <div class="form-group">
+        <select class="form-control" formControlName="didId" id="didId">
+          <option [value]="didId" *ngFor="let didId of didIds">{{didId}}</option>
+        </select>
       </div>
-    </div>
-  </div>
+    </form>
+</div>
+<div class="button-footer">
+  <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()">Back</button>
+  <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToNext()" [disabled]="!didId.valid">Next</button>
 </div>

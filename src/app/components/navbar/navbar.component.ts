@@ -22,7 +22,8 @@ export class NavbarComponent implements OnInit {
     private vaultService: VaultService) { }
 
   ngOnInit() {
-    chrome.browserAction.getBadgeText({}, (result) => {
+
+    chrome.browserAction && chrome.browserAction.getBadgeText({}, (result) => {
       this.pendingRequestsCount = parseInt(result, 10);
     });
 

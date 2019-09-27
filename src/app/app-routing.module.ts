@@ -9,17 +9,25 @@ import { PreviewDidComponent } from './components/did/preview-did/preview.did.co
 import { SignerComponent } from './components/signer/signer.component';
 import { UpdateActionGuard } from './core/guards/update-action.guard';
 import { VaultGuard } from './core/guards/vault.guard';
+import { SummaryComponent } from './components/did/summary/summary.component';
+import { FinalComponent } from './components/did/final/final.component';
+import { FinalComponentGuard } from 'src/app/core/guards/final-component.guard';
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'home' },
   { path: 'home', component: HomeComponent, canActivate: [VaultGuard] },
   { path: 'signer', component: SignerComponent, canActivate: [VaultGuard] },
   { path: 'vault', loadChildren: './components/vault/vault.module#VaultModule' },
-  { path: 'dids/action', component: ActionComponent, canActivate: [VaultGuard] },
-  { path: 'dids/manage', component: ManageDidsComponent, canActivate: [VaultGuard] },
+  { path: 'dids/manage', component: ManageDidsComponent, canActivate: [VaultGuard], children: [
+    // {path: '', redirectTo: 'action'},
+    { path: 'action', component: ActionComponent },
+    { path: 'summary', component: SummaryComponent },
+    { path: 'final', component: FinalComponent, canActivate: [ FinalComponentGuard ] },
+    { path: 'create', loadChildren: './components/did/did.module#DIDModule', canActivate: [ CreateActionGuard ] },
+    { path: 'update', loadChildren: './components/did/did.module#DIDModule', canActivate: [ UpdateActionGuard ] }
+
+  ] },
   { path: 'dids/preview/:id', component: PreviewDidComponent, canActivate: [VaultGuard] },
-  { path: 'dids/create', loadChildren: './components/did/did.module#DIDModule', canActivate: [ CreateActionGuard ] },
-  { path: 'dids/update', loadChildren: './components/did/did.module#DIDModule', canActivate: [ UpdateActionGuard ] }
 ];
 
 @NgModule({

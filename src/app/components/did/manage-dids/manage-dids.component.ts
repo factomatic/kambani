@@ -10,6 +10,7 @@ import { downloadFile } from 'src/app/core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-manage-dids',
@@ -19,14 +20,19 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
 export class ManageDidsComponent implements OnInit {
   public didIds: string[] = [];
   public didDocuments: object;
-
+  public isListing:boolean;
   constructor(
     private dialogsService: DialogsService,
     private toastr: ToastrService,
-    private vaultService: VaultService) { }
+    private vaultService: VaultService,
+    private router: Router) { }
 
   ngOnInit() {
-    chrome.tabs.getCurrent(function(tab) {
+
+
+    this.isListing = this.router.url == '/dids/manage';
+
+    chrome.tabs && chrome.tabs.getCurrent(function(tab) {
       if (tab === undefined) {
         chrome.runtime.sendMessage({type: ChromeMessageType.ManageDidsRequest}, (response) => {
           if (response.success) {
@@ -45,6 +51,8 @@ export class ManageDidsComponent implements OnInit {
 
     this.didDocuments = this.vaultService.getAllDIDDocuments();
     this.didIds = Object.keys(this.didDocuments);
+
+
   }
 
   backupDid(didId: string) {

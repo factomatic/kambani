@@ -1,4 +1,4 @@
 export enum SharedRoutes {
-  Action = '/dids/action',
+  Action = '/dids/manage/action',
   ManageDids = '/dids/manage'
 }

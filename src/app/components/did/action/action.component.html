@@ -1,30 +1,20 @@
-<div class="container">
-  <div class="row">
-    <div class="col-xs-12 col-sm-12 col-md-12">
-      <div class="page-content">
-        <h1 class="page-title text-center">Choose an action</h1>
-        <form class="action-form" #actionForm="ngForm">
-          <div class="form-group">
-            <label>
-              <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="create-basic">
-              Create Paper DID (Basic Mode)
-            </label>
-          </div>
-          <div class="form-group">
-            <label>
-              <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="create-advanced">
-              Create Paper DID (Advanced Mode)
-            </label>
-          </div>
-          <div class="form-group">
-            <label>
-              <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="update">
-              Update Existing DID
-            </label>
-          </div>
-          <button class="btn btn-primary btn-block" mdbBtn type="button" color="primary" mdbWavesEffect [disabled]="!actionForm.valid" (click)="goToNext()"> Start </button>
-        </form>
-      </div>
+<div class="steps-content">
+  <form class="action-form" #actionForm="ngForm">
+    <h3>Choose an action</h3>
+    <div class="choose-action">
+      <label [ngClass]="{'active': actionType=='create-basic'}">
+        <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="create-basic">
+        Create Paper DID (Basic Mode)
+      </label>
+      <label [ngClass]="{'active': actionType=='create-advanced'}">
+        <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="create-advanced">
+        Create Paper DID (Advanced Mode)
+      </label>
+      <label [ngClass]="{'active': actionType=='update'}">
+        <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="update">
+        Update Existing DID
+      </label>
+      <button class="btn btn-primary btn-block next-step" mdbBtn type="button" color="primary" mdbWavesEffect [disabled]="!actionForm.valid" (click)="goToNext()">Next</button>
     </div>
-  </div>
+  </form>
 </div>
