@@ -8,7 +8,7 @@
   <h3 *ngIf="selectedAction === actionType.CreateAdvanced">
     Add services
     <ng-template #tipContent>{{headerTooltipMessage}} <b>{{headerBoldPartTooltipMessage}}</b></ng-template>
-    <i class="fas fa-info-circle fa-sm text-primary" [ngbTooltip]="tipContent" tooltipClass="custom-tooltip"></i>
+    <i class="fas fa-info-circle fa-sm text-primary" [ngbTooltip]="tipContent" tooltipClass="custom-tooltip" placement="bottom"></i>
   </h3>
   <h3 *ngIf="selectedAction === actionType.Update">Update services</h3>
   <div class="collapsible collapsed mb-5" *ngFor="let service of services">
