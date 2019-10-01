@@ -19,7 +19,6 @@ export class AppComponent implements OnInit {
     private zone: NgZone) { }
 
   ngOnInit() {
-
     try {
       chrome.runtime.sendMessage({type: ChromeMessageType.CheckRequests}, (checkRequestsResponse) => {
         if (checkRequestsResponse.importKeysRequested) {
@@ -46,7 +45,8 @@ export class AppComponent implements OnInit {
       });
     }
     catch(err){
-      
+      console.error("This app should run as a Chrome extension.");
+      throw(err);
     }
   }
 }
