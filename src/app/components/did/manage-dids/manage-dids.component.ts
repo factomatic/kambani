@@ -1,16 +1,21 @@
 /// <reference types="chrome" />
 
 import { Component, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { ToastrService } from 'ngx-toastr';
 
-import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
+import { ActionType } from 'src/app/core/enums/action-type';
+import { AppState } from 'src/app/core/store/app.state';
 import { BackupResultModel } from 'src/app/core/models/backup-result.model';
+import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
+import { DIDService } from 'src/app/core/services/did/did.service';
 import { downloadFile } from 'src/app/core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
+import { SelectAction } from 'src/app/core/store/action/action.actions';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
-import { Router, RouterModule } from '@angular/router';
+import { WorkflowService } from 'src/app/core/services/workflow/workflow.service';
 
 @Component({
   selector: 'app-manage-dids',
@@ -19,19 +24,22 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class ManageDidsComponent implements OnInit {
   public didIds: string[] = [];
+  public displayedDidIds: string[] = [];
   public didDocuments: object;
-  public isListing:boolean;
+  public formScreenOpen: boolean = false;
+  public pageSize: number = 10;
+  public currentPage: number = 1;
+  public currentStartIndex = 0;
+
   constructor(
     private dialogsService: DialogsService,
+    private didService: DIDService,
+    private store: Store<AppState>,
     private toastr: ToastrService,
     private vaultService: VaultService,
-    private router: Router) { }
+    private workflowService: WorkflowService) { }
 
   ngOnInit() {
-
-
-    this.isListing = this.router.url == '/dids/manage';
-
     chrome.tabs && chrome.tabs.getCurrent(function(tab) {
       if (tab === undefined) {
         chrome.runtime.sendMessage({type: ChromeMessageType.ManageDidsRequest}, (response) => {
@@ -51,8 +59,7 @@ export class ManageDidsComponent implements OnInit {
 
     this.didDocuments = this.vaultService.getAllDIDDocuments();
     this.didIds = Object.keys(this.didDocuments);
-
-
+    this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
   }
 
   backupDid(didId: string) {
@@ -74,6 +81,26 @@ export class ManageDidsComponent implements OnInit {
             });
         }
       });
+  }
+
+  updateDid(didId: string) {
+    this.store.dispatch(new SelectAction(ActionType.Update));
+    this.workflowService.moveToNextStep();
+    this.didService.loadDIDForUpdate(didId);
+    this.workflowService.moveToNextStep();
+    this.formScreenOpen = true;
+  }
+
+  closeFormScreen() {
+    this.formScreenOpen = false;
+    this.didDocuments = this.vaultService.getAllDIDDocuments();
+    this.didIds = Object.keys(this.didDocuments);
+  }
+
+  changePage (page) {
+    this.currentPage = page;
+    this.currentStartIndex = (this.currentPage - 1) * this.pageSize;
+    this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
   }
 
   private postProcessDidBackupFile(encryptedFile: string, didId: string) {

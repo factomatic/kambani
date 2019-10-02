@@ -1,7 +1,6 @@
 $mainColor: #2F5BE7;
 .table-holder {
   margin: 20px 0px;
-  overflow-x: scroll;
   table {
     width: 100%;
     white-space: nowrap;
@@ -34,12 +33,12 @@ $mainColor: #2F5BE7;
           background: $mainColor;
           color: #fff;
           border-radius: 50%;
-          transition: box-shadow 0.3s ease;
+          // transition: box-shadow 0.3s ease;
           font-size: 12px;
-          &:hover {
-            text-decoration: none;
-            box-shadow: 0 0 0 3px rgba(47, 91, 231, 0.5);
-          }
+          // &:hover {
+          //   text-decoration: none;
+          //   box-shadow: 0 0 0 3px rgba(47, 91, 231, 0.5);
+          // }
         }
         td:last-child {
           a:not(:last-child) {
