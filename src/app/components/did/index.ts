@@ -6,6 +6,7 @@ import { ManagementKeysComponent } from './management-keys/management-keys.compo
 import { PreviewDidComponent } from './preview-did/preview.did.component';
 import { ProvideDidComponent } from './provide-did/provide-did.component';
 import { ServicesComponent } from './services/services.component';
+import { StepperComponent } from './stepper/stepper.component';
 import { SummaryComponent } from './summary/summary.component';
 
 export const didComponents = [
@@ -17,5 +18,6 @@ export const didComponents = [
   PreviewDidComponent,
   ProvideDidComponent,
   ServicesComponent,
+  StepperComponent,
   SummaryComponent
 ];
