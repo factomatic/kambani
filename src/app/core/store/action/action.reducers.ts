@@ -16,7 +16,8 @@ export function actionReducers(state: ActionState = initialState, action) {
       });
     case SELECT_ACTION:
       return Object.assign({}, state, {
-        selectedAction: action.payload
+        selectedAction: action.payload,
+        currentStepIndex: 0
       });
     default:
       return state;

@@ -19,7 +19,6 @@ const actionRoutes = {
   ],
   [ActionType.Update]: [
     SharedRoutes.Action,
-    UpdateRoutes.Provide,
     UpdateRoutes.ManagementKeys,
     UpdateRoutes.DidKeys,
     UpdateRoutes.Services,

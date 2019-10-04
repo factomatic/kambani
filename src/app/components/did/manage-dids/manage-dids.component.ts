@@ -85,7 +85,6 @@ export class ManageDidsComponent implements OnInit {
 
   updateDid(didId: string) {
     this.store.dispatch(new SelectAction(ActionType.Update));
-    this.workflowService.moveToNextStep();
     this.didService.loadDIDForUpdate(didId);
     this.workflowService.moveToNextStep();
     this.formScreenOpen = true;
