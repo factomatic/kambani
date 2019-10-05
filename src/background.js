@@ -1,7 +1,6 @@
 /// <reference types="chrome" />
 
 const NEW_TAB_OPEN = 'newTabOpen';
-const IMPORT_KEYS_REQUEST = 'importKeysRequest';
 const RESTORE_VAULT_REQUEST = 'restoreVaultRequest';
 const MANAGE_DIDS_REQUEST = 'manageDidsRequest';
 const CHECK_REQUESTS = 'checkRequests';
@@ -16,7 +15,6 @@ const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
   let contentsToSign = [];
   let responseCallbacks = [];
   let currentRequestedContentIndex = -1;
-  let importKeysRequested = false;
   let restoreVaultRequested = false;
   let manageDidsRequested = false;
 
@@ -24,10 +22,6 @@ const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
 
   chrome.runtime.onMessage.addListener((msg, sender, response) => {
     switch (msg.type) {
-      case IMPORT_KEYS_REQUEST:
-        importKeysRequested = true;
-        response({success: true});
-        break;
       case RESTORE_VAULT_REQUEST:
         restoreVaultRequested = true;
         response({success: true});
@@ -38,13 +32,11 @@ const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
         break;
       case CHECK_REQUESTS:
         response({
-          importKeysRequested: importKeysRequested,
           restoreVaultRequested: restoreVaultRequested,
           manageDidsRequested: manageDidsRequested
         });
         break;
       case NEW_TAB_OPEN:
-        importKeysRequested = false;
         restoreVaultRequested = false;
         manageDidsRequested = false;
         break;

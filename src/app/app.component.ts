@@ -21,11 +21,7 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     try {
       chrome.runtime.sendMessage({type: ChromeMessageType.CheckRequests}, (checkRequestsResponse) => {
-        if (checkRequestsResponse.importKeysRequested) {
-          this.zone.run(() => {
-            this.router.navigate(['/vault/import']);
-          });
-        } else if (checkRequestsResponse.restoreVaultRequested) {
+        if (checkRequestsResponse.restoreVaultRequested) {
           this.zone.run(() => {
             this.router.navigate(['/vault/restore']);
           });
