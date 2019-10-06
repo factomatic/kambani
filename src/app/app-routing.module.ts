@@ -15,11 +15,13 @@ const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [VaultGuard] },
   { path: 'signer', component: SignerComponent, canActivate: [VaultGuard] },
   { path: 'vault', loadChildren: './components/vault/vault.module#VaultModule' },
-  { path: 'dids/action', component: ActionComponent, canActivate: [VaultGuard] },
-  { path: 'dids/manage', component: ManageDidsComponent, canActivate: [VaultGuard] },
+  { path: 'dids/manage', component: ManageDidsComponent, canActivate: [VaultGuard], children: [
+    { path: 'action', component: ActionComponent },
+    { path: 'create', loadChildren: './components/did/did.module#DIDModule', canActivate: [ CreateActionGuard ] },
+    { path: 'update', loadChildren: './components/did/did.module#DIDModule', canActivate: [ UpdateActionGuard ] }
+  ] },
   { path: 'dids/preview/:id', component: PreviewDidComponent, canActivate: [VaultGuard] },
-  { path: 'dids/create', loadChildren: './components/did/did.module#DIDModule', canActivate: [ CreateActionGuard ] },
-  { path: 'dids/update', loadChildren: './components/did/did.module#DIDModule', canActivate: [ UpdateActionGuard ] }
+  { path: '**', component: HomeComponent, canActivate: [VaultGuard] }
 ];
 
 @NgModule({

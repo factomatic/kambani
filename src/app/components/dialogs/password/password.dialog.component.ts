@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   templateUrl: './password.dialog.component.html',
+  styleUrls: ['./password.dialog.component.scss']
 })
 
 export class PasswordDialogComponent {

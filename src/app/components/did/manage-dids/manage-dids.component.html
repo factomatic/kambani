@@ -3,10 +3,7 @@
     <div class="col-xs-12 col-sm-12 col-md-12">
       <div class="page-content">
         <div class="page-header">
-          <h1 class="page-title pull-left">
-            Available DIDs
-          </h1>
-          <a class="btn btn-success pull-right" routerLink="/dids/action"><i class="fa fa-plus"></i> Create new</a>
+          <a class="btn btn-success pull-right" routerLink="/dids/manage/action" (click)="formScreenOpen = true"><i class="fa fa-plus"></i> Create new</a>
           <div class="clearfix"></div>
         </div>
         <div class="table-holder" *ngIf="didIds.length > 0">
@@ -15,49 +12,58 @@
               <tr>
                 <th>DID</th>
                 <th>Nickname</th>
-                <th class="text-center">M Keys</th>
-                <th class="text-center">D Keys</th>
+                <th class="text-center">MGMT Keys</th>
+                <th class="text-center">DID Keys</th>
                 <th class="text-center">Services</th>
                 <th class="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let didId of didIds">
+              <tr *ngFor="let didId of displayedDidIds">
                 <td><span>{{didId}}</span></td>
                 <td>MyFirstDID</td>
                 <td class="text-center">
-                  <a href="" class="counter-label">{{didDocuments[didId].managementKey ? didDocuments[didId].managementKey.length : 0}}</a>
+                  <div class="counter-label">{{didDocuments[didId].managementKey ? didDocuments[didId].managementKey.length : 0}}</div>
                 </td>
                 <td class="text-center">
-                  <a href="" class="counter-label">{{didDocuments[didId].didKey ? didDocuments[didId].didKey.length : 0}}</a>
+                  <div class="counter-label">{{didDocuments[didId].didKey ? didDocuments[didId].didKey.length : 0}}</div>
                 </td>
                 <td class="text-center">
-                  <a href="" class="counter-label">{{didDocuments[didId].service ? didDocuments[didId].service.length : 0}}</a>
+                  <div class="counter-label">{{didDocuments[didId].service ? didDocuments[didId].service.length : 0}}</div>
                 </td>
                 <td class="text-right">
                   <a routerLink="/dids/preview/{{didId}}" class="btn btn-xs btn-primary"><i class="fa fa-search"></i></a>
                   <a (click)="backupDid(didId)" class="btn btn-xs btn-success"><i class="fa fa-download"></i></a>
-                  <a href="javascript:;" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i></a>
+                  <a (click)="updateDid(didId)" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i></a>
                   <a href="javascript:;" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div class="row" *ngIf="didIds.length > 0">
+        <div class="row" *ngIf="didIds.length > 10">
           <div class="col-6">
             <div class="paginator">
-              <a href="javascript:;" class="disabled">Prev</a>
-              <a href="javascript:;" class="">Next</a>
+              <a (click)="changePage(currentPage - 1)" [ngClass]="currentPage == 1 ? 'disabled' : ''">Prev</a>
+              <a (click)="changePage(currentPage + 1)" [ngClass]="currentStartIndex + pageSize < didIds.length ? '' : 'disabled'">Next</a>
             </div>
           </div>
           <div class="col-6 text-right">
-            1 - 10 from 30
+            {{currentStartIndex + 1}} - {{currentStartIndex + pageSize < didIds.length ? currentStartIndex + pageSize : didIds.length}} from {{didIds.length}}
           </div>
         </div>
         <div class="row">
           <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!didIds || didIds.length === 0">
             <p class="text-warning text-center">You have not created any DIDs yet</p>
+          </div>
+        </div>
+      </div>
+      <div class="formScreen" [ngClass]="{'active': formScreenOpen}">
+        <a class="closeForm" routerLink="/dids/manage" (click)="closeFormScreen()"></a>
+        <div class="formContent">
+          <div class="scrollArea">
+            <app-stepper></app-stepper>
+            <router-outlet></router-outlet>
           </div>
         </div>
       </div>

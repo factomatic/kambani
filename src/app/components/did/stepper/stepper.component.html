@@ -1,0 +1,3 @@
+<div class="steper" *ngIf="isVisible">
+  <a *ngFor="let step of [1,2,3]" [ngClass]="step <= currentStepIndex ? 'active' : ''">{{step}}</a>
+</div>

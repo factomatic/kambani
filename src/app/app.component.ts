@@ -19,28 +19,30 @@ export class AppComponent implements OnInit {
     private zone: NgZone) { }
 
   ngOnInit() {
-    chrome.runtime.sendMessage({type: ChromeMessageType.CheckRequests}, (checkRequestsResponse) => {
-      if (checkRequestsResponse.importKeysRequested) {
-        this.zone.run(() => {
-          this.router.navigate(['/vault/import']);
-        });
-      } else if (checkRequestsResponse.restoreVaultRequested) {
-        this.zone.run(() => {
-          this.router.navigate(['/vault/restore']);
-        });
-      } else if (checkRequestsResponse.manageDidsRequested) {
-        this.zone.run(() => {
-          this.router.navigate(['/dids/manage']);
-        });
-      } else {
-        chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (pendingRequestsResponse) => {
+    try {
+      chrome.runtime.sendMessage({type: ChromeMessageType.CheckRequests}, (checkRequestsResponse) => {
+        if (checkRequestsResponse.restoreVaultRequested) {
           this.zone.run(() => {
-            if (pendingRequestsResponse.pendingRequestsCount > 0) {
-              this.router.navigate(['signer']);
-            }
+            this.router.navigate(['/vault/restore']);
           });
-        });
-      }
-    });
+        } else if (checkRequestsResponse.manageDidsRequested) {
+          this.zone.run(() => {
+            this.router.navigate(['/dids/manage']);
+          });
+        } else {
+          chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (pendingRequestsResponse) => {
+            this.zone.run(() => {
+              if (pendingRequestsResponse.pendingRequestsCount > 0) {
+                this.router.navigate(['signer']);
+              }
+            });
+          });
+        }
+      });
+    }
+    catch(err){
+      console.error("This app should run as a Chrome extension.");
+      throw(err);
+    }
   }
 }

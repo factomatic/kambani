@@ -1,12 +1,14 @@
-.btn-warning:focus {
-  outline: none !important;
-  border: none !important;
+.steps-content {
+  h3 {
+    text-align: center;
+    font-size: 15px !important;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin: 35px 0px;
+  }
 }
-.button-holder {
-  .pull-left {
-    float: left;
-  }
-  .pull-right {
-    float: right;
-  }
+.button-footer {
+  bottom: 20px;
+  position: absolute;
+  width: calc(100% - 30px);
 }
