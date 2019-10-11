@@ -28,17 +28,26 @@ export class SigningService {
 
   constructor(private vaultService: VaultService) { }
 
-  signData(data: string, publicKey: string, vaultPassword: string): Observable<SignatureDataModel> {
+  signData(data: string, signingKeyModel: DidKeyEntryModel, vaultPassword: string): Observable<SignatureDataModel> {
     return defer(async () => {
       try {
+        const signingKeyIdParts = signingKeyModel.id.split('#');
+        const didId = signingKeyIdParts[0];
+        const signingKeyAlias = signingKeyIdParts[1];
+
         const vault = this.vaultService.getVault();
-        const decryptedVault = JSON.parse(await encryptor.decrypt(vaultPassword, vault));
-        const privateKey = decryptedVault[publicKey].privateKey;
-        const signatureType = decryptedVault[publicKey].type;
+        const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
+        const didKeys = decryptedVault[didId].didKeys;
+        const privateKey = didKeys[signingKeyAlias];
         const dataToSign = Buffer.from(data, 'utf8');
+        const signatureType = signingKeyModel.type.replace('VerificationKey', '') as SignatureType;
         const signature = await this.getSignature(dataToSign, signatureType, privateKey);
 
-        return new SignatureDataModel(data, signatureType, publicKey, signature);
+        return new SignatureDataModel(
+          data,
+          signatureType,
+          signingKeyModel.publicKeyBase58 ? signingKeyModel.publicKeyBase58 : signingKeyModel.publicKeyPem,
+          signature);
       } catch {
         return undefined;
       }
