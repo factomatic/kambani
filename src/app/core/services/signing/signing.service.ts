@@ -8,6 +8,7 @@ import { defer, Observable } from 'rxjs';
 import { Injectable, Output, EventEmitter } from '@angular/core';
 
 import { arrayBufferToBase64String, convertPemToBinary, calculateDoubleSha256 } from '../../utils/helpers';
+import { DIDDocument } from '../../interfaces/did-document';
 import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { EntryType } from '../../enums/entry-type';
 import { environment } from 'src/environments/environment';
@@ -75,7 +76,7 @@ export class SigningService {
   }
 
   getAvailableManagementKeysForSigning(didId: string, entry: UpdateEntryDocument): ManagementKeyEntryModel[] {
-    const didDocument = this.vaultService.getDIDDocument(didId);
+    const didDocument: DIDDocument = this.vaultService.getDIDPublicInfo(didId).didDocument;
     const managementKeys = didDocument.managementKey;
     let requiredPriority = 101;
 

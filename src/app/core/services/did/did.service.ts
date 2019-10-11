@@ -113,7 +113,7 @@ export class DIDService {
 
   loadDIDForUpdate(didId: string): void {
     this.id = didId;
-    const didDocument: DIDDocument = this.vaultService.getDIDDocument(didId);
+    const didDocument: DIDDocument = this.vaultService.getDIDPublicInfo(didId).didDocument;
     this.parseDocument(didDocument);
   }
 
