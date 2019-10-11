@@ -1,6 +1,7 @@
 import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 
+import { DIDDocument } from 'src/app/core/interfaces/did-document';
 import { DidKeyEntryModel } from 'src/app/core/interfaces/did-key-entry';
 import { ManagementKeyEntryModel } from 'src/app/core/interfaces/management-key-entry';
 import { minifyPublicKey, minifyDid } from 'src/app/core/utils/helpers';
@@ -16,6 +17,7 @@ export class PreviewDidComponent implements OnInit {
   public minKey = minifyPublicKey;
   public minDid = minifyDid;
   public didId: string;
+  public nickname: string;
   public managementKeys: ManagementKeyEntryModel[];
   public didKeys: DidKeyEntryModel[];
   public services: ServiceEntryModel[];
@@ -27,7 +29,9 @@ export class PreviewDidComponent implements OnInit {
   ngOnInit() {
     this.didId = this.route.snapshot.paramMap.get('id');
 
-    const didDocument = this.vaultService.getDIDDocument(this.didId);
+    const didPublicInfo = this.vaultService.getDIDPublicInfo(this.didId);
+    const didDocument: DIDDocument = didPublicInfo.didDocument;
+    this.nickname = didPublicInfo.nickname;
     this.managementKeys = didDocument.managementKey;
     this.didKeys = didDocument.didKey ? didDocument.didKey : [];
     this.services = didDocument.service ? didDocument.service : [];

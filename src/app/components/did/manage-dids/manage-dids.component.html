@@ -21,15 +21,15 @@
             <tbody>
               <tr *ngFor="let didId of displayedDidIds">
                 <td><span>{{didId}}</span></td>
-                <td>MyFirstDID</td>
+                <td>{{allDIDsPublicInfo[didId].nickname}}</td>
                 <td class="text-center">
-                  <div class="counter-label">{{didDocuments[didId].managementKey ? didDocuments[didId].managementKey.length : 0}}</div>
+                  <div class="counter-label">{{allDIDsPublicInfo[didId].didDocument.managementKey ? allDIDsPublicInfo[didId].didDocument.managementKey.length : 0}}</div>
                 </td>
                 <td class="text-center">
-                  <div class="counter-label">{{didDocuments[didId].didKey ? didDocuments[didId].didKey.length : 0}}</div>
+                  <div class="counter-label">{{allDIDsPublicInfo[didId].didDocument.didKey ? allDIDsPublicInfo[didId].didDocument.didKey.length : 0}}</div>
                 </td>
                 <td class="text-center">
-                  <div class="counter-label">{{didDocuments[didId].service ? didDocuments[didId].service.length : 0}}</div>
+                  <div class="counter-label">{{allDIDsPublicInfo[didId].didDocument.service ? allDIDsPublicInfo[didId].didDocument.service.length : 0}}</div>
                 </td>
                 <td class="text-right">
                   <a routerLink="/dids/preview/{{didId}}" class="btn btn-xs btn-primary"><i class="fa fa-search"></i></a>

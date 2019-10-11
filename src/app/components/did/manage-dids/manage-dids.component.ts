@@ -25,7 +25,7 @@ import { WorkflowService } from 'src/app/core/services/workflow/workflow.service
 export class ManageDidsComponent implements OnInit {
   public didIds: string[] = [];
   public displayedDidIds: string[] = [];
-  public didDocuments: object;
+  public allDIDsPublicInfo: object;
   public formScreenOpen: boolean = false;
   public pageSize: number = 10;
   public currentPage: number = 1;
@@ -57,9 +57,7 @@ export class ManageDidsComponent implements OnInit {
       }
     });
 
-    this.didDocuments = this.vaultService.getAllDIDDocuments();
-    this.didIds = Object.keys(this.didDocuments);
-    this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+    this.getDIDsInfo();
   }
 
   backupDid(didId: string) {
@@ -92,14 +90,18 @@ export class ManageDidsComponent implements OnInit {
 
   closeFormScreen() {
     this.formScreenOpen = false;
-    this.didDocuments = this.vaultService.getAllDIDDocuments();
-    this.didIds = Object.keys(this.didDocuments);
-    this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+    this.getDIDsInfo();
   }
 
   changePage (page) {
     this.currentPage = page;
     this.currentStartIndex = (this.currentPage - 1) * this.pageSize;
+    this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+  }
+
+  private getDIDsInfo() {
+    this.allDIDsPublicInfo = this.vaultService.getAllDIDsPublicInfo();
+    this.didIds = Object.keys(this.allDIDsPublicInfo);
     this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
   }
 
