@@ -94,6 +94,7 @@ export class ManageDidsComponent implements OnInit {
     this.formScreenOpen = false;
     this.didDocuments = this.vaultService.getAllDIDDocuments();
     this.didIds = Object.keys(this.didDocuments);
+    this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
   }
 
   changePage (page) {
