@@ -25,9 +25,10 @@ export class SignerComponent implements OnInit {
   public contentPretified: string;
   public from: string;
   public selectedDIDId: string;
+  public selectedKey: DidKeyEntryModel;
   public didIds: string[] = [];
   public minifyPublicKey = minifyPublicKey;
-  private didKeys = {};
+  public allDIDsPublicInfo = {};
   private dialogMessage = 'Enter your vault password to sign the data';
 
   constructor(
@@ -44,8 +45,12 @@ export class SignerComponent implements OnInit {
     this.getDIDIds();
   }
 
-  onSelectChange(selectedDIDId) {
+  onSelectDIDChange(selectedDIDId: string) {
     this.selectedDIDId= selectedDIDId;
+  }
+
+  onSelectKeyChange(selectedKey: DidKeyEntryModel) {
+    this.selectedKey = selectedKey;
   }
 
   signData() {
@@ -54,10 +59,8 @@ export class SignerComponent implements OnInit {
         if (vaultPassword) {
           this.spinner.show();
 
-          const signingKey: DidKeyEntryModel = this.didKeys[this.selectedDIDId][0];
-
           this.signingService
-            .signData(this.content, signingKey, vaultPassword)
+            .signData(this.content, this.selectedKey, vaultPassword)
             .subscribe((signatureData: SignatureDataModel) => {
               if (signatureData) {
                 chrome.runtime.sendMessage({type: ChromeMessageType.SendSignedDataBack, data: signatureData});
@@ -87,18 +90,22 @@ export class SignerComponent implements OnInit {
     this.getContentToSign();
   }
 
+  getDIDKeys(): DidKeyEntryModel[] {
+    return this.allDIDsPublicInfo[this.selectedDIDId].didDocument.didKey;
+  }
+
   private getDIDIds() {
-    const didDocuments = this.vaultService.getAllDIDDocuments();
-    for (const didId in didDocuments) {
-      const didIdDocument = didDocuments[didId];
-      if (didIdDocument.didKey && didIdDocument.didKey.length > 0) {
+    this.allDIDsPublicInfo = this.vaultService.getAllDIDsPublicInfo();
+    for (const didId in this.allDIDsPublicInfo) {
+      const didDocument = this.allDIDsPublicInfo[didId].didDocument;
+      if (didDocument.didKey && didDocument.didKey.length > 0) {
         this.didIds.push(didId);
-        this.didKeys[didId] = didIdDocument.didKey;
       }
     }
     
-    if (this.didIds) {
+    if (this.didIds.length > 0) {
       this.selectedDIDId = this.didIds[0];
+      this.selectedKey = this.getDIDKeys()[0];
     }
   }
 

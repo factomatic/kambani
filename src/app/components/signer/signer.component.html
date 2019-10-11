@@ -15,10 +15,18 @@
               <pre><code mwlHighlightJs [source]='contentPretified' language="json"></code></pre>
             </div>
             <div *ngIf="didIds.length > 0">
-              <label for="selectDID">Choose DID to sign with:</label>
-              <select class="form-control" id="selectDID" (ngModelChange)="onSelectChange($event)" [ngModel]="selectedDIDId">
-                <option [value]="didId" *ngFor="let didId of didIds">{{didId}}</option>
-              </select>
+              <div>
+                <label for="selectDID">Choose DID to sign with:</label>
+                <select class="form-control" id="selectDID" (ngModelChange)="onSelectDIDChange($event)" [ngModel]="selectedDIDId">
+                  <option [value]="didId" *ngFor="let didId of didIds">{{allDIDsPublicInfo[didId].nickname}}</option>
+                </select>
+              </div>
+              <div>
+                <label for="selectKey">Choose key to sign with:</label>
+                <select class="form-control" id="selectKey" (ngModelChange)="onSelectKeyChange($event)" [ngModel]="selectedKey">
+                  <option [value]="key" *ngFor="let key of getDIDKeys()">{{key.id.split('#')[1]}}</option>
+                </select>
+              </div>
             </div>
             <div class="center mt-5" *ngIf="didIds.length === 0">
               <p class="text-warning text-center">You need to create a DID in order to sign the data.</p>
