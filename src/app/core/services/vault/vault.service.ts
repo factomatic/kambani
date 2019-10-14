@@ -30,7 +30,8 @@ export class VaultService {
       this.localStorageStore.putState({
         vault: encryptedVault,
         didsPublicInfo: JSON.stringify({}),
-        createdDIDsCount: 0
+        createdDIDsCount: 0,
+        signedRequestsCount: 0
       });
     });
   }
@@ -72,11 +73,13 @@ export class VaultService {
             didDocument: didDocument
           };
 
-          this.localStorageStore.putState({
+          const newState = Object.assign({}, state, {
             vault: encryptedVault,
             didsPublicInfo: JSON.stringify(didsPublicInfo),
             createdDIDsCount: createdDIDsCount
           });
+
+          this.localStorageStore.putState(newState);
 
           return new ResultModel(true, 'DID was successfully saved');
         } catch {
@@ -126,10 +129,12 @@ export class VaultService {
             didDocument: didDocument
           };
 
-          this.localStorageStore.putState({
+          const newState = Object.assign({}, state, {
             vault: encryptedVault,
             didsPublicInfo: JSON.stringify(didsPublicInfo)
           });
+
+          this.localStorageStore.putState(newState);
 
           return new ResultModel(true, 'Vault state was successfully updated');
         } catch {
@@ -184,6 +189,15 @@ export class VaultService {
     });
   }
 
+  updateSignedRequestsCount() {
+    const state = this.localStorageStore.getState();
+    const newState = Object.assign({}, state, {
+      signedRequestsCount: state.signedRequestsCount + 1
+    });
+
+    this.localStorageStore.putState(newState);
+  }
+
   getVault(): string {
     return this.localStorageStore.getState().vault;
   }
@@ -194,6 +208,10 @@ export class VaultService {
 
   getDIDsCount(): number {
     return Object.keys(this.getAllDIDsPublicInfo()).length;
+  }
+
+  getSignedRequestsCount(): number {
+    return this.localStorageStore.getState().signedRequestsCount;
   }
 
   getDIDPublicInfo(didId: string) {

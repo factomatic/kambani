@@ -43,6 +43,7 @@ export class SigningService {
         const dataToSign = Buffer.from(data, 'utf8');
         const signatureType = signingKeyModel.type.replace('VerificationKey', '') as SignatureType;
         const signature = await this.getSignature(dataToSign, signatureType, privateKey);
+        this.vaultService.updateSignedRequestsCount();
 
         return new SignatureDataModel(
           data,
