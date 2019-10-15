@@ -15,6 +15,7 @@ export class HomeComponent implements OnInit {
   public pendingRequestsCount: number = 0;
   public signedRequestsCount: number = 0;
   public didsCount: number;
+  private signedRequestsData: number[];
   private labels: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   
   constructor(
@@ -24,25 +25,24 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     this.didsCount = this.vaultService.getDIDsCount();
     this.signedRequestsCount = this.vaultService.getSignedRequestsCount();
+    this.signedRequestsData = this.vaultService.getSignedRequestsData();
     
     chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (response) => {
       this.zone.run(() => {
         this.pendingRequestsCount = response.pendingRequestsCount;
       });
     });
-
-    chrome.runtime.sendMessage({type: ChromeMessageType.GetReceivedRequestsData}, (response) => {
-      const receivedData = response.receivedRequestsData;
-      const today = new Date().getDay();
-
-      const labels = this.labels.slice(today + 1, this.labels.length).concat(this.labels.slice(0, today + 1));
-      const data = receivedData.slice(today + 1, receivedData.length).concat(receivedData.slice(0, today + 1));
-
-      this.createChart(labels, data);
-    });
   }
 
-  @ViewChild('signingRequests') chart: ElementRef;
+  @ViewChild('signedRequests') chart: ElementRef;
+
+  ngAfterViewInit() {
+    const today = new Date().getDay();
+    const labels = this.labels.slice(today + 1, this.labels.length).concat(this.labels.slice(0, today + 1));
+    const data = this.signedRequestsData.slice(today + 1, this.signedRequestsData.length).concat(this.signedRequestsData.slice(0, today + 1));
+
+    this.createChart(labels, data);
+  }
 
   createChart(labels: string[], data: number[]) {
     const H = this.chart.nativeElement.getContext('2d');

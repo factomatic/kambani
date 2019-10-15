@@ -10,13 +10,10 @@ const CANCEL_SIGNING = 'cancelSigning';
 const SKIP_SIGNING = 'skipSigning';
 const SEND_SIGNED_DATA_BACK = 'sendSignedDataBack';
 const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
-const GET_RECEIVED_REQUESTS_DATA = 'getReceivedRequestsData';
 
 (function() {
   let contentsToSign = [];
   let responseCallbacks = [];
-  let receivedRequestsData = new Array(7).fill(0);
-  let dateOfLastRequest = undefined;
   let currentRequestedContentIndex = -1;
   let restoreVaultRequested = false;
   let manageDidsRequested = false;
@@ -43,27 +40,14 @@ const GET_RECEIVED_REQUESTS_DATA = 'getReceivedRequestsData';
         restoreVaultRequested = false;
         manageDidsRequested = false;
         break;
-      case GET_RECEIVED_REQUESTS_DATA:
-        response({
-          receivedRequestsData: receivedRequestsData
-        });
-        break;
       case RECEIVE_CONTENT_TO_SIGN:
         if (msg.content) {
           contentsToSign.push({
             content: msg.content,
             from: sender.url
           });
-          responseCallbacks.push(response);
 
-          // Sunday -> 0, Monday -> 1, ..., Saturday -> 6
-          let now = new Date();
-          if (dateOfLastRequest && dateOfLastRequest == now.toDateString()) {
-            receivedRequestsData[now.getUTCDay()] += 1;
-          } else {
-            receivedRequestsData[now.getUTCDay()] = 1;
-            dateOfLastRequest = now.toDateString();
-          }
+          responseCallbacks.push(response);
           
           chrome.browserAction.getBadgeText({}, function(result) {
             const number = parseInt(result) + 1;

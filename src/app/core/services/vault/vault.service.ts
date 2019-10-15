@@ -31,7 +31,9 @@ export class VaultService {
         vault: encryptedVault,
         didsPublicInfo: JSON.stringify({}),
         createdDIDsCount: 0,
-        signedRequestsCount: 0
+        signedRequestsCount: 0,
+        signedRequestsData: JSON.stringify(new Array(7).fill(0)),
+        dateOfLastSignedRequest: undefined
       });
     });
   }
@@ -189,10 +191,24 @@ export class VaultService {
     });
   }
 
-  updateSignedRequestsCount() {
+  updateSignedRequests() {
     const state = this.localStorageStore.getState();
+    let dateOfLastSignedRequest = state.dateOfLastSignedRequest;
+    let signedRequestsData = JSON.parse(state.signedRequestsData);
+
+     // Sunday -> 0, Monday -> 1, ..., Saturday -> 6
+     let now = new Date();
+     if (dateOfLastSignedRequest == now.toDateString()) {
+       signedRequestsData[now.getDay()] += 1;
+     } else {
+       signedRequestsData[now.getDay()] = 1;
+       dateOfLastSignedRequest = now.toDateString();
+     }
+
     const newState = Object.assign({}, state, {
-      signedRequestsCount: state.signedRequestsCount + 1
+      signedRequestsCount: state.signedRequestsCount + 1,
+      signedRequestsData: JSON.stringify(signedRequestsData),
+      dateOfLastSignedRequest: dateOfLastSignedRequest
     });
 
     this.localStorageStore.putState(newState);
@@ -212,6 +228,10 @@ export class VaultService {
 
   getSignedRequestsCount(): number {
     return this.localStorageStore.getState().signedRequestsCount;
+  }
+
+  getSignedRequestsData(): number[] {
+    return JSON.parse(this.localStorageStore.getState().signedRequestsData);
   }
 
   getDIDPublicInfo(didId: string) {
