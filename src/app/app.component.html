@@ -9,7 +9,7 @@
 <div class="outlet">
   <router-outlet></router-outlet>
 </div>
-<footer id="main-footer">
+<footer id="main-footer" *ngIf="router.url !== '/vault/create'">
   <div class="container mt-3">
     <p class="powered-by">Powered by</p>
     <div class="row powered-by-logos">
@@ -20,4 +20,3 @@
     </div>
   </div>
 </footer>
-

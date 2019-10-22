@@ -28,6 +28,7 @@ export class ManageDidsComponent implements OnInit {
   public allDIDsPublicInfo: object;
   public formScreenOpen: boolean = false;
   public pageSize: number = 10;
+  public didEditNickname: boolean[] = [];
   public currentPage: number = 1;
   public currentStartIndex = 0;
 
@@ -81,6 +82,10 @@ export class ManageDidsComponent implements OnInit {
       });
   }
 
+  changeToInput() {
+    console.log(123);
+  }
+
   updateDid(didId: string) {
     this.store.dispatch(new SelectAction(ActionType.Update));
     this.didService.loadDIDForUpdate(didId);
@@ -103,6 +108,9 @@ export class ManageDidsComponent implements OnInit {
     this.allDIDsPublicInfo = this.vaultService.getAllDIDsPublicInfo();
     this.didIds = Object.keys(this.allDIDsPublicInfo);
     this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+    for(var i in this.displayedDidIds){
+      this.didEditNickname[i] = false;
+     }
   }
 
   private postProcessDidBackupFile(encryptedFile: string, didId: string) {

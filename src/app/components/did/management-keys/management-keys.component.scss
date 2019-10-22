@@ -36,12 +36,17 @@ $mainColor: #2F5BE7;
     padding: 10px;
     border: 2px solid $mainColor;
     border-radius: 4px;
+    .editableArea {
+      margin-top: 35px;
+    }
     h3 {
       font-size: 15px;
       text-transform: uppercase;
       margin-top: 0px;
       text-align: left;
       position: relative;
+      overflow: hidden;
+      margin-bottom: 0px;
       cursor: pointer;
       span {
         width: calc(100% - 80px);

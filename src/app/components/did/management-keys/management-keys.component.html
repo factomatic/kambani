@@ -4,7 +4,7 @@
   </div>
   <h3 *ngIf="selectedAction === actionType.CreateAdvanced">Create management keys</h3>
   <h3 *ngIf="selectedAction === actionType.Update">Update management keys</h3>
-  <div class="collapsible collapsed mb-5" *ngFor="let key of componentKeys">
+  <div class="collapsible collapsed mb-3" *ngFor="let key of componentKeys">
     <h3 (click)="collapse.toggle(); toggleKey(key.keyModel);" class="withoutPlus">
       <span>{{key.keyModel.alias}}</span>
       <i class="fas fa-caret-{{key.iconPosition}} text-primary"></i>
@@ -12,7 +12,7 @@
         <i class="fas fa-trash"></i>
       </button>
     </h3>
-    <div mdbCollapse #collapse="bs-collapse">
+    <div mdbCollapse #collapse="bs-collapse" class="editableArea">
       <div class="form-group">
         <label class="control-label" for="type">Signature type</label>
         <input

@@ -10,6 +10,7 @@
       display: flex;
       align-items: center;
     }
+
     .form-container {
       width: 90%;
       max-width: 400px;
@@ -24,6 +25,21 @@
       .btn-primary {
         width: 100%;
         display: block;
+      }
+    }
+    @media only screen and (max-width: 768px){
+      background-image: url("/assets/crypto-auth.png");
+      background-size: cover;
+      background-position: 50% 50%;
+      .form-container {
+        border-radius: 9px;
+        background: #fff;
+        padding: 10px;
+        position: absolute;
+        top: 50%;
+        left: 5%;
+        transform: translateY(-50%);
+        max-width: none;
       }
     }
   }

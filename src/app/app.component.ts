@@ -15,7 +15,7 @@ export class AppComponent implements OnInit {
 
   constructor(
     public vaultService: VaultService,
-    private router: Router,
+    public router: Router,
     private zone: NgZone) { }
 
   ngOnInit() {

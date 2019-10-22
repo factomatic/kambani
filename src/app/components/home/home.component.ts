@@ -17,7 +17,7 @@ export class HomeComponent implements OnInit {
   public didsCount: number;
   private signedRequestsData: number[];
   private labels: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  
+
   constructor(
     private vaultService: VaultService,
     private zone: NgZone) { }
@@ -26,7 +26,7 @@ export class HomeComponent implements OnInit {
     this.didsCount = this.vaultService.getDIDsCount();
     this.signedRequestsCount = this.vaultService.getSignedRequestsCount();
     this.signedRequestsData = this.vaultService.getSignedRequestsData();
-    
+
     chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (response) => {
       this.zone.run(() => {
         this.pendingRequestsCount = response.pendingRequestsCount;
@@ -97,9 +97,18 @@ export class HomeComponent implements OnInit {
           } ],
           yAxes: [ {
             // display:false,
-            // ticks: {
-            //     display: false,
-            // }
+            ticks: {
+              suggestedMin: 0,    // minimum will be 0, unless there is a lower value.
+              userCallback: function(label, index, labels) {
+                   // when the floored value is the same as the value we have a whole number
+                   if (Math.floor(label) === label) {
+                       return label;
+                   }
+
+               },
+              // OR //
+              beginAtZero: true   // minimum value will be 0.
+            }
           } ]
         },
         title: {
