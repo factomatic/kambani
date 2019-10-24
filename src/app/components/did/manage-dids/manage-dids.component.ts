@@ -82,8 +82,10 @@ export class ManageDidsComponent implements OnInit {
       });
   }
 
-  changeToInput() {
-    console.log(123);
+  editNickname(didId: string, nickname: string) {
+    this.vaultService.updateDIDNickname(didId, nickname);
+    this.allDIDsPublicInfo[didId].nickname = nickname;
+    this.didEditNickname[didId] = false;
   }
 
   updateDid(didId: string) {
@@ -98,19 +100,39 @@ export class ManageDidsComponent implements OnInit {
     this.getDIDsInfo();
   }
 
+  search(searchTerm: string) {
+    this.didIds = [];
+    for (const didId in this.allDIDsPublicInfo) {
+      if (didId.includes(searchTerm)) {
+        this.didIds.push(didId);
+      } else if (this.allDIDsPublicInfo[didId].nickname.includes(searchTerm)) {
+        this.didIds.push(didId);
+      }
+    }
+
+    this.currentStartIndex = 0;
+    this.currentPage = 1;
+    this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+  }
+
   changePage (page) {
     this.currentPage = page;
     this.currentStartIndex = (this.currentPage - 1) * this.pageSize;
     this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
   }
 
+  anyDID() {
+    return Object.keys(this.allDIDsPublicInfo).length > 0;
+  }
+
   private getDIDsInfo() {
     this.allDIDsPublicInfo = this.vaultService.getAllDIDsPublicInfo();
     this.didIds = Object.keys(this.allDIDsPublicInfo);
     this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
-    for(var i in this.displayedDidIds){
-      this.didEditNickname[i] = false;
-     }
+
+    for(const didId in this.displayedDidIds) {
+      this.didEditNickname[didId] = false;
+    }
   }
 
   private postProcessDidBackupFile(encryptedFile: string, didId: string) {

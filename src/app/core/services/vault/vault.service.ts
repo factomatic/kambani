@@ -214,6 +214,22 @@ export class VaultService {
     this.localStorageStore.putState(newState);
   }
 
+  updateDIDNickname(didId: string, nickname: string) {
+    const state = this.localStorageStore.getState();
+    const didsPublicInfo = JSON.parse(state.didsPublicInfo);
+
+    didsPublicInfo[didId] = {
+      nickname: nickname,
+      didDocument: didsPublicInfo[didId].didDocument
+    };
+
+    const newState = Object.assign({}, state, {
+      didsPublicInfo: JSON.stringify(didsPublicInfo)
+    });
+
+    this.localStorageStore.putState(newState);
+  }
+
   getVault(): string {
     return this.localStorageStore.getState().vault;
   }

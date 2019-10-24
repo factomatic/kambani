@@ -4,7 +4,8 @@
       <div class="page-content">
         <div class="page-header">
           <div class="form-group header-search pull-left">
-            <input type="search" class="form-control" placeholder="Search" /><button class="btn btn-primary"><i class="fa fa-search"></i></button>
+            <input type="search" #searchInput class="form-control" placeholder="Search" />
+            <button class="btn btn-primary" (click)="search(searchInput.value)"><i class="fa fa-search"></i></button>
           </div>
           <a class="btn btn-success pull-right" routerLink="/dids/manage/action" (click)="formScreenOpen = true"><i class="fa fa-plus"></i> Create new</a>
           <div class="clearfix"></div>
@@ -26,7 +27,17 @@
                 <td><span>{{didId}}</span></td>
                 <td>
                   <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true">{{allDIDsPublicInfo[didId].nickname}}</a>
-                  <div class="nickname-editable" *ngIf="didEditNickname[didId]"><input type="text" name="nickname" value="{{allDIDsPublicInfo[didId].nickname}}" class="form-control" /><button class="btn btn-danger" (click)="didEditNickname[didId] = false"><i class="fa fa-times"></i></button><button class="btn btn-primary"><i class="fa fa-save"></i></button></div>
+                  <div class="nickname-editable" *ngIf="didEditNickname[didId]">
+                    <form (ngSubmit)="editNickname(didId, nickname.value)">
+                      <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}" class="form-control" />
+                      <button class="btn btn-danger" (click)="didEditNickname[didId] = false">
+                        <i class="fa fa-times"></i>
+                      </button>
+                      <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save"></i>
+                      </button>
+                    </form>
+                  </div>
                 </td>
                 <td class="text-center">
                   <div class="counter-label">{{allDIDsPublicInfo[didId].didDocument.managementKey ? allDIDsPublicInfo[didId].didDocument.managementKey.length : 0}}</div>
@@ -59,8 +70,11 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!didIds || didIds.length === 0">
+          <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!anyDID()">
             <p class="text-warning text-center">You have not created any DIDs yet</p>
+          </div>
+          <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="anyDID() && (!didIds || didIds.length === 0)">
+            <p class="text-warning text-center">DID not found</p>
           </div>
         </div>
       </div>
