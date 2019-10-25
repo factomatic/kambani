@@ -25,9 +25,10 @@ import { WorkflowService } from 'src/app/core/services/workflow/workflow.service
 export class ManageDidsComponent implements OnInit {
   public didIds: string[] = [];
   public displayedDidIds: string[] = [];
-  public didDocuments: object;
+  public allDIDsPublicInfo: object;
   public formScreenOpen: boolean = false;
   public pageSize: number = 10;
+  public didEditNickname: boolean[] = [];
   public currentPage: number = 1;
   public currentStartIndex = 0;
 
@@ -57,9 +58,7 @@ export class ManageDidsComponent implements OnInit {
       }
     });
 
-    this.didDocuments = this.vaultService.getAllDIDDocuments();
-    this.didIds = Object.keys(this.didDocuments);
-    this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+    this.getDIDsInfo();
   }
 
   backupDid(didId: string) {
@@ -83,6 +82,12 @@ export class ManageDidsComponent implements OnInit {
       });
   }
 
+  editNickname(didId: string, nickname: string) {
+    this.vaultService.updateDIDNickname(didId, nickname);
+    this.allDIDsPublicInfo[didId].nickname = nickname;
+    this.didEditNickname[didId] = false;
+  }
+
   updateDid(didId: string) {
     this.store.dispatch(new SelectAction(ActionType.Update));
     this.didService.loadDIDForUpdate(didId);
@@ -92,14 +97,40 @@ export class ManageDidsComponent implements OnInit {
 
   closeFormScreen() {
     this.formScreenOpen = false;
-    this.didDocuments = this.vaultService.getAllDIDDocuments();
-    this.didIds = Object.keys(this.didDocuments);
+    this.getDIDsInfo();
+  }
+
+  search(searchTerm: string) {
+    this.didIds = [];
+    for (const didId in this.allDIDsPublicInfo) {
+      if (this.allDIDsPublicInfo[didId].nickname.includes(searchTerm)) {
+        this.didIds.push(didId);
+      }
+    }
+
+    this.currentStartIndex = 0;
+    this.currentPage = 1;
+    this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
   }
 
   changePage (page) {
     this.currentPage = page;
     this.currentStartIndex = (this.currentPage - 1) * this.pageSize;
     this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+  }
+
+  anyDID() {
+    return Object.keys(this.allDIDsPublicInfo).length > 0;
+  }
+
+  private getDIDsInfo() {
+    this.allDIDsPublicInfo = this.vaultService.getAllDIDsPublicInfo();
+    this.didIds = Object.keys(this.allDIDsPublicInfo);
+    this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+
+    for(const didId in this.displayedDidIds) {
+      this.didEditNickname[didId] = false;
+    }
   }
 
   private postProcessDidBackupFile(encryptedFile: string, didId: string) {

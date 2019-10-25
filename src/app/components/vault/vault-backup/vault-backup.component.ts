@@ -9,12 +9,12 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
   styleUrls: ['./vault-backup.component.scss']
 })
 export class VaultBackupComponent implements OnInit {
-  public didsAny: boolean;
+  public anyDIDs: boolean;
 
   constructor(private vaultService: VaultService) { }
 
   ngOnInit() {
-    this.didsAny = this.vaultService.didDocumentsAny();
+    this.anyDIDs = this.vaultService.anyDIDs();
   }
 
   backupVault() {

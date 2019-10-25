@@ -6,7 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
-import { KeyViewModel } from 'src/app/core/models/key-view.model';
+import { DidKeyEntryModel } from 'src/app/core/interfaces/did-key-entry';
 import { minifyPublicKey } from 'src/app/core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
@@ -24,9 +24,11 @@ export class SignerComponent implements OnInit {
   public content: string;
   public contentPretified: string;
   public from: string;
-  public selectedPublicKey: string;
-  public publicKeys: KeyViewModel[] = [];
+  public selectedDIDId: string;
+  public selectedKey: DidKeyEntryModel;
+  public didIds: string[] = [];
   public minifyPublicKey = minifyPublicKey;
+  public allDIDsPublicInfo = {};
   private dialogMessage = 'Enter your vault password to sign the data';
 
   constructor(
@@ -40,11 +42,15 @@ export class SignerComponent implements OnInit {
   ngOnInit() {
     this.getPendingRequestsCount();
     this.getContentToSign();
-    this.getPublicKeys();
+    this.getDIDIds();
   }
 
-  onSelectChange(selectedPublicKey) {
-    this.selectedPublicKey = selectedPublicKey;
+  onSelectDIDChange(selectedDIDId: string) {
+    this.selectedDIDId= selectedDIDId;
+  }
+
+  onSelectKeyChange(selectedKey: DidKeyEntryModel) {
+    this.selectedKey = selectedKey;
   }
 
   signData() {
@@ -54,7 +60,7 @@ export class SignerComponent implements OnInit {
           this.spinner.show();
 
           this.signingService
-            .signData(this.content, this.selectedPublicKey, vaultPassword)
+            .signData(this.content, this.selectedKey, vaultPassword)
             .subscribe((signatureData: SignatureDataModel) => {
               if (signatureData) {
                 chrome.runtime.sendMessage({type: ChromeMessageType.SendSignedDataBack, data: signatureData});
@@ -84,20 +90,23 @@ export class SignerComponent implements OnInit {
     this.getContentToSign();
   }
 
-  private getPublicKeys() {
-    // const publicKeys = this.vaultService.getVaultPublicKeys();
-    // if (publicKeys) {
-    //   const publicKeysArray = JSON.parse(publicKeys);
-    //   const publicKeysAliases = JSON.parse(this.vaultService.getVaultPublicKeysAliases());
-    //   publicKeysArray.forEach(publicKey => {
-    //     this.publicKeys.push(new KeyViewModel(
-    //       publicKeysAliases[publicKey] ? publicKeysAliases[publicKey] : 'unknown',
-    //       publicKey
-    //     ));
-    //   });
+  getDIDKeys(): DidKeyEntryModel[] {
+    return this.allDIDsPublicInfo[this.selectedDIDId].didDocument.didKey;
+  }
 
-    //   this.selectedPublicKey = this.publicKeys[0].publicKey;
-    // }
+  private getDIDIds() {
+    this.allDIDsPublicInfo = this.vaultService.getAllDIDsPublicInfo();
+    for (const didId in this.allDIDsPublicInfo) {
+      const didDocument = this.allDIDsPublicInfo[didId].didDocument;
+      if (didDocument.didKey && didDocument.didKey.length > 0) {
+        this.didIds.push(didId);
+      }
+    }
+    
+    if (this.didIds.length > 0) {
+      this.selectedDIDId = this.didIds[0];
+      this.selectedKey = this.getDIDKeys()[0];
+    }
   }
 
   private getContentToSign() {

@@ -46,8 +46,9 @@ const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
             content: msg.content,
             from: sender.url
           });
-          responseCallbacks.push(response);
 
+          responseCallbacks.push(response);
+          
           chrome.browserAction.getBadgeText({}, function(result) {
             const number = parseInt(result) + 1;
             chrome.browserAction.setBadgeText({text: number.toString()});
@@ -74,18 +75,14 @@ const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
         break;
       case GET_CONTENT_TO_SIGN:
         if (contentsToSign.length > 0) {
-          if(currentRequestedContentIndex > -1 && currentRequestedContentIndex < contentsToSign.length) {
-            response({
-              success: true,
-              contentToSign: contentsToSign[currentRequestedContentIndex]
-            });
-          } else {
-            currentRequestedContentIndex = contentsToSign.length - 1;
-            response({
-              success: true,
-              contentToSign: contentsToSign[contentsToSign.length - 1]
-            });
+          if(currentRequestedContentIndex < 0 || currentRequestedContentIndex >= contentsToSign.length) {
+            currentRequestedContentIndex = contentsToSign.length - 1;  
           }
+
+          response({
+            success: true,
+            contentToSign: contentsToSign[currentRequestedContentIndex]
+          });
         } else {
           response({
             success: false

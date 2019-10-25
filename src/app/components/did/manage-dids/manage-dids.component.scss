@@ -171,3 +171,29 @@ a {
     }
   }
 }
+.header-search {
+  width: 300px;
+  .form-control {
+    width: calc(300px - 38px);
+    float: left;
+  }
+  button {
+    line-height: 35px;
+    width: 37px;
+    height: 37px;
+    float: right;
+  }
+}
+.nickname-editable {
+  width: 190px;
+  .form-control {
+    float: left;
+    width: 113px;
+  }
+  button {
+    float: right;
+    line-height: 35px;
+    width: 37px;
+    height: 37px;
+  }
+}

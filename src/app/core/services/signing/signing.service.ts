@@ -8,6 +8,7 @@ import { defer, Observable } from 'rxjs';
 import { Injectable, Output, EventEmitter } from '@angular/core';
 
 import { arrayBufferToBase64String, convertPemToBinary, calculateDoubleSha256 } from '../../utils/helpers';
+import { DIDDocument } from '../../interfaces/did-document';
 import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { EntryType } from '../../enums/entry-type';
 import { environment } from 'src/environments/environment';
@@ -28,17 +29,27 @@ export class SigningService {
 
   constructor(private vaultService: VaultService) { }
 
-  signData(data: string, publicKey: string, vaultPassword: string): Observable<SignatureDataModel> {
+  signData(data: string, signingKeyModel: DidKeyEntryModel, vaultPassword: string): Observable<SignatureDataModel> {
     return defer(async () => {
       try {
-        const vault = this.vaultService.getVault();
-        const decryptedVault = JSON.parse(await encryptor.decrypt(vaultPassword, vault));
-        const privateKey = decryptedVault[publicKey].privateKey;
-        const signatureType = decryptedVault[publicKey].type;
-        const dataToSign = Buffer.from(data, 'utf8');
-        const signature = await this.getSignature(dataToSign, signatureType, privateKey);
+        const signingKeyIdParts = signingKeyModel.id.split('#');
+        const didId = signingKeyIdParts[0];
+        const signingKeyAlias = signingKeyIdParts[1];
 
-        return new SignatureDataModel(data, signatureType, publicKey, signature);
+        const vault = this.vaultService.getVault();
+        const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
+        const didKeys = decryptedVault[didId].didKeys;
+        const privateKey = didKeys[signingKeyAlias];
+        const dataToSign = Buffer.from(data, 'utf8');
+        const signatureType = signingKeyModel.type.replace('VerificationKey', '') as SignatureType;
+        const signature = await this.getSignature(dataToSign, signatureType, privateKey);
+        this.vaultService.updateSignedRequests();
+
+        return new SignatureDataModel(
+          data,
+          signatureType,
+          signingKeyModel.publicKeyBase58 ? signingKeyModel.publicKeyBase58 : signingKeyModel.publicKeyPem,
+          signature);
       } catch {
         return undefined;
       }
@@ -66,7 +77,7 @@ export class SigningService {
   }
 
   getAvailableManagementKeysForSigning(didId: string, entry: UpdateEntryDocument): ManagementKeyEntryModel[] {
-    const didDocument = this.vaultService.getDIDDocument(didId);
+    const didDocument: DIDDocument = this.vaultService.getDIDPublicInfo(didId).didDocument;
     const managementKeys = didDocument.managementKey;
     let requiredPriority = 101;
 
