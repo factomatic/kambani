@@ -103,9 +103,7 @@ export class ManageDidsComponent implements OnInit {
   search(searchTerm: string) {
     this.didIds = [];
     for (const didId in this.allDIDsPublicInfo) {
-      if (didId.includes(searchTerm)) {
-        this.didIds.push(didId);
-      } else if (this.allDIDsPublicInfo[didId].nickname.includes(searchTerm)) {
+      if (this.allDIDsPublicInfo[didId].nickname.includes(searchTerm)) {
         this.didIds.push(didId);
       }
     }
