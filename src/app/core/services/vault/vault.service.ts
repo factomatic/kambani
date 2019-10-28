@@ -263,6 +263,37 @@ export class VaultService {
     });
   }
 
+  removeFactomKey(publicKey: string, type: FactomKeyType, vaultPassword: string) {
+    return defer(async () => {
+      try {
+        const state = this.localStorageStore.getState();
+        const decryptedVault = await encryptor.decrypt(vaultPassword, state.vault);
+
+        if (decryptedVault[publicKey]) {
+          delete decryptedVault[publicKey];
+        }
+        
+        const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
+
+        const factomKeysPublicInfo = JSON.parse(state.factomKeysPublicInfo);
+        if (factomKeysPublicInfo[type][publicKey]) {
+          delete factomKeysPublicInfo[type][publicKey];
+        }
+
+        const newState = Object.assign({}, state, {
+          vault: encryptedVault,
+          factomKeysPublicInfo: JSON.stringify(factomKeysPublicInfo)
+        });
+
+        this.localStorageStore.putState(newState);
+
+        return new ResultModel(true, 'Key was successfully removed');
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
   getVault(): string {
     return this.localStorageStore.getState().vault;
   }
