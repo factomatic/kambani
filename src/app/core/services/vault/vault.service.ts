@@ -263,6 +263,21 @@ export class VaultService {
     });
   }
 
+  updateFactomAddressNickname(publicAddress: string, type: FactomAddressType, nickname: string) {
+    const state = this.localStorageStore.getState();
+    const factomAddressesPublicInfo = JSON.parse(state.factomAddressesPublicInfo);
+
+    if (factomAddressesPublicInfo[type][publicAddress]) {
+      factomAddressesPublicInfo[type][publicAddress] = nickname;
+    }
+
+    const newState = Object.assign({}, state, {
+      factomAddressesPublicInfo: JSON.stringify(factomAddressesPublicInfo)
+    });
+
+    this.localStorageStore.putState(newState);
+  }
+
   removeFactomAddress(publicAddress: string, type: FactomAddressType, vaultPassword: string) {
     return defer(async () => {
       try {
