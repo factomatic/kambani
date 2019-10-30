@@ -1,0 +1,123 @@
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12">
+      <div class="page-content">
+        <div class="page-header">
+          <button class="btn btn-success pull-left" (click)="generateAddressPair()"><i class="fa fa-plus"></i> Generate New Address</button>
+          <a class="btn btn-success pull-right" routerLink="/factom/addresses/import/{{selectedAddressType}}"><i class="fa fa-plus"></i> Import Address</a>
+          <div class="clearfix"></div>
+        </div>
+        <nav class="info-tables">
+          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a (click)="changeSelectedAddressType(FactomAddressType.FCT)" class="nav-item nav-link active" id="nav-fct-addresses-tab" data-toggle="tab" href="#nav-fct-addresses" role="tab" aria-controls="nav-fct-addresses" aria-selected="true">FCT Addresses</a>
+            <a (click)="changeSelectedAddressType(FactomAddressType.EC)" class="nav-item nav-link" id="nav-ec-addresses-tab" data-toggle="tab" href="#nav-ec-addresses" role="tab" aria-controls="nav-ec-addresses" aria-selected="false">EC Addresses</a>
+          </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+          <div class="tab-pane fade show active" id="nav-fct-addresses" role="tabpanel" aria-labelledby="nav-fct-addresses-tab">
+            <div class="table-holder" *ngIf="fctAddresses.length > 0">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Public Address</th>
+                    <th>Nickname</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let publicAddress of displayedFCTAddresses">
+                    <td><span>{{publicAddress}}</span></td>
+                    <td>
+                      <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true">{{fctAddressesInfo[publicAddress]}}</a>
+                      <div class="nickname-editable" *ngIf="editAddressNickname[publicAddress]">
+                        <form (ngSubmit)="editNickname(publicAddress, FactomAddressType.FCT, nickname.value)">
+                          <input type="text" name="nickname" #nickname value="{{fctAddressesInfo[publicAddress]}}" class="form-control" />
+                          <button class="btn btn-danger" (click)="editAddressNickname[publicAddress] = false">
+                            <i class="fa fa-times"></i>
+                          </button>
+                          <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                    <td class="text-right">
+                      <button (click)="removeAddress(publicAddress, FactomAddressType.FCT)" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-6">
+                <div class="paginator" *ngIf="fctAddresses.length > pageSize">
+                  <a (click)="changePage(currentPage - 1)" [ngClass]="currentPage == 1 ? 'disabled' : ''">Prev</a>
+                  <a (click)="changePage(currentPage + 1)" [ngClass]="currentStartIndex + pageSize < fctAddresses.length ? '' : 'disabled'">Next</a>
+                </div>
+              </div>
+              <div class="col-6 text-right" *ngIf="fctAddresses.length > 0">
+                {{currentStartIndex + 1}} - {{currentStartIndex + pageSize < fctAddresses.length ? currentStartIndex + pageSize : fctAddresses.length}} from {{fctAddresses.length}}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="fctAddresses.length == 0">
+                <p class="text-warning text-center">You have not imported any FCT addresses yet</p>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="nav-ec-addresses" role="tabpanel" aria-labelledby="nav-ec-addresses-tab">
+            <div class="table-holder" *ngIf="ecAddresses.length > 0">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Public Address</th>
+                    <th>Nickname</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let publicAddress of displayedECAddresses">
+                    <td><span>{{publicAddress}}</span></td>
+                    <td>
+                      <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true">{{ecAddressesInfo[publicAddress]}}</a>
+                      <div class="nickname-editable" *ngIf="editAddressNickname[publicAddress]">
+                        <form (ngSubmit)="editNickname(publicAddress, FactomAddressType.EC, nickname.value)">
+                          <input type="text" name="nickname" #nickname value="{{ecAddressesInfo[publicAddress]}}" class="form-control" />
+                          <button class="btn btn-danger" (click)="editAddressNickname[publicAddress] = false">
+                            <i class="fa fa-times"></i>
+                          </button>
+                          <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                    <td class="text-right">
+                      <button (click)="removeAddress(publicAddress, FactomAddressType.EC)" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-6">
+                <div class="paginator" *ngIf="ecAddresses.length > pageSize">
+                  <a (click)="changePage(currentPage - 1)" [ngClass]="currentPage == 1 ? 'disabled' : ''">Prev</a>
+                  <a (click)="changePage(currentPage + 1)" [ngClass]="currentStartIndex + pageSize < ecAddresses.length ? '' : 'disabled'">Next</a>
+                </div>
+              </div>
+              <div class="col-6 text-right" *ngIf="ecAddresses.length > 0">
+                {{currentStartIndex + 1}} - {{currentStartIndex + pageSize < ecAddresses.length ? currentStartIndex + pageSize : ecAddresses.length}} from {{ecAddresses.length}}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="ecAddresses.length == 0">
+                <p class="text-warning text-center">You have not imported any EC addresses yet</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
