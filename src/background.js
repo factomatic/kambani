@@ -3,6 +3,7 @@
 const NEW_TAB_OPEN = 'newTabOpen';
 const RESTORE_VAULT_REQUEST = 'restoreVaultRequest';
 const MANAGE_DIDS_REQUEST = 'manageDidsRequest';
+const MANAGE_FACTOM_ADDRESSES_REQUEST = 'manageFactomAddressesRequest';
 const CHECK_REQUESTS = 'checkRequests';
 const PENDING_REQUESTS_COUNT = 'pendingRequestsCount';
 const GET_CONTENT_TO_SIGN = 'getContentToSign';
@@ -10,6 +11,7 @@ const CANCEL_SIGNING = 'cancelSigning';
 const SKIP_SIGNING = 'skipSigning';
 const SEND_SIGNED_DATA_BACK = 'sendSignedDataBack';
 const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
+const INVALID_REQUEST_RESPONSE = 'Invalid request!';
 
 (function() {
   let contentsToSign = [];
@@ -17,6 +19,7 @@ const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
   let currentRequestedContentIndex = -1;
   let restoreVaultRequested = false;
   let manageDidsRequested = false;
+  let manageFactomAddressesRequested = false;
 
   chrome.browserAction.setBadgeText({text: "0"});
 
@@ -30,15 +33,21 @@ const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
         manageDidsRequested = true;
         response({success: true});
         break;
+      case MANAGE_FACTOM_ADDRESSES_REQUEST:
+        manageFactomAddressesRequested = true;
+        response({success: true});
+        break;
       case CHECK_REQUESTS:
         response({
           restoreVaultRequested: restoreVaultRequested,
-          manageDidsRequested: manageDidsRequested
+          manageDidsRequested: manageDidsRequested,
+          manageFactomAddressesRequested: manageFactomAddressesRequested
         });
         break;
       case NEW_TAB_OPEN:
         restoreVaultRequested = false;
         manageDidsRequested = false;
+        manageFactomAddressesRequested = false;
         break;
       case RECEIVE_CONTENT_TO_SIGN:
         if (msg.content) {

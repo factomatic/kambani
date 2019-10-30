@@ -1,9 +1,6 @@
-/// <reference types="chrome" />
-
 import { Chart } from 'chart.js';
-import { Component, OnInit, ViewChild, ElementRef, NgZone } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 
-import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
@@ -12,26 +9,19 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-  public pendingRequestsCount: number = 0;
-  public signedRequestsCount: number = 0;
   public didsCount: number;
+  public fctAddressesCount: number;
+  public ecAddressesCount: number;
   private signedRequestsData: number[];
   private labels: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  constructor(
-    private vaultService: VaultService,
-    private zone: NgZone) { }
+  constructor(private vaultService: VaultService) { }
 
   ngOnInit() {
     this.didsCount = this.vaultService.getDIDsCount();
-    this.signedRequestsCount = this.vaultService.getSignedRequestsCount();
+    this.fctAddressesCount = Object.keys(this.vaultService.getFCTAddressesPublicInfo()).length;
+    this.ecAddressesCount = Object.keys(this.vaultService.getECAddressesPublicInfo()).length;
     this.signedRequestsData = this.vaultService.getSignedRequestsData();
-
-    chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (response) => {
-      this.zone.run(() => {
-        this.pendingRequestsCount = response.pendingRequestsCount;
-      });
-    });
   }
 
   @ViewChild('signedRequests') chart: ElementRef;

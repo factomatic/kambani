@@ -6,6 +6,7 @@ export enum ChromeMessageType {
   SendSignedDataBack = 'sendSignedDataBack',
   RestoreVaultRequest = 'restoreVaultRequest',
   ManageDidsRequest = 'manageDidsRequest',
+  ManageFactomAddressesRequest = 'manageFactomAddressesRequest',
   CheckRequests = 'checkRequests',
   NewTabOpen = 'newTabOpen'
 }

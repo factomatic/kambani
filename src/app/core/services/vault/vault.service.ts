@@ -8,6 +8,7 @@ import { DIDDocument } from '../../interfaces/did-document';
 import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { DidKeyModel } from '../../models/did-key.model';
 import { environment } from 'src/environments/environment';
+import { FactomAddressType } from '../../enums/factom-address-type';
 import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
 import { ManagementKeyModel } from '../../models/management-key.model';
 import { ResultModel } from '../../models/result.model';
@@ -30,6 +31,10 @@ export class VaultService {
       this.localStorageStore.putState({
         vault: encryptedVault,
         didsPublicInfo: JSON.stringify({}),
+        factomAddressesPublicInfo: JSON.stringify({
+          [FactomAddressType.FCT]: {},
+          [FactomAddressType.EC]: {}
+        }),
         createdDIDsCount: 0,
         signedRequestsCount: 0,
         signedRequestsData: JSON.stringify(new Array(7).fill(0)),
@@ -69,7 +74,7 @@ export class VaultService {
           const createdDIDsCount = state.createdDIDsCount + 1;
           const didNickname = `did-${createdDIDsCount}`;
 
-          const didsPublicInfo = this.getAllDIDsPublicInfo();
+          const didsPublicInfo = JSON.parse(state.didsPublicInfo);
           didsPublicInfo[didId] = {
             nickname: didNickname,
             didDocument: didDocument
@@ -100,7 +105,7 @@ export class VaultService {
         try {
           const state = this.localStorageStore.getState();
           const decryptedVault = await encryptor.decrypt(vaultPassword, state.vault);
-          const didsPublicInfo = this.getAllDIDsPublicInfo();
+          const didsPublicInfo = JSON.parse(state.didsPublicInfo);
 
           const didNickname = didsPublicInfo[didId].nickname;
           const didDocument: DIDDocument = didsPublicInfo[didId].didDocument;
@@ -230,6 +235,80 @@ export class VaultService {
     this.localStorageStore.putState(newState);
   }
 
+  importFactomAddress(type: FactomAddressType, nickname: string, publicAddress: string, privateAddress: string, vaultPassword: string) {
+    return defer(async () => {
+      try {
+        const state = this.localStorageStore.getState();
+        const decryptedVault = await encryptor.decrypt(vaultPassword, state.vault);
+
+        decryptedVault[publicAddress] = privateAddress;
+        const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
+
+        const factomAddressesPublicInfo = JSON.parse(state.factomAddressesPublicInfo);
+        factomAddressesPublicInfo[type] = Object.assign({}, factomAddressesPublicInfo[type], {
+          [publicAddress]: nickname
+        });
+
+        const newState = Object.assign({}, state, {
+          vault: encryptedVault,
+          factomAddressesPublicInfo: JSON.stringify(factomAddressesPublicInfo)
+        });
+
+        this.localStorageStore.putState(newState);
+
+        return new ResultModel(true, `${type} address was successfully imported`);
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
+  updateFactomAddressNickname(publicAddress: string, type: FactomAddressType, nickname: string) {
+    const state = this.localStorageStore.getState();
+    const factomAddressesPublicInfo = JSON.parse(state.factomAddressesPublicInfo);
+
+    if (factomAddressesPublicInfo[type][publicAddress]) {
+      factomAddressesPublicInfo[type][publicAddress] = nickname;
+    }
+
+    const newState = Object.assign({}, state, {
+      factomAddressesPublicInfo: JSON.stringify(factomAddressesPublicInfo)
+    });
+
+    this.localStorageStore.putState(newState);
+  }
+
+  removeFactomAddress(publicAddress: string, type: FactomAddressType, vaultPassword: string) {
+    return defer(async () => {
+      try {
+        const state = this.localStorageStore.getState();
+        const decryptedVault = await encryptor.decrypt(vaultPassword, state.vault);
+
+        if (decryptedVault[publicAddress]) {
+          delete decryptedVault[publicAddress];
+        }
+        
+        const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
+
+        const factomAddressesPublicInfo = JSON.parse(state.factomAddressesPublicInfo);
+        if (factomAddressesPublicInfo[type][publicAddress]) {
+          delete factomAddressesPublicInfo[type][publicAddress];
+        }
+
+        const newState = Object.assign({}, state, {
+          vault: encryptedVault,
+          factomAddressesPublicInfo: JSON.stringify(factomAddressesPublicInfo)
+        });
+
+        this.localStorageStore.putState(newState);
+
+        return new ResultModel(true, `${type} address was successfully removed`);
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
   getVault(): string {
     return this.localStorageStore.getState().vault;
   }
@@ -253,6 +332,14 @@ export class VaultService {
   getDIDPublicInfo(didId: string) {
     const didsPublicInfo = this.getAllDIDsPublicInfo();
     return didsPublicInfo[didId];
+  }
+
+  getFCTAddressesPublicInfo() {
+    return JSON.parse(this.localStorageStore.getState().factomAddressesPublicInfo)[FactomAddressType.FCT];
+  }
+
+  getECAddressesPublicInfo() {
+    return JSON.parse(this.localStorageStore.getState().factomAddressesPublicInfo)[FactomAddressType.EC];
   }
 
   anyDIDs(): boolean {
