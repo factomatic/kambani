@@ -31,6 +31,7 @@ export class ManageAddressesComponent implements OnInit {
   public pageSize: number = 5;
   public currentPage: number = 1;
   public currentStartIndex = 0;
+  private removeAddressDialogMessage = `<b>Warning! Any funds that you have in this address will be irrevocably lost, if you have not backed up your private key</b>. If you want to continue, enter your vault password to remove the FCT/EC address`;
 
   constructor(
     private dialogsService: DialogsService,
@@ -109,8 +110,7 @@ export class ManageAddressesComponent implements OnInit {
   }
 
   removeAddress(publicAddress: string, type: FactomAddressType) {
-    const dialogMessage = `Enter your vault password to remove the ${type} address`;
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, this.removeAddressDialogMessage)
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {
           this.spinner.show();
