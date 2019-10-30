@@ -17,10 +17,8 @@ $mainColor: #2F5BE7;
       tr {
         td:first-child {
           span {
-            width: 150px;
+            width: 250px;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
             display: inline-block;
             font-weight: 700;
           }
