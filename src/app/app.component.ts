@@ -29,6 +29,10 @@ export class AppComponent implements OnInit {
           this.zone.run(() => {
             this.router.navigate(['/dids/manage']);
           });
+        } else if (checkRequestsResponse.manageFactomAddressesRequested) {
+          this.zone.run(() => {
+            this.router.navigate(['/factom/addresses/manage']);
+          });
         } else {
           chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (pendingRequestsResponse) => {
             this.zone.run(() => {

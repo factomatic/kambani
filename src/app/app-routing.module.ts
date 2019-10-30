@@ -21,6 +21,7 @@ const routes: Routes = [
     { path: 'update', loadChildren: './components/did/did.module#DIDModule', canActivate: [ UpdateActionGuard ] }
   ] },
   { path: 'dids/preview/:id', component: PreviewDidComponent, canActivate: [VaultGuard] },
+  { path: 'factom', loadChildren: './components/factom-addresses/factom-addresses.module#FactomAddressesModule' },
   { path: '**', component: HomeComponent, canActivate: [VaultGuard] }
 ];
 
