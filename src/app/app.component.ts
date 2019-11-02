@@ -1,5 +1,3 @@
-/// <reference types="chrome" />
-
 import { Component, OnInit, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 

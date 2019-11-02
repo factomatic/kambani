@@ -1,5 +1,3 @@
-/// <reference types="chrome" />
-
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ToastrService } from 'ngx-toastr';
