@@ -1,5 +1,3 @@
-/// <reference types="chrome" />
-
 const NEW_TAB_OPEN = 'newTabOpen';
 const RESTORE_VAULT_REQUEST = 'restoreVaultRequest';
 const MANAGE_DIDS_REQUEST = 'manageDidsRequest';

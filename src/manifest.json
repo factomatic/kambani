@@ -19,7 +19,14 @@
       "matches": [
         "<all_urls>"
       ],
-      "js": ["contentScript.js"],
+      "js": ["signerContentScript.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": ["factomAddressesContentScript.js"],
       "run_at": "document_start"
     }
   ],
