@@ -167,6 +167,7 @@ export class VaultService {
 
   removeVault(): void {
     localStorage.removeItem(environment.storageKey);
+    chrome.storage.sync.clear();
   }
 
   canDecryptVault(vaultPassword: string): Observable<ResultModel> {
@@ -256,6 +257,24 @@ export class VaultService {
 
         this.localStorageStore.putState(newState);
 
+        chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
+          if (type === FactomAddressType.FCT) {
+            if (addressesState.fctAddresses) {
+              addressesState.fctAddresses.push(publicAddress);
+            } else {
+              addressesState.fctAddresses = [publicAddress];
+            }
+          } else if (type === FactomAddressType.EC) {
+            if (addressesState.ecAddresses) {
+              addressesState.ecAddresses.push(publicAddress);
+            } else {
+              addressesState.ecAddresses = [publicAddress];
+            }
+          }
+
+          chrome.storage.sync.set(addressesState);       
+        });
+
         return new ResultModel(true, `${type} address was successfully imported`);
       } catch {
         return new ResultModel(false, 'Incorrect vault password');
@@ -301,6 +320,16 @@ export class VaultService {
         });
 
         this.localStorageStore.putState(newState);
+
+        chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
+          if (type === FactomAddressType.FCT) {
+            addressesState.fctAddresses = addressesState.fctAddresses.filter(address => address !== publicAddress);
+          } else if (type === FactomAddressType.EC) {
+            addressesState.ecAddresses = addressesState.ecAddresses.filter(address => address !== publicAddress);
+          }
+
+          chrome.storage.sync.set(addressesState);       
+        });
 
         return new ResultModel(true, `${type} address was successfully removed`);
       } catch {
