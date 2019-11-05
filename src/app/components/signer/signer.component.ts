@@ -1,5 +1,3 @@
-/// <reference types="chrome" />
-
 import { Component, OnInit, NgZone } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
@@ -21,14 +19,20 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
 })
 export class SignerComponent implements OnInit {
   public pendingRequestsCount: number;
-  public content: string;
-  public contentPretified: string;
+  public content;
+  public dataToSign: string;
+  public selectedSignMethod: string;
   public from: string;
+  public allDIDsPublicInfo = {};
+  public fctAddressesPublicInfo = {};
+  public ecAddressesPublicInfo = {};
+  public didIds: string[] = [];
+  public fctAddresses: string[] = [];
+  public ecAddresses: string[] = [];
   public selectedDIDId: string;
   public selectedKey: DidKeyEntryModel;
-  public didIds: string[] = [];
+  public selectedPublicAddress: string;
   public minifyPublicKey = minifyPublicKey;
-  public allDIDsPublicInfo = {};
   private dialogMessage = 'Enter your vault password to sign the data';
 
   constructor(
@@ -40,9 +44,10 @@ export class SignerComponent implements OnInit {
     private zone: NgZone) { }
 
   ngOnInit() {
+    this.getAllAvailableSigningKeys();
     this.getPendingRequestsCount();
     this.getContentToSign();
-    this.getDIDIds();
+    // this.getDIDIds();
   }
 
   onSelectDIDChange(selectedDIDId: string) {
@@ -53,6 +58,10 @@ export class SignerComponent implements OnInit {
     this.selectedKey = selectedKey;
   }
 
+  onSelectAddressChange(selectedPublicAddress: string) {
+    this.selectedPublicAddress = selectedPublicAddress;
+  }
+
   signData() {
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, this.dialogMessage)
       .subscribe((vaultPassword: string) => {
@@ -60,7 +69,7 @@ export class SignerComponent implements OnInit {
           this.spinner.show();
 
           this.signingService
-            .signData(this.content, this.selectedKey, vaultPassword)
+            .signData(this.content.data, this.selectedKey, vaultPassword)
             .subscribe((signatureData: SignatureDataModel) => {
               if (signatureData) {
                 chrome.runtime.sendMessage({type: ChromeMessageType.SendSignedDataBack, data: signatureData});
@@ -94,6 +103,14 @@ export class SignerComponent implements OnInit {
     return this.allDIDsPublicInfo[this.selectedDIDId].didDocument.didKey;
   }
 
+  private getAllAvailableSigningKeys() {
+    this.getDIDIds();
+    this.fctAddressesPublicInfo = this.vaultService.getFCTAddressesPublicInfo();
+    this.fctAddresses = Object.keys(this.fctAddressesPublicInfo);
+    this.ecAddressesPublicInfo = this.vaultService.getECAddressesPublicInfo();
+    this.ecAddresses = Object.keys(this.ecAddressesPublicInfo);
+  }
+
   private getDIDIds() {
     this.allDIDsPublicInfo = this.vaultService.getAllDIDsPublicInfo();
     for (const didId in this.allDIDsPublicInfo) {
@@ -103,10 +120,10 @@ export class SignerComponent implements OnInit {
       }
     }
     
-    if (this.didIds.length > 0) {
-      this.selectedDIDId = this.didIds[0];
-      this.selectedKey = this.getDIDKeys()[0];
-    }
+    // if (this.didIds.length > 0) {
+    //   this.selectedDIDId = this.didIds[0];
+    //   this.selectedKey = this.getDIDKeys()[0];
+    // }
   }
 
   private getContentToSign() {
@@ -115,12 +132,32 @@ export class SignerComponent implements OnInit {
         if (response.success) {
           this.from = response.contentToSign.from;
           this.content = response.contentToSign.content;
+          console.log(this.content);
 
-          try {
-            const parsedContent = JSON.parse(this.content);
-            this.contentPretified = JSON.stringify(parsedContent, null, 2);
-          } catch {
-            this.contentPretified = this.content;
+          if (this.content.signWith) {
+            this.selectedSignMethod = this.content.signWith;
+            if (this.selectedSignMethod == 'DID') {
+              if (this.didIds.length > 0) {
+                this.selectedDIDId = this.didIds[0];
+                this.selectedKey = this.getDIDKeys()[0];
+              }
+            } else if (this.selectedSignMethod == 'FCT Address') {
+              // if address is specified check here; add boolean addressSpecified to disable the option to choose different address
+              this.selectedPublicAddress = this.fctAddresses[0];
+            } else if (this.selectedSignMethod == 'EC Address') {
+              this.selectedPublicAddress = this.ecAddresses[0];
+            } else {
+              // error unsupported sign method
+            }
+          } else {
+            // error
+          }
+
+          if (this.content.data) {
+            this.dataToSign = JSON.stringify(this.content.data, null, 2);
+          } else {
+            // error invalid format; skip the entry or show error
+            // validation may also be in background.js
           }
         }
       });
@@ -150,7 +187,7 @@ export class SignerComponent implements OnInit {
 
   private clearContentData() {
     this.content = undefined;
-    this.contentPretified = undefined;
+    this.dataToSign = undefined;
     this.from = undefined;
   }
 }
