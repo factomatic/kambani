@@ -1,7 +1,7 @@
-window.addEventListener('ContentToSign', (event) => {
-  chrome.runtime.sendMessage({type: 'receiveContentToSign', content: event.detail},
+window.addEventListener('SigningRequest', (event) => {
+  chrome.runtime.sendMessage({type: 'receiveSigningRequest', content: event.detail},
     function(response) {
-      var event = new CustomEvent('SigningResult', {detail: response});
+      var event = new CustomEvent('SigningResponse', {detail: response});
       window.dispatchEvent(event);
     }
   );
