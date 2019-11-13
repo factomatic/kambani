@@ -3,18 +3,22 @@ const RESTORE_VAULT_REQUEST = 'restoreVaultRequest';
 const MANAGE_DIDS_REQUEST = 'manageDidsRequest';
 const MANAGE_FACTOM_ADDRESSES_REQUEST = 'manageFactomAddressesRequest';
 const CHECK_REQUESTS = 'checkRequests';
-const PENDING_REQUESTS_COUNT = 'pendingRequestsCount';
-const GET_CONTENT_TO_SIGN = 'getContentToSign';
-const CANCEL_SIGNING = 'cancelSigning';
-const SKIP_SIGNING = 'skipSigning';
-const SEND_SIGNED_DATA_BACK = 'sendSignedDataBack';
-const RECEIVE_CONTENT_TO_SIGN = 'receiveContentToSign';
+const PENDING_SIGNING_REQUESTS_COUNT = 'pendingSigningRequestsCount';
+const GET_SIGNING_REQUEST = 'getSigningRequest';
+const CANCEL_SIGNING_REQUEST = 'cancelSigningRequest';
+const SKIP_SIGNING_REQUEST = 'skipSigningRequest';
+const SEND_SIGNING_REQUEST_RESPONSE = 'sendSigningRequestResponse';
+const RECEIVE_SIGNING_REQUEST = 'receiveSigningRequest';
 const INVALID_REQUEST_RESPONSE = 'Invalid request!';
+const DID_KEY_REQUEST_TYPE = 'didKey';
+const MANAGEMENT_KEY_REQUEST_TYPE = 'managementKey';
+const FCT_REQUEST_TYPE = 'fct';
+const EC_REQUEST_TYPE = 'ec';
 
 (function() {
-  let contentsToSign = [];
+  let signingRequests = [];
   let responseCallbacks = [];
-  let currentRequestedContentIndex = -1;
+  let currentSigningRequestIndex = -1;
   let restoreVaultRequested = false;
   let manageDidsRequested = false;
   let manageFactomAddressesRequested = false;
@@ -47,15 +51,15 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
         manageDidsRequested = false;
         manageFactomAddressesRequested = false;
         break;
-      case RECEIVE_CONTENT_TO_SIGN:
-        if (msg.content) {
-          contentsToSign.push({
+      case RECEIVE_SIGNING_REQUEST:
+        if (isValidRequest(msg.content)) {
+          signingRequests.push({
             content: msg.content,
             from: sender.url
           });
 
           responseCallbacks.push(response);
-          
+
           chrome.browserAction.getBadgeText({}, function(result) {
             const number = parseInt(result) + 1;
             chrome.browserAction.setBadgeText({text: number.toString()});
@@ -71,24 +75,25 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
           return true;
         } else {
           response({
-            success: false
+            success: false,
+            requestId: msg.content.requestId
           });
         }
         break;
-      case PENDING_REQUESTS_COUNT:
+      case PENDING_SIGNING_REQUESTS_COUNT:
         response({
-          pendingRequestsCount: contentsToSign.length,
+          pendingSigningRequestsCount: signingRequests.length,
         });
         break;
-      case GET_CONTENT_TO_SIGN:
-        if (contentsToSign.length > 0) {
-          if(currentRequestedContentIndex < 0 || currentRequestedContentIndex >= contentsToSign.length) {
-            currentRequestedContentIndex = contentsToSign.length - 1;  
+      case GET_SIGNING_REQUEST:
+        if (signingRequests.length > 0) {
+          if(currentSigningRequestIndex < 0 || currentSigningRequestIndex >= signingRequests.length) {
+            currentSigningRequestIndex = signingRequests.length - 1;
           }
 
           response({
             success: true,
-            contentToSign: contentsToSign[currentRequestedContentIndex]
+            signingRequest: signingRequests[currentSigningRequestIndex]
           });
         } else {
           response({
@@ -96,32 +101,33 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
           });
         }
         break;
-      case CANCEL_SIGNING:
+      case CANCEL_SIGNING_REQUEST:
         if(responseCallbacks.length > 0) {
-          const responseCallback = responseCallbacks[currentRequestedContentIndex];
+          const responseCallback = responseCallbacks[currentSigningRequestIndex];
           responseCallback({
             success: false,
             ...msg.data
           });
 
           chrome.browserAction.getBadgeText({}, function(result) {
-            const number = parseInt(result) - 1;
+            let number = parseInt(result) - 1;
+            if (number < 0) number = 0;
             chrome.browserAction.setBadgeText({text: number.toString()});
           });
 
-          contentsToSign.splice(currentRequestedContentIndex, 1);
-          responseCallbacks.splice(currentRequestedContentIndex, 1);
-          if (contentsToSign.length === 0) {
-            currentRequestedContentIndex = -1;
+          signingRequests.splice(currentSigningRequestIndex, 1);
+          responseCallbacks.splice(currentSigningRequestIndex, 1);
+          if (signingRequests.length === 0) {
+            currentSigningRequestIndex = -1;
           }
         }
         break;
-      case SKIP_SIGNING:
-        currentRequestedContentIndex--;
+      case SKIP_SIGNING_REQUEST:
+        currentSigningRequestIndex--;
         break;
-      case SEND_SIGNED_DATA_BACK:
+      case SEND_SIGNING_REQUEST_RESPONSE:
         if(responseCallbacks.length > 0) {
-          const responseCallback = responseCallbacks[currentRequestedContentIndex];
+          const responseCallback = responseCallbacks[currentSigningRequestIndex];
           responseCallback({
             success: true,
             ...msg.data
@@ -132,10 +138,10 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
             chrome.browserAction.setBadgeText({text: number.toString()});
           });
 
-          contentsToSign.splice(currentRequestedContentIndex, 1);
-          responseCallbacks.splice(currentRequestedContentIndex, 1);
-          if (contentsToSign.length === 0) {
-            currentRequestedContentIndex = -1;
+          signingRequests.splice(currentSigningRequestIndex, 1);
+          responseCallbacks.splice(currentSigningRequestIndex, 1);
+          if (signingRequests.length === 0) {
+            currentSigningRequestIndex = -1;
           }
         }
         break;
@@ -145,3 +151,42 @@ const INVALID_REQUEST_RESPONSE = 'Invalid request!';
     }
   });
 }());
+
+function isValidRequest (requestContent) {
+  if (requestContent.requestId == undefined || requestContent.keyType == undefined || requestContent.data == undefined) {
+    return false;
+  }
+  
+  const requestKeyTypes = [DID_KEY_REQUEST_TYPE, MANAGEMENT_KEY_REQUEST_TYPE, FCT_REQUEST_TYPE, EC_REQUEST_TYPE];
+  if (!requestKeyTypes.includes(requestContent.keyType)) {
+    return false;
+  }
+
+  if (requestContent.did) {
+    if (requestContent.keyType == FCT_REQUEST_TYPE || requestContent.keyType == EC_REQUEST_TYPE) {
+      return false;
+    }
+
+    if (!/did:factom:[a-f0-9]{64}/.test(requestContent.did)) {
+      return false;
+    }
+  }
+
+  if (requestContent.keyIdentifier) {
+    if (requestContent.keyType == FCT_REQUEST_TYPE) {
+      if (requestContent.keyIdentifier.substring(0, 2) !== 'FA') {
+        return false;
+      }
+    } else if (requestContent.keyType == EC_REQUEST_TYPE) {
+      if (requestContent.keyIdentifier.substring(0, 2) !== 'EC') {
+        return false;
+      }
+    } else {
+      if (!requestContent.did) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
