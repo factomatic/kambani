@@ -5,9 +5,11 @@ import { ToastrService } from 'ngx-toastr';
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { DidKeyEntryModel } from 'src/app/core/interfaces/did-key-entry';
+import { ManagementKeyEntryModel } from 'src/app/core/interfaces/management-key-entry';
 import { minifyPublicKey } from 'src/app/core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
+import { RequestKeyType } from 'src/app/core/enums/request-key-type';
 import { SignatureDataModel } from 'src/app/core/models/signature-data.model';
 import { SigningService } from 'src/app/core/services/signing/signing.service';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
@@ -18,20 +20,29 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
   styleUrls: ['./signer.component.scss']
 })
 export class SignerComponent implements OnInit {
+  public RequestKeyType = RequestKeyType;
   public pendingRequestsCount: number;
-  public content;
+  public request;
   public dataToSign: string;
-  public selectedSignMethod: string;
+  public requestKeyType: string;
   public from: string;
   public allDIDsPublicInfo = {};
   public fctAddressesPublicInfo = {};
   public ecAddressesPublicInfo = {};
-  public didIds: string[] = [];
+  public allDIDIds: string[] = [];
+  public didIdsWithDIDKeys: string[] = [];
+  public availableDIDIds: string[] = [];
   public fctAddresses: string[] = [];
   public ecAddresses: string[] = [];
+  public availableFactomAddresses: string[] = [];
+  public availableFactomAddressesPublicInfo = {};
+  public availableKeys: any[];
   public selectedDIDId: string;
-  public selectedKey: DidKeyEntryModel;
-  public selectedPublicAddress: string;
+  public didIdSpecified: boolean;
+  public selectedKeyId: string;
+  public keySpecified: boolean;
+  public selectedFactomAddress: string;
+  public factomAddressSpecified: boolean;
   public minifyPublicKey = minifyPublicKey;
   private dialogMessage = 'Enter your vault password to sign the data';
 
@@ -46,20 +57,21 @@ export class SignerComponent implements OnInit {
   ngOnInit() {
     this.getAllAvailableSigningKeys();
     this.getPendingRequestsCount();
-    this.getContentToSign();
-    // this.getDIDIds();
+    this.getSigningRequest();
   }
 
   onSelectDIDChange(selectedDIDId: string) {
-    this.selectedDIDId= selectedDIDId;
+    this.selectedDIDId = selectedDIDId;
+    this.availableKeys = this.getKeys(this.selectedDIDId);
+    this.selectedKeyId = this.availableKeys[0].id;
   }
 
-  onSelectKeyChange(selectedKey: DidKeyEntryModel) {
-    this.selectedKey = selectedKey;
+  onSelectKeyChange(selectedKeyId: string) {
+    this.selectedKeyId = selectedKeyId;
   }
 
-  onSelectAddressChange(selectedPublicAddress: string) {
-    this.selectedPublicAddress = selectedPublicAddress;
+  onSelectAddressChange(selectedFactomAddress: string) {
+    this.selectedFactomAddress = selectedFactomAddress;
   }
 
   signData() {
@@ -68,16 +80,28 @@ export class SignerComponent implements OnInit {
         if (vaultPassword) {
           this.spinner.show();
 
+          const dataToSign = typeof this.request.data == "string"
+            ? this.request.data
+            : JSON.stringify(this.request.data);
+
+          const signingKeyOrAddress = this.selectedKeyId
+            ? this.availableKeys.find(dk => dk.id == this.selectedKeyId)
+            : this.selectedFactomAddress;
+
           this.signingService
-            .signData(this.content.data, this.selectedKey, vaultPassword)
+            .signData(dataToSign, this.requestKeyType, signingKeyOrAddress, vaultPassword)
             .subscribe((signatureData: SignatureDataModel) => {
               if (signatureData) {
-                chrome.runtime.sendMessage({type: ChromeMessageType.SendSignedDataBack, data: signatureData});
+                chrome.runtime.sendMessage({type: ChromeMessageType.SendSigningRequestResponse, data: {
+                  requestId: this.request.requestId,
+                  ...signatureData
+                }});
+
                 this.spinner.hide();
                 this.toastr.success('Data successfully signed!', null, {timeOut: 1000});
-                this.clearContentData();
+                this.clearRequestData();
                 this.getPendingRequestsCount();
-                this.getContentToSign();
+                this.getSigningRequest();
               } else {
                 this.spinner.hide();
                 this.toastr.error('Incorrect vault password');
@@ -87,20 +111,22 @@ export class SignerComponent implements OnInit {
       });
   }
 
-  cancelSigning() {
-    this.cancelContentToSign();
+  cancelSigning(message?: string) {
+    if (message) {
+      this.toastr.error(message, null, {timeOut: 5000});
+    } else {
+      this.toastr.info('Signing request cancelled!', null, {timeOut: 1000});
+    }
+
+    this.cancelSigningRequest();
     this.getPendingRequestsCount();
-    this.getContentToSign();
+    this.getSigningRequest();
   }
 
   skipSigning() {
-    this.skipContentToSign();
+    this.skipSigningRequest();
     this.getPendingRequestsCount();
-    this.getContentToSign();
-  }
-
-  getDIDKeys(): DidKeyEntryModel[] {
-    return this.allDIDsPublicInfo[this.selectedDIDId].didDocument.didKey;
+    this.getSigningRequest();
   }
 
   private getAllAvailableSigningKeys() {
@@ -113,81 +139,137 @@ export class SignerComponent implements OnInit {
 
   private getDIDIds() {
     this.allDIDsPublicInfo = this.vaultService.getAllDIDsPublicInfo();
+    this.allDIDIds = Object.keys(this.allDIDsPublicInfo);
+
     for (const didId in this.allDIDsPublicInfo) {
       const didDocument = this.allDIDsPublicInfo[didId].didDocument;
       if (didDocument.didKey && didDocument.didKey.length > 0) {
-        this.didIds.push(didId);
+        this.didIdsWithDIDKeys.push(didId);
       }
     }
-    
-    // if (this.didIds.length > 0) {
-    //   this.selectedDIDId = this.didIds[0];
-    //   this.selectedKey = this.getDIDKeys()[0];
-    // }
   }
 
-  private getContentToSign() {
-    chrome.runtime.sendMessage({type: ChromeMessageType.GetContentToSign}, (response) => {
+  private getKeys(didId: string): DidKeyEntryModel[] | ManagementKeyEntryModel[] {
+    if (this.requestKeyType == RequestKeyType.DIDKey) {
+      return this.allDIDsPublicInfo[didId].didDocument.didKey;
+    }
+
+    return this.allDIDsPublicInfo[didId].didDocument.managementKey;
+  }
+
+  private getSigningRequest() {
+    chrome.runtime.sendMessage({type: ChromeMessageType.GetSigningRequest}, (response) => {
       this.zone.run(() => {
         if (response.success) {
-          this.from = response.contentToSign.from;
-          this.content = response.contentToSign.content;
-          console.log(this.content);
+          this.from = response.signingRequest.from;
+          this.request = response.signingRequest.content;
+          this.requestKeyType = this.request.keyType;
 
-          if (this.content.signWith) {
-            this.selectedSignMethod = this.content.signWith;
-            if (this.selectedSignMethod == 'DID') {
-              if (this.didIds.length > 0) {
-                this.selectedDIDId = this.didIds[0];
-                this.selectedKey = this.getDIDKeys()[0];
+          if ((this.requestKeyType == RequestKeyType.DIDKey && this.didIdsWithDIDKeys.length > 0)
+            || (this.requestKeyType == RequestKeyType.ManagementKey && this.allDIDIds.length > 0)) {
+              this.availableDIDIds = this.requestKeyType == RequestKeyType.DIDKey
+                ? this.didIdsWithDIDKeys
+                : this.allDIDIds;
+              this.selectedDIDId = this.availableDIDIds[0];
+              this.availableKeys = this.getKeys(this.selectedDIDId);
+              this.selectedKeyId = this.availableKeys[0].id;
+
+              if (this.request.did) {
+                if (this.availableDIDIds.includes(this.request.did)) {
+                  this.selectedDIDId = this.request.did;
+                  this.availableKeys = this.getKeys(this.selectedDIDId);
+                  this.selectedKeyId = this.availableKeys[0].id;
+                  this.didIdSpecified = true;
+
+                  const selectedKeyAlias = this.request.keyIdentifier;
+                  if (selectedKeyAlias) {
+                    const selectedKey = this.availableKeys.find(k => k.id.split('#')[1] == selectedKeyAlias);
+                    if (selectedKey) {
+                      this.selectedKeyId = selectedKey.id;
+                      this.keySpecified = true;
+                    } else {
+                      const keyType = this.requestKeyType == RequestKeyType.DIDKey
+                        ? 'DID Key'
+                        : 'Management Key';
+                      this.cancelSigning(`The ${keyType} requested for signing does not exist!`);
+                      return;
+                    }
+                  }
+                } else {
+                  if (this.requestKeyType == RequestKeyType.DIDKey
+                    && this.allDIDIds.includes(this.request.did)) {
+                    this.cancelSigning('The DID requested for signing does not have any DID keys!');
+                  } else {
+                    this.cancelSigning('The DID requested for signing does not exist!');
+                  }
+
+                  return;
+                }
               }
-            } else if (this.selectedSignMethod == 'FCT Address') {
-              // if address is specified check here; add boolean addressSpecified to disable the option to choose different address
-              this.selectedPublicAddress = this.fctAddresses[0];
-            } else if (this.selectedSignMethod == 'EC Address') {
-              this.selectedPublicAddress = this.ecAddresses[0];
-            } else {
-              // error unsupported sign method
+          } else if ((this.requestKeyType == RequestKeyType.FCT && this.fctAddresses.length > 0)
+            || (this.requestKeyType == RequestKeyType.EC && this.ecAddresses.length > 0)) {
+            this.availableFactomAddresses = this.requestKeyType == RequestKeyType.FCT
+            ? this.fctAddresses
+            : this.ecAddresses;
+
+            this.availableFactomAddressesPublicInfo = this.requestKeyType == RequestKeyType.FCT
+            ? this.fctAddressesPublicInfo
+            : this.ecAddressesPublicInfo;
+
+            this.selectedFactomAddress = this.availableFactomAddresses[0];
+
+            const selectedAddress = this.request.keyIdentifier;
+            if (selectedAddress) {
+              if (this.availableFactomAddresses.includes(selectedAddress)) {
+                this.selectedFactomAddress = selectedAddress;
+                this.factomAddressSpecified = true;
+              } else {
+                this.cancelSigning(`The ${this.requestKeyType.toUpperCase()} Address requested for signing does not exist!`);
+                return;
+              }
             }
-          } else {
-            // error
           }
 
-          if (this.content.data) {
-            this.dataToSign = JSON.stringify(this.content.data, null, 2);
-          } else {
-            // error invalid format; skip the entry or show error
-            // validation may also be in background.js
-          }
+          this.dataToSign = JSON.stringify(this.request.data, null, 2);
         }
       });
     });
   }
 
   private getPendingRequestsCount() {
-    chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (response) => {
+    chrome.runtime.sendMessage({type: ChromeMessageType.PendingSigningRequestsCount}, (response) => {
       this.zone.run(() => {
-        this.pendingRequestsCount = response.pendingRequestsCount;
+        this.pendingRequestsCount = response.pendingSigningRequestsCount;
         this.signingService.updatePendingRequestsCount(this.pendingRequestsCount);
       });
     });
   }
 
-  private cancelContentToSign() {
-    this.toastr.info('Signing request cancelled!', null, {timeOut: 1000});
-    chrome.runtime.sendMessage({type: ChromeMessageType.CancelSigning, data: {content: this.content}});
-    this.clearContentData();
+  private cancelSigningRequest() {
+    chrome.runtime.sendMessage({type: ChromeMessageType.CancelSigningRequest, data: {requestId: this.request.requestId}});
+    this.clearRequestData();
   }
 
-  private skipContentToSign() {
+  private skipSigningRequest() {
     this.toastr.info('Signing request skipped!', null, {timeOut: 1000});
-    chrome.runtime.sendMessage({type: ChromeMessageType.SkipSigning});
-    this.clearContentData();
+    chrome.runtime.sendMessage({type: ChromeMessageType.SkipSigningRequest});
+    this.clearRequestData();
   }
 
-  private clearContentData() {
-    this.content = undefined;
+  private clearRequestData() {
+    this.request = undefined;
     this.dataToSign = undefined;
     this.from = undefined;
+    this.requestKeyType = undefined;
+    this.selectedDIDId = undefined;
+    this.selectedKeyId = undefined;
+    this.availableDIDIds = undefined;
+    this.availableKeys = undefined;
+    this.selectedFactomAddress = undefined;
+    this.availableFactomAddresses = undefined;
+    this.availableFactomAddressesPublicInfo = undefined;
+    this.factomAddressSpecified = false;
+    this.keySpecified = false;
+    this.didIdSpecified = false;
   }
 }
