@@ -85,7 +85,7 @@ function calculateSha512(content: string): string {
 function calculateDoubleSha256(content: string) {
   const hash = sha256.update(content);
   const hash2 = sha256.update(hash.digest());
-  return hash2.hex();
+  return hash2.digest();
 }
 
 async function exportPemKeys(keys) {
@@ -141,7 +141,6 @@ export {
   minifyPublicKey,
   minifyDid,
   convertPemToBinary,
-  arrayBufferToBase64String,
   toHexString,
   calculateChainId,
   calculateSha512,
