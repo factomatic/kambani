@@ -24,6 +24,8 @@ import { SignatureType } from '../../enums/signature-type';
 import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
 import { VaultService } from '../vault/vault.service';
 
+const RSA_SIGNING_ALGO_NAME = "RSASSA-PKCS1-v1_5";
+
 @Injectable()
 export class SigningService {
   private entrySchemaVersion = environment.entrySchemaVersion;
@@ -58,6 +60,10 @@ export class SigningService {
 
           signatureType = signingKeyOrAddress.type.replace('VerificationKey', '') as SignatureType;
           signature = Buffer.from(await this.getSignature(dataToSign, signatureType, privateKey));
+
+          if (signatureType == SignatureType.RSA) {
+            signatureType = RSA_SIGNING_ALGO_NAME;
+          }
 
         } else {
           const privateKey = addressToKey(decryptedVault[signingKeyOrAddress]);
@@ -279,7 +285,7 @@ export class SigningService {
       return signature.toDER();
     } else if (type == SignatureType.RSA) {
       const signAlgorithm = {
-        name: "RSASSA-PKCS1-v1_5",
+        name: RSA_SIGNING_ALGO_NAME,
         modulusLength: 4096,
         publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
         hash: { name: "SHA-256" }
