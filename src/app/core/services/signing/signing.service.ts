@@ -1,18 +1,21 @@
+declare const Buffer;
 import * as base58 from 'bs58';
 import * as elliptic from 'elliptic';
 import * as encryptor from 'browser-passworder';
 import * as nacl from 'tweetnacl/nacl-fast';
 import * as naclUtil from 'tweetnacl-util';
-import { Buffer } from 'buffer/';
+import { addressToKey } from 'factom';
 import { defer, Observable } from 'rxjs';
 import { Injectable, Output, EventEmitter } from '@angular/core';
+import { sha256 } from 'js-sha256';
 
-import { arrayBufferToBase64String, convertPemToBinary, calculateDoubleSha256 } from '../../utils/helpers';
+import { convertPemToBinary, calculateDoubleSha256 } from '../../utils/helpers';
 import { DIDDocument } from '../../interfaces/did-document';
 import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { EntryType } from '../../enums/entry-type';
 import { environment } from 'src/environments/environment';
 import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
+import { RequestKeyType } from '../../enums/request-key-type';
 import { RevokeModel } from '../../interfaces/revoke-model';
 import { ServiceEntryModel } from '../../interfaces/service-entry';
 import { SignatureDataModel } from '../../models/signature-data.model';
@@ -20,6 +23,8 @@ import { SignatureResultModel } from '../../models/signature-result.model';
 import { SignatureType } from '../../enums/signature-type';
 import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
 import { VaultService } from '../vault/vault.service';
+
+const RSA_SIGNING_ALGO_NAME = "RSASSA-PKCS1-v1_5";
 
 @Injectable()
 export class SigningService {
@@ -29,27 +34,53 @@ export class SigningService {
 
   constructor(private vaultService: VaultService) { }
 
-  signData(data: string, signingKeyModel: DidKeyEntryModel, vaultPassword: string): Observable<SignatureDataModel> {
+  signData(data: string, requestKeyType: string, signingKeyOrAddress: any, vaultPassword: string): Observable<SignatureDataModel> {
     return defer(async () => {
       try {
-        const signingKeyIdParts = signingKeyModel.id.split('#');
-        const didId = signingKeyIdParts[0];
-        const signingKeyAlias = signingKeyIdParts[1];
-
         const vault = this.vaultService.getVault();
         const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
-        const didKeys = decryptedVault[didId].didKeys;
-        const privateKey = didKeys[signingKeyAlias];
-        const dataToSign = Buffer.from(data, 'utf8');
-        const signatureType = signingKeyModel.type.replace('VerificationKey', '') as SignatureType;
-        const signature = await this.getSignature(dataToSign, signatureType, privateKey);
+        const dataToSign = Buffer.from(sha256.update(data).digest());
+        let privateKey;
+        let signatureType;
+        let publicKey;
+        let signature;
+
+        if (requestKeyType == RequestKeyType.DIDKey || requestKeyType == RequestKeyType.ManagementKey) {
+          const signingKeyIdParts = signingKeyOrAddress.id.split('#');
+          const didId = signingKeyIdParts[0];
+          const signingKeyAlias = signingKeyIdParts[1];
+          const keys = requestKeyType == RequestKeyType.DIDKey
+            ? decryptedVault[didId].didKeys
+            : decryptedVault[didId].managementKeys;
+
+          privateKey = keys[signingKeyAlias];
+          publicKey = signingKeyOrAddress.publicKeyBase58
+            ? Buffer.from(base58.decode(signingKeyOrAddress.publicKeyBase58))
+            : Buffer.from(convertPemToBinary(signingKeyOrAddress.publicKeyPem));
+
+          signatureType = signingKeyOrAddress.type.replace('VerificationKey', '') as SignatureType;
+          signature = Buffer.from(await this.getSignature(dataToSign, signatureType, privateKey));
+
+          if (signatureType == SignatureType.RSA) {
+            signatureType = RSA_SIGNING_ALGO_NAME;
+          }
+
+        } else {
+          const privateKey = addressToKey(decryptedVault[signingKeyOrAddress]);
+          const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
+          publicKey = Buffer.from(keyPair.publicKey);
+          signatureType = SignatureType.EdDSA;
+          signature = Buffer.from(nacl.sign.detached(dataToSign, keyPair.secretKey));
+        }
+
         this.vaultService.updateSignedRequests();
 
         return new SignatureDataModel(
-          data,
-          signatureType,
-          signingKeyModel.publicKeyBase58 ? signingKeyModel.publicKeyBase58 : signingKeyModel.publicKeyPem,
-          signature);
+          dataToSign,
+          publicKey,
+          signature,
+          signatureType
+        );
       } catch {
         return undefined;
       }
@@ -63,11 +94,14 @@ export class SigningService {
         const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
         const managementKeys = decryptedVault[didId].managementKeys;
         const privateKey = managementKeys[selectedManagementKey.id.split('#')[1]];
-        const contentToSignDoubleSha256Hash = calculateDoubleSha256(EntryType.UpdateDIDEntry.concat(this.entrySchemaVersion, selectedManagementKey.id, JSON.stringify(entry)));
-        const signatureBase64 = await this.getSignature(
-          Buffer.from(contentToSignDoubleSha256Hash, 'utf8'),
-          selectedManagementKey.type.replace('VerificationKey', '') as SignatureType,
-          privateKey);
+        const signatureType = selectedManagementKey.type.replace('VerificationKey', '') as SignatureType;
+
+        const contentToSign = Buffer.from(calculateDoubleSha256(
+          EntryType.UpdateDIDEntry.concat(this.entrySchemaVersion, selectedManagementKey.id, JSON.stringify(entry))
+        ));
+
+        const signature = await this.getSignature(contentToSign, signatureType, privateKey);   
+        const signatureBase64 = naclUtil.encodeBase64(signature);
 
         return new SignatureResultModel(true, 'Successfully signed the entry', signatureBase64);
       } catch {
@@ -237,27 +271,21 @@ export class SigningService {
     return requiredPriority;
   }
 
-  private async getSignature(dataToSign: Buffer, type: SignatureType, privateKey: string): Promise<string> {
+  private async getSignature(dataToSign: Buffer, type: SignatureType, privateKey: string): Promise<any> {
     if (type === SignatureType.EdDSA) {
       const secret = Buffer.from(base58.decode(privateKey));
       const keyPair = nacl.sign.keyPair.fromSecretKey(secret);
 
-      const signature = nacl.sign.detached(dataToSign, keyPair.secretKey);
-      const signatureBase64 = naclUtil.encodeBase64(signature);
-
-      return signatureBase64;
+      return nacl.sign.detached(dataToSign, keyPair.secretKey);
     } else if (type === SignatureType.ECDSA) {
       const ec = elliptic.ec('secp256k1');
       const key = ec.keyFromPrivate(base58.decode(privateKey), 'hex');
       const signature = key.sign(dataToSign);
 
-      const derSignature = signature.toDER();
-      const signatureBase64 = naclUtil.encodeBase64(derSignature);
-
-      return signatureBase64;
+      return signature.toDER();
     } else if (type == SignatureType.RSA) {
       const signAlgorithm = {
-        name: "RSASSA-PKCS1-v1_5",
+        name: RSA_SIGNING_ALGO_NAME,
         modulusLength: 4096,
         publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
         hash: { name: "SHA-256" }
@@ -265,9 +293,8 @@ export class SigningService {
 
       const privateCryptoKey = await window.crypto.subtle.importKey("pkcs8", convertPemToBinary(privateKey) as ArrayBuffer, signAlgorithm, true, ["sign"]);
       const signature = await window.crypto.subtle.sign(signAlgorithm, privateCryptoKey, dataToSign);
-      const signatureBase64 = arrayBufferToBase64String(signature);
 
-      return signatureBase64;
+      return new Uint8Array(signature);
     }
   }
 }

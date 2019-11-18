@@ -1,5 +1,3 @@
-/// <reference types="chrome" />
-
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { NgxSpinnerService } from 'ngx-spinner';

@@ -1,5 +1,3 @@
-/// <reference types="chrome" />
-
 import { Component, OnInit, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -34,9 +32,16 @@ export class AppComponent implements OnInit {
             this.router.navigate(['/factom/addresses/manage']);
           });
         } else {
-          chrome.runtime.sendMessage({type: ChromeMessageType.PendingRequestsCount}, (pendingRequestsResponse) => {
+          chrome.runtime.sendMessage({type: ChromeMessageType.PendingSigningRequestsCount}, (pendingRequestsResponse) => {
             this.zone.run(() => {
-              if (pendingRequestsResponse.pendingRequestsCount > 0) {
+              const pendingRequests = pendingRequestsResponse.pendingSigningRequestsCount;
+              chrome.browserAction.getBadgeText({}, function(result) {
+                if (parseInt(result) !== pendingRequests) {
+                  chrome.browserAction.setBadgeText({text: pendingRequests.toString()});
+                }
+              });
+
+              if (pendingRequests > 0) {
                 this.router.navigate(['signer']);
               }
             });

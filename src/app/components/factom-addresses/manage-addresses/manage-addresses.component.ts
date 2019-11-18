@@ -1,5 +1,3 @@
-/// <reference types="chrome" />
-
 declare const Buffer;
 import { Component, OnInit } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
