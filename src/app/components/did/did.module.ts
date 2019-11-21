@@ -11,6 +11,8 @@ import { AliasValidator } from 'src/app/core/utils/alias.validator';
 import { didComponents } from '.';
 import { DIDRoutingModule } from './did.routing';
 
+import { ClickOutsideModule } from 'ng-click-outside';
+
 hljs.registerLanguage('json', json);
 
 export function highlightJsFactory() {
@@ -32,6 +34,7 @@ export function highlightJsFactory() {
     }),
     MDBBootstrapModule.forRoot(),
     NgbModule,
+    ClickOutsideModule,
     ReactiveFormsModule
   ],
   exports: [

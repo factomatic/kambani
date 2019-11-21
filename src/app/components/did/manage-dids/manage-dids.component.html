@@ -26,16 +26,10 @@
               <tr *ngFor="let didId of displayedDidIds">
                 <td><span>{{didId}}</span></td>
                 <td>
-                  <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true">{{allDIDsPublicInfo[didId].nickname}}</a>
+                  <a *ngIf="!didEditNickname[didId]" (click)="editNickname(didId, '')">{{allDIDsPublicInfo[didId].nickname ? allDIDsPublicInfo[didId].nickname : 'N/A'}}</a>
                   <div class="nickname-editable" *ngIf="didEditNickname[didId]">
-                    <form (ngSubmit)="editNickname(didId, nickname.value)">
-                      <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}" class="form-control" />
-                      <button class="btn btn-danger" (click)="didEditNickname[didId] = false">
-                        <i class="fa fa-times"></i>
-                      </button>
-                      <button type="submit" class="btn btn-primary">
-                        <i class="fa fa-save"></i>
-                      </button>
+                    <form (ngSubmit)="editNickname(didId, nickname.value)" (clickOutside)="editNickname(didId, nickname.value)" [attachOutsideOnClick]="didEditNickname[didId]" >
+                      <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}"  class="form-control" />
                     </form>
                   </div>
                 </td>

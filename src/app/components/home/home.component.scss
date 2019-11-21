@@ -1,4 +1,4 @@
-.card-holder { 
+.card-holder {
   margin-top: 20px;
   .card-item {
     background-image: linear-gradient(45deg, #1c65c9 0%, #2c80ff 100%);
@@ -17,11 +17,16 @@
       text-align: center;
       line-height: 61px;
       float: left;
+      &.txt {
+        line-height: 50px;
+        font-weight: 700;
+        font-size: 18px;
+      }
     }
     .text-holder {
       float: left;
       font-size: 17px;
-      .title {  
+      .title {
         display: block;
         letter-spacing: 1px;
         text-transform: uppercase;
@@ -35,7 +40,7 @@
     @media only screen and (min-width: 576px) and (max-width: 767px){
       padding: 10px;
       .icon-holder {
-        width: 35px; 
+        width: 35px;
         height: 35px;
         line-height: 37px;
         margin-right: 11px;
