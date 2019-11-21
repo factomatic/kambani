@@ -3,7 +3,7 @@ export const environment = {
   storageKey: '@#signerextension#@',
   staging: true,
   entrySchemaVersion: '1.0.0',
-  didMethodSpecVersion: '0.1.0',
+  didMethodSpecVersion: '0.2.0',
   entrySizeLimit: 10275,
   apiUrl: 'https://testnet-api.factomatic.io/write-did'
 };
