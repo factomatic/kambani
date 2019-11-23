@@ -103,7 +103,7 @@ export class DIDService {
       [EntryType.UpdateDIDEntry, this.entrySchemaVersion, managementKeyId, signature],
       entry
     ]);
-    
+
     // change the api url with update endpoint
     // const updateApiUrl = '';
     // return this.recordEntry(updateApiUrl, data);
@@ -150,7 +150,7 @@ export class DIDService {
         'Content-Type': 'application/json'
       })
     };
-    
+
     return this.http.post(apiUrl, data, httpOptions);
   }
 

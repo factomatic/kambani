@@ -7,6 +7,8 @@ import { ManagementKeyEntryModel } from 'src/app/core/interfaces/management-key-
 import { minifyPublicKey, minifyDid } from 'src/app/core/utils/helpers';
 import { ServiceEntryModel } from 'src/app/core/interfaces/service-entry';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
+import { DIDService } from 'src/app/core/services/did/did.service';
+
 
 @Component({
   selector: 'app-preview-did',
@@ -21,9 +23,13 @@ export class PreviewDidComponent implements OnInit {
   public managementKeys: ManagementKeyEntryModel[];
   public didKeys: DidKeyEntryModel[];
   public services: ServiceEntryModel[];
+  public formScreenOpen: boolean = false;
+
+  public currentMode = 1;
 
   constructor(
     private route: ActivatedRoute,
+    private didService: DIDService,
     private vaultService: VaultService ) { }
 
   ngOnInit() {
@@ -35,5 +41,14 @@ export class PreviewDidComponent implements OnInit {
     this.managementKeys = didDocument.managementKey;
     this.didKeys = didDocument.didKey ? didDocument.didKey : [];
     this.services = didDocument.service ? didDocument.service : [];
+
+    this.didService.loadDIDForUpdate(this.didId);
+
   }
+
+  closeFormScreen() {
+    this.formScreenOpen = false;
+    // this.getDIDsInfo();
+  }
+
 }

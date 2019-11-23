@@ -1,0 +1,70 @@
+<form [formGroup]="keyForm" (ngSubmit)="generateKey()">
+  <div class="form-group">
+    <label class="control-label" for="purpose">Purpose type</label>
+    <select class="form-control" formControlName="purpose" id="purpose">
+      <option value="publicKey">Public Key</option>
+      <option value="authentication">Authentication Key</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label" for="type">Signature type</label>
+    <select class="form-control" formControlName="type" id="type">
+      <option value="Ed25519">Ed25519</option>
+      <option value="ECDSASecp256k1">ECDSASecp256k1</option>
+      <option value="RSA">RSA</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label" for="controller">Key controller</label>
+    <input
+      type="text"
+      class="form-control input-md"
+      formControlName="controller"
+      id="controller"
+      placeholder="Key controller"
+      pattern="^did:factom:[abcdef0-9]{64}$"
+      [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
+    <div *ngIf="controller.errors" class="invalid-feedback">
+      <div *ngIf="controller['errors'].required">Key controller is required!</div>
+      <div *ngIf="controller['errors'].pattern">Key controller must be a valid DID!</div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label" for="alias">Alias</label>
+    <input
+      type="text"
+      class="form-control input-md"
+      formControlName="alias" id="alias"
+      placeholder="Alias"
+      pattern="^[a-z0-9-]{1,32}$"
+      [ngClass]="{ 'is-invalid': alias.touched && alias.errors }" />
+    <div *ngIf="alias.errors" class="invalid-feedback">
+      <div *ngIf="alias['errors'].required">Alias is required!</div>
+      <div *ngIf="alias['errors'].pattern">Alias must not be more than 32 characters long and must contain only lower-case letters, digits and hyphens!</div>
+      <div *ngIf="alias['errors'].taken">You have already used this alias!</div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label" for="priorityRequirement">
+      Priority Requirement
+    </label>
+    <input
+      type="number"
+      class="form-control input-md"
+      formControlName="priorityRequirement"
+      id="priorityRequirement"
+      [ngClass]="{ 'is-invalid': priorityRequirement.touched && priorityRequirement.errors }" />
+    <div *ngIf="priorityRequirement.errors" class="invalid-feedback">
+      <div *ngIf="priorityRequirement['errors'].min">Priority requirement must be a positive number!</div>
+      <div *ngIf="priorityRequirement['errors'].max">Priority requirement must not be bigger than 100!</div>
+    </div>
+  </div>
+
+  <div class="form-group text-center">
+    <input type="submit" mdbBtn color="success" class="btn btn-block" mdbWavesEffect value="Generate key" [disabled]="keyForm.invalid" />
+  </div>
+</form>

@@ -7,6 +7,8 @@ import { PreviewDidComponent } from './preview-did/preview.did.component';
 import { ServicesComponent } from './services/services.component';
 import { StepperComponent } from './stepper/stepper.component';
 import { SummaryComponent } from './summary/summary.component';
+import { ManagementKeyCreateComponent } from './mgmtkeys-create/mgmtcreate.component';
+import { DidKeyCreateComponent } from './didkeys-create/didkeyscreate.component';
 
 export const didComponents = [
   ActionComponent,
@@ -17,5 +19,7 @@ export const didComponents = [
   PreviewDidComponent,
   ServicesComponent,
   StepperComponent,
-  SummaryComponent
+  SummaryComponent,
+  ManagementKeyCreateComponent,
+  DidKeyCreateComponent
 ];
