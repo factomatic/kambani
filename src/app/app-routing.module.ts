@@ -11,6 +11,8 @@ import { DidKeyCreateComponent } from './components/did/didkeys-create/didkeyscr
 import { SignerComponent } from './components/signer/signer.component';
 import { UpdateActionGuard } from './core/guards/update-action.guard';
 import { VaultGuard } from './core/guards/vault.guard';
+import { ServiceCreateComponent } from './components/did/services-create/servicescreate.component';
+
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'home' },
@@ -27,6 +29,8 @@ const routes: Routes = [
     { path: 'mgmtkey/update/:id', component: ManagementKeyCreateComponent },
     { path: 'didkey/create', component: DidKeyCreateComponent },
     { path: 'didkey/update/:id', component: DidKeyCreateComponent },
+    { path: 'service/create', component: ServiceCreateComponent },
+    { path: 'service/update/:id', component: ServiceCreateComponent },
   ] },
   { path: 'factom', loadChildren: './components/factom-addresses/factom-addresses.module#FactomAddressesModule' },
   { path: '**', component: HomeComponent, canActivate: [VaultGuard] }

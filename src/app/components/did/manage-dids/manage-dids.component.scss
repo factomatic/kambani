@@ -171,3 +171,14 @@ a {
     }
   }
 }
+.header-search {
+  width: 300px;
+  input {
+    width: calc(300px - 43px);
+    float: left;
+    height: 40px;
+  }
+  button {
+    float: right;
+  }
+}

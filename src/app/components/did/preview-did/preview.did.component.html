@@ -3,7 +3,7 @@
     <div class="col-xs-12 col-sm-12 col-md-12">
       <div class="page-content">
         <div class="row">
-          <div class="col-12 col-sm-8 col-md-9">
+          <div class="col-12 col-md-8">
             <h1 class="head">
               {{didId}}
             </h1>
@@ -14,8 +14,8 @@
               </div>
             </div>
           </div>
-          <div class="col-12 col-sm-4 col-md-3 text-md-right text-sm-right text-lg-right">
-            <a href="javascript:;" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/{{currentMode == 1 ? 'mgmtkey/create' : (currentMode == 2 ? 'didkey/create' : '' )}}" (click)="formScreenOpen = true">Add {{currentMode == 1 ? 'MGMT key' : (currentMode == 2 ? 'DID key' : 'service')}}</a>
+          <div class="col-12 col-md-4 text-md-right text-sm-right text-lg-right">
+            <a href="javascript:;" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/{{currentMode == 1 ? 'mgmtkey/create' : (currentMode == 2 ? 'didkey/create' : 'service/create' )}}" (click)="formScreenOpen = true">Add {{currentMode == 1 ? 'MGMT key' : (currentMode == 2 ? 'DID key' : 'service')}}</a>
             <a class="btn btn-outline-success backup-btn action-btn" href="javascript:;"><i class="fa fa-download"></i></a>
             <!-- <a class="btn btn-outline-warning action-btn" href="javascript:;"><i class="fa fa-edit"></i></a> -->
             <a class="btn btn-outline-danger action-btn" href="javascript:;"><i class="fa fa-trash"></i></a>
@@ -121,7 +121,7 @@
                       <div class="label">Service type</div>
                       <div class="value">{{service.type}}</div>
                       <div class="buttons">
-                        <a href="javascript:;" class="btn btn-xs btn-warning" (click)="formScreenOpen = true"><i class="fa fa-edit"></i></a>
+                        <a href="javascript:;" class="btn btn-xs btn-warning" routerLink="/dids/preview/{{didId}}/service/update/{{service.id.split('#')[1]}}" (click)="formScreenOpen = true"><i class="fa fa-edit"></i></a>
                         <a href="javascript:;" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
                           <a href="javascript:;" class="btn btn-xs btn-default" (click)="collapse.toggle();"><i class="fa fa-plus"></i></a>
                       </div>
