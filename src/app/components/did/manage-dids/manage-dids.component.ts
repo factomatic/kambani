@@ -15,7 +15,6 @@ import { SelectAction } from 'src/app/core/store/action/action.actions';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 import { WorkflowService } from 'src/app/core/services/workflow/workflow.service';
 
-
 @Component({
   selector: 'app-manage-dids',
   templateUrl: './manage-dids.component.html',
@@ -59,6 +58,7 @@ export class ManageDidsComponent implements OnInit {
 
     this.getDIDsInfo();
   }
+
   backupDid(didId: string) {
     const dialogMessage = 'Enter your vault password to open the vault and encrypt your DID';
 
@@ -81,14 +81,9 @@ export class ManageDidsComponent implements OnInit {
   }
 
   editNickname(didId: string, nickname: string) {
-    console.log(this.didEditNickname[didId] !== true);
-    if(this.didEditNickname[didId] !== true){
-      this.didEditNickname[didId] = true;
-    }else {
-      this.vaultService.updateDIDNickname(didId, nickname);
-      this.allDIDsPublicInfo[didId].nickname = nickname;
-      this.didEditNickname[didId] = false;
-    }
+    this.vaultService.updateDIDNickname(didId, nickname);
+    this.allDIDsPublicInfo[didId].nickname = nickname;
+    this.didEditNickname[didId] = false;
   }
 
   updateDid(didId: string) {

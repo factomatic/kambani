@@ -44,6 +44,9 @@ $mainColor: #2F5BE7;
           a:not(:last-child) {
             margin-right: 3px;
           }
+          button:not(:last-child) {
+            margin-right: 3px;
+          }
         }
       }
     }

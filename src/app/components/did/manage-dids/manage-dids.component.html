@@ -26,7 +26,7 @@
               <tr *ngFor="let didId of displayedDidIds">
                 <td><span>{{didId}}</span></td>
                 <td>
-                  <a *ngIf="!didEditNickname[didId]" (click)="editNickname(didId, '')">{{allDIDsPublicInfo[didId].nickname ? allDIDsPublicInfo[didId].nickname : 'N/A'}}</a>
+                  <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true">{{allDIDsPublicInfo[didId].nickname}}</a>
                   <div class="nickname-editable" *ngIf="didEditNickname[didId]">
                     <form (ngSubmit)="editNickname(didId, nickname.value)" (clickOutside)="editNickname(didId, nickname.value)" [attachOutsideOnClick]="didEditNickname[didId]" >
                       <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}"  class="form-control" />
@@ -44,9 +44,8 @@
                 </td>
                 <td class="text-right">
                   <a routerLink="/dids/preview/{{didId}}" class="btn btn-xs btn-primary"><i class="fa fa-search"></i></a>
-                  <a (click)="backupDid(didId)" class="btn btn-xs btn-success"><i class="fa fa-download"></i></a>
-                  <!-- <a (click)="updateDid(didId)" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i></a> -->
-                  <a href="javascript:;" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
+                  <button (click)="backupDid(didId)" class="btn btn-xs btn-success"><i class="fa fa-download"></i></button>
+                  <button class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
                 </td>
               </tr>
             </tbody>
