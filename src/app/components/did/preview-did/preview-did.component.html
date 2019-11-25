@@ -15,18 +15,19 @@
             </div>
           </div>
           <div class="col-12 col-md-4 text-md-right text-sm-right text-lg-right">
-            <a href="javascript:;" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/{{currentMode == 1 ? 'mgmtkey/create' : (currentMode == 2 ? 'didkey/create' : 'service/create' )}}" (click)="formScreenOpen = true">Add {{currentMode == 1 ? 'MGMT key' : (currentMode == 2 ? 'DID key' : 'service')}}</a>
+            <a *ngIf="currentMode == MGMTKeysMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-management-key" (click)="formScreenOpen = true">Add MGMT key</a>
+            <a *ngIf="currentMode == DIDKeysMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-did-key" (click)="formScreenOpen = true">Add DID key</a>
+            <a *ngIf="currentMode == ServicesMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-service" (click)="formScreenOpen = true">Add service</a>
             <a class="btn btn-outline-success backup-btn action-btn" href="javascript:;"><i class="fa fa-download"></i></a>
-            <!-- <a class="btn btn-outline-warning action-btn" href="javascript:;"><i class="fa fa-edit"></i></a> -->
             <a class="btn btn-outline-danger action-btn" href="javascript:;"><i class="fa fa-trash"></i></a>
             <div class="clearfix"></div>
           </div>
         </div>
         <nav class="info-tables">
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <a class="nav-item nav-link active" id="nav-mkeys-tab" data-toggle="tab" href="#nav-mkeys" role="tab" aria-controls="nav-mkeys" aria-selected="true" (click)="currentMode = 1">MGMT Keys</a>
-            <a class="nav-item nav-link" id="nav-dkeys-tab" data-toggle="tab" href="#nav-dkeys" role="tab" aria-controls="nav-dkeys" aria-selected="false" (click)="currentMode = 2">DID Keys</a>
-            <a class="nav-item nav-link" id="nav-services-tab" data-toggle="tab" href="#nav-services" role="tab" aria-controls="nav-services" aria-selected="false" (click)="currentMode = 3">Services</a>
+            <a class="nav-item nav-link active" id="nav-mkeys-tab" data-toggle="tab" href="#nav-mkeys" role="tab" aria-controls="nav-mkeys" aria-selected="true" (click)="currentMode = MGMTKeysMode">MGMT Keys</a>
+            <a class="nav-item nav-link" id="nav-dkeys-tab" data-toggle="tab" href="#nav-dkeys" role="tab" aria-controls="nav-dkeys" aria-selected="false" (click)="currentMode = DIDKeysMode">DID Keys</a>
+            <a class="nav-item nav-link" id="nav-services-tab" data-toggle="tab" href="#nav-services" role="tab" aria-controls="nav-services" aria-selected="false" (click)="currentMode = ServicesMode">Services</a>
           </div>
         </nav>
         <div class="tab-content" id="nav-tabContent">
@@ -37,11 +38,11 @@
                   <div class="info-box">
                     <div class="info-row alias-row">
                       <div class="label">Alias</div>
-                      <div class="value">{{managementKey.id.split('#')[1]}}</div>
+                      <div class="value">{{managementKey.alias}}</div>
                       <div class="buttons">
-                        <a href="javascript:;" class="btn btn-xs btn-warning" routerLink="/dids/preview/{{didId}}/mgmtkey/update/{{managementKey.id.split('#')[1]}}" (click)="formScreenOpen = true"><i class="fa fa-edit"></i></a>
-                        <a href="javascript:;" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
-                          <a href="javascript:;" class="btn btn-xs btn-primary" (click)="collapse.toggle();"><i class="fa fa-plus"></i></a>
+                        <a class="btn btn-xs btn-warning" routerLink="/dids/preview/{{didId}}/update-management-key/{{managementKey.alias}}" (click)="formScreenOpen = true"><i class="fa fa-edit"></i></a>
+                        <button class="btn btn-xs btn-danger" (click)="removeManagementKey(managementKey)"><i class="fa fa-trash"></i></button>
+                        <button class="btn btn-xs btn-primary" (click)="collapse.toggle()"><i class="fa fa-plus"></i></button>
                       </div>
                     </div>
                     <div mdbCollapse #collapse="bs-collapse">
@@ -55,7 +56,7 @@
                       </div>
                       <div class="info-row">
                         <div class="label">Public Key</div>
-                        <div class="value">{{managementKey.publicKeyBase58 ? minKey(managementKey.publicKeyBase58) : minKey(managementKey.publicKeyPem)}}</div>
+                        <div class="value">{{minKey(managementKey.publicKey)}}</div>
                       </div>
                       <div class="info-row">
                         <div class="label">Priority</div>
@@ -63,7 +64,7 @@
                       </div>
                       <div class="info-row">
                         <div class="label">Priority Requirement</div>
-                        <div class="value">{{managementKey.priorityRequirement ? managementKey.priorityRequirement : 'N/A'}}</div>
+                        <div class="value">{{managementKey.priorityRequirement >= 0 ? managementKey.priorityRequirement : 'N/A'}}</div>
                       </div>
                     </div>
                   </div>
@@ -78,11 +79,11 @@
                   <div class="info-box">
                     <div class="info-row alias-row">
                       <div class="label">Alias</div>
-                      <div class="value">{{didKey.id.split('#')[1]}}</div>
+                      <div class="value">{{didKey.alias}}</div>
                       <div class="buttons">
-                        <a href="javascript:;" class="btn btn-xs btn-warning" routerLink="/dids/preview/{{didId}}/didkey/update/{{didKey.id.split('#')[1]}}"  (click)="formScreenOpen = true"><i class="fa fa-edit"></i></a>
-                        <a href="javascript:;" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
-                          <a href="javascript:;" class="btn btn-xs btn-default" (click)="collapse.toggle();"><i class="fa fa-plus"></i></a>
+                        <a class="btn btn-xs btn-warning" routerLink="/dids/preview/{{didId}}/update-did-key/{{didKey.alias}}"  (click)="formScreenOpen = true"><i class="fa fa-edit"></i></a>
+                        <button class="btn btn-xs btn-danger" (click)="removeDIDKey(didKey)"><i class="fa fa-trash"></i></button>
+                        <button class="btn btn-xs btn-default" (click)="collapse.toggle()"><i class="fa fa-plus"></i></button>
                       </div>
                     </div>
                     <div mdbCollapse #collapse="bs-collapse">
@@ -100,15 +101,18 @@
                       </div>
                       <div class="info-row">
                         <div class="label">Public Key</div>
-                        <div class="value">{{didKey.publicKeyBase58 ? minKey(didKey.publicKeyBase58) : minKey(didKey.publicKeyPem)}}</div>
+                        <div class="value">{{minKey(didKey.publicKey)}}</div>
                       </div>
                       <div class="info-row">
                         <div class="label">Priority Requirement</div>
-                        <div class="value">{{didKey.priorityRequirement ? didKey.priorityRequirement : 'N/A'}}</div>
+                        <div class="value">{{didKey.priorityRequirement >= 0 ? didKey.priorityRequirement : 'N/A'}}</div>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="didKeys.length == 0">
+                <p class="text-warning text-center">The DID does not have any DID Keys</p>
               </div>
             </div>
           </div>
@@ -121,19 +125,18 @@
                       <div class="label">Service type</div>
                       <div class="value">{{service.type}}</div>
                       <div class="buttons">
-                        <a href="javascript:;" class="btn btn-xs btn-warning" routerLink="/dids/preview/{{didId}}/service/update/{{service.id.split('#')[1]}}" (click)="formScreenOpen = true"><i class="fa fa-edit"></i></a>
-                        <a href="javascript:;" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
-                          <a href="javascript:;" class="btn btn-xs btn-default" (click)="collapse.toggle();"><i class="fa fa-plus"></i></a>
+                        <button class="btn btn-xs btn-danger" (click)="removeService(service)"><i class="fa fa-trash"></i></button>
+                        <button class="btn btn-xs btn-default" (click)="collapse.toggle()"><i class="fa fa-plus"></i></button>
                       </div>
                     </div>
                     <div mdbCollapse #collapse="bs-collapse">
                       <div class="info-row">
                         <div class="label">Alias</div>
-                        <div class="value">{{service.id.split('#')[1]}}</div>
+                        <div class="value">{{service.alias}}</div>
                       </div>
                       <div class="info-row">
                         <div class="label">Service endpoint</div>
-                        <div class="value">{{service.serviceEndpoint}}</div>
+                        <div class="value">{{service.endpoint}}</div>
                       </div>
                       <div class="info-row">
                         <div class="label">Priority Requirement</div>
@@ -142,6 +145,9 @@
                     </div>
                   </div>
                 </div>
+              </div>
+              <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="services.length == 0">
+                <p class="text-warning text-center">The DID does not have any Services</p>
               </div>
             </div>
           </div>
@@ -158,8 +164,8 @@
     </div>
   </div>
 </div>
-<div class="fixed-bottom-button">
+<div class="fixed-bottom-button" *ngIf="pendingChanges">
   <div class="container text-center">
-      <button class="btn btn-success">Save changes</button>
-    </div>
+    <button class="btn btn-success" (click)="saveChanges()">Save changes</button>
+  </div>
 </div>

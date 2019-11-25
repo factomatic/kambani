@@ -7,7 +7,7 @@ import { DidKeyFormComponent } from './components/did/update-did/did-key-form/di
 import { HomeComponent } from './components/home/home.component';
 import { ManageDidsComponent } from './components/did/manage-dids/manage-dids.component';
 import { ManagementKeyFormComponent } from './components/did/update-did/management-key-form/management-key-form.component';
-import { PreviewDidComponent } from './components/did/preview-did/preview.did.component';
+import { PreviewDidComponent } from './components/did/preview-did/preview-did.component';
 import { ServiceFormComponent } from './components/did/update-did/service-form/service-form.component';
 import { SignerComponent } from './components/signer/signer.component';
 import { UpdateActionGuard } from './core/guards/update-action.guard';

@@ -5,7 +5,7 @@ import { FinalComponent } from './final/final.component';
 import { ManageDidsComponent } from './manage-dids/manage-dids.component';
 import { ManagementKeyFormComponent } from './update-did/management-key-form/management-key-form.component';
 import { ManagementKeysComponent } from './management-keys/management-keys.component';
-import { PreviewDidComponent } from './preview-did/preview.did.component';
+import { PreviewDidComponent } from './preview-did/preview-did.component';
 import { ServiceFormComponent } from './update-did/service-form/service-form.component';
 import { ServicesComponent } from './services/services.component';
 import { StepperComponent } from './stepper/stepper.component';
