@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 
@@ -11,6 +11,7 @@ export class WorkflowService {
   private selectedAction: string;
   private currentStepIndex: number;
   private selectedActionRoutes;
+  @Output() closeFormEvent: EventEmitter<any> = new EventEmitter();
 
   constructor (
     private router: Router,
@@ -44,5 +45,9 @@ export class WorkflowService {
     const previousStepIndex = this.currentStepIndex - 1;
     this.store.dispatch(new MoveToStep(previousStepIndex));
     this.router.navigate([this.selectedActionRoutes[previousStepIndex]]);
+  }
+
+  closeUpdateForm() {
+    this.closeFormEvent.emit();
   }
 }
