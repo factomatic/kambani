@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { ClickOutsideModule } from 'ng-click-outside';
 import { FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { HighlightJsModule, HIGHLIGHT_JS } from 'angular-highlight-js';
 import hljs from 'highlight.js/lib/highlight';
@@ -10,8 +11,6 @@ import { NgModule } from '@angular/core';
 import { AliasValidator } from 'src/app/core/utils/alias.validator';
 import { didComponents } from '.';
 import { DIDRoutingModule } from './did.routing';
-
-import { ClickOutsideModule } from 'ng-click-outside';
 
 hljs.registerLanguage('json', json);
 
@@ -26,6 +25,7 @@ export function highlightJsFactory() {
   ],
   imports: [
     CommonModule,
+    ClickOutsideModule,
     DIDRoutingModule,
     FormsModule,
     HighlightJsModule.forRoot({
@@ -34,7 +34,6 @@ export function highlightJsFactory() {
     }),
     MDBBootstrapModule.forRoot(),
     NgbModule,
-    ClickOutsideModule,
     ReactiveFormsModule
   ],
   exports: [

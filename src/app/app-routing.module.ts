@@ -3,16 +3,15 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { ActionComponent } from './components/did/action/action.component';
 import { CreateActionGuard } from './core/guards/create-action.guard';
+import { DidKeyFormComponent } from './components/did/update-did/did-key-form/did-key-form.component';
 import { HomeComponent } from './components/home/home.component';
 import { ManageDidsComponent } from './components/did/manage-dids/manage-dids.component';
+import { ManagementKeyFormComponent } from './components/did/update-did/management-key-form/management-key-form.component';
 import { PreviewDidComponent } from './components/did/preview-did/preview.did.component';
-import { ManagementKeyCreateComponent } from './components/did/mgmtkeys-create/mgmtcreate.component';
-import { DidKeyCreateComponent } from './components/did/didkeys-create/didkeyscreate.component';
+import { ServiceFormComponent } from './components/did/update-did/service-form/service-form.component';
 import { SignerComponent } from './components/signer/signer.component';
 import { UpdateActionGuard } from './core/guards/update-action.guard';
 import { VaultGuard } from './core/guards/vault.guard';
-import { ServiceCreateComponent } from './components/did/services-create/servicescreate.component';
-
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'home' },
@@ -25,12 +24,11 @@ const routes: Routes = [
     { path: 'update', loadChildren: './components/did/did.module#DIDModule', canActivate: [ UpdateActionGuard ] }
   ] },
   { path: 'dids/preview/:id', component: PreviewDidComponent, canActivate: [VaultGuard], children: [
-    { path: 'mgmtkey/create', component: ManagementKeyCreateComponent },
-    { path: 'mgmtkey/update/:id', component: ManagementKeyCreateComponent },
-    { path: 'didkey/create', component: DidKeyCreateComponent },
-    { path: 'didkey/update/:id', component: DidKeyCreateComponent },
-    { path: 'service/create', component: ServiceCreateComponent },
-    { path: 'service/update/:id', component: ServiceCreateComponent },
+    { path: 'create-management-key', component: ManagementKeyFormComponent },
+    { path: 'update-management-key/:id', component: ManagementKeyFormComponent },
+    { path: 'create-did-key', component: DidKeyFormComponent },
+    { path: 'update-did-key/:id', component: DidKeyFormComponent },
+    { path: 'create-service', component: ServiceFormComponent },
   ] },
   { path: 'factom', loadChildren: './components/factom-addresses/factom-addresses.module#FactomAddressesModule' },
   { path: '**', component: HomeComponent, canActivate: [VaultGuard] }
