@@ -1,10 +1,12 @@
 import { ActionReducerMap } from '@ngrx/store';
 
-import { actionReducers } from './action/action.reducers';
 import { AppState } from './app.state';
-import { formReducers } from './form/form.reducers';
+import { createDIDReducers } from './create-did/create-did.reducers';
+import { updateDIDReducers } from './update-did/update-did.reducers';
+import { workflowReducers } from './workflow/workflow.reducers';
 
 export const appReducers: ActionReducerMap<AppState> = {
-  action: actionReducers,
-  form: formReducers
+  createDID: createDIDReducers,
+  updateDID: updateDIDReducers,
+  workflow: workflowReducers
 };
