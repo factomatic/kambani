@@ -14,7 +14,9 @@ export enum UpdateDIDActionTypes {
   UPDATE_DID_KEY = '[Update DID] Update DID Key',
   REMOVE_MANAGEMENT_KEY = '[Update DID] Remove Management Key',
   REMOVE_DID_KEY = '[Update DID] Remove DID Key',
-  REMOVE_SERVICE = '[Update DID] Remove Service'
+  REMOVE_SERVICE = '[Update DID] Remove Service',
+  CANCEL_CHANGES = '[Update DID] Cancel Changes',
+  COMPLETE_DID_UPDATE = '[Update DID] Complete DID Update'
 }
 
 export class InitializeDIDUpdate implements Action {
@@ -69,4 +71,16 @@ export class RemoveService implements Action {
   readonly type: string = UpdateDIDActionTypes.REMOVE_SERVICE;
 
   constructor (public didId: string, public payload: ServiceModel) { }
+}
+
+export class CancelChanges implements Action {
+  readonly type: string = UpdateDIDActionTypes.CANCEL_CHANGES;
+
+  constructor (public didId: string) { }
+}
+
+export class CompleteDIDUpdate implements Action {
+  readonly type: string = UpdateDIDActionTypes.COMPLETE_DID_UPDATE;
+
+  constructor (public didId: string) { }
 }
