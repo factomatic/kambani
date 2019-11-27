@@ -3,12 +3,6 @@
     <div class="container">
       <div class="row">
         <div class="col-6 col-sm-6 col-xs-6 brand-name">WebSigner</div>
-        <div class="col-xs-6 col-6 col-sm-6 text-right">
-          <a class="remove-vault" (click)="removeVault()">
-            <span class="close-icon"></span>
-            <span class="close-hint">Remove Vault</span>
-          </a>
-        </div>
       </div>
     </div>
   </div>
@@ -32,6 +26,9 @@
         </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/vault/backup">Backup</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" (click)="removeVault()">Remove Vault</a>
         </li>
       </ul>
     </div>
