@@ -28,14 +28,8 @@
                 <td>
                   <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true">{{allDIDsPublicInfo[didId].nickname}}</a>
                   <div class="nickname-editable" *ngIf="didEditNickname[didId]">
-                    <form (ngSubmit)="editNickname(didId, nickname.value)">
-                      <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}" class="form-control" />
-                      <button class="btn btn-danger" (click)="didEditNickname[didId] = false">
-                        <i class="fa fa-times"></i>
-                      </button>
-                      <button type="submit" class="btn btn-primary">
-                        <i class="fa fa-save"></i>
-                      </button>
+                    <form (ngSubmit)="editNickname(didId, nickname.value)" (clickOutside)="editNickname(didId, nickname.value)" [attachOutsideOnClick]="didEditNickname[didId]" >
+                      <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}"  class="form-control" />
                     </form>
                   </div>
                 </td>
@@ -50,9 +44,8 @@
                 </td>
                 <td class="text-right">
                   <a routerLink="/dids/preview/{{didId}}" class="btn btn-xs btn-primary"><i class="fa fa-search"></i></a>
-                  <a (click)="backupDid(didId)" class="btn btn-xs btn-success"><i class="fa fa-download"></i></a>
-                  <a (click)="updateDid(didId)" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i></a>
-                  <a href="javascript:;" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
+                  <button (click)="backupDid(didId)" class="btn btn-xs btn-success"><i class="fa fa-download"></i></button>
+                  <button class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
                 </td>
               </tr>
             </tbody>

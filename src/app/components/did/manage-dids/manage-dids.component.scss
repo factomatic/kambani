@@ -44,6 +44,9 @@ $mainColor: #2F5BE7;
           a:not(:last-child) {
             margin-right: 3px;
           }
+          button:not(:last-child) {
+            margin-right: 3px;
+          }
         }
       }
     }
@@ -173,27 +176,12 @@ a {
 }
 .header-search {
   width: 300px;
-  .form-control {
-    width: calc(300px - 38px);
+  input {
+    width: calc(300px - 43px);
     float: left;
-  }
-  button {
-    line-height: 35px;
-    width: 37px;
-    height: 37px;
-    float: right;
-  }
-}
-.nickname-editable {
-  width: 190px;
-  .form-control {
-    float: left;
-    width: 113px;
+    height: 40px;
   }
   button {
     float: right;
-    line-height: 35px;
-    width: 37px;
-    height: 37px;
   }
 }

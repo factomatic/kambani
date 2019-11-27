@@ -21,10 +21,11 @@ export default class CustomValidators {
 
     return null;
   }
-  
-  static uniqueKeyAlias(managementKeys: ManagementKeyModel[], didKeys: DidKeyModel[]): ValidatorFn {
+
+  static uniqueKeyAlias(managementKeys: ManagementKeyModel[], didKeys: DidKeyModel[], originalValue?: string): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } | null => {
-      if (control.value !== null) {
+      const hasOriginalValue = originalValue && originalValue.length > 0;
+      if (control.value !== null && (!hasOriginalValue || originalValue !== control.value)) {
         if (!managementKeys.find(k => k.alias === control.value)
           && !didKeys.find(k => k.alias === control.value)) {
           return null;

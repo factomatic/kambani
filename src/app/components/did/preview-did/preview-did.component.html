@@ -1,0 +1,171 @@
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12">
+      <div class="page-content">
+        <div class="row">
+          <div class="col-12 col-md-8">
+            <h1 class="head">
+              {{didId}}
+            </h1>
+            <div class="info-box">
+              <div class="info-row">
+                <div class="label">Nickname</div>
+                <div class="value">{{nickname}}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-4 text-md-right text-sm-right text-lg-right">
+            <a *ngIf="currentMode == MGMTKeysMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-management-key" (click)="formScreenOpen = true">Add MGMT key</a>
+            <a *ngIf="currentMode == DIDKeysMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-did-key" (click)="formScreenOpen = true">Add DID key</a>
+            <a *ngIf="currentMode == ServicesMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-service" (click)="formScreenOpen = true">Add service</a>
+            <a class="btn btn-outline-success backup-btn action-btn" href="javascript:;"><i class="fa fa-download"></i></a>
+            <a class="btn btn-outline-danger action-btn" href="javascript:;"><i class="fa fa-trash"></i></a>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+        <nav class="info-tables">
+          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a class="nav-item nav-link active" id="nav-mkeys-tab" data-toggle="tab" href="#nav-mkeys" role="tab" aria-controls="nav-mkeys" aria-selected="true" (click)="currentMode = MGMTKeysMode">MGMT Keys</a>
+            <a class="nav-item nav-link" id="nav-dkeys-tab" data-toggle="tab" href="#nav-dkeys" role="tab" aria-controls="nav-dkeys" aria-selected="false" (click)="currentMode = DIDKeysMode">DID Keys</a>
+            <a class="nav-item nav-link" id="nav-services-tab" data-toggle="tab" href="#nav-services" role="tab" aria-controls="nav-services" aria-selected="false" (click)="currentMode = ServicesMode">Services</a>
+          </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+          <div class="tab-pane fade show active" id="nav-mkeys" role="tabpanel" aria-labelledby="nav-mkeys-tab">
+            <div class="row key-row">
+              <div class="col-12 col-sm-6" *ngFor="let managementKey of managementKeys">
+                <div class="collapsible collapsed">
+                  <div class="info-box">
+                    <div class="info-row alias-row">
+                      <div class="label">Alias</div>
+                      <div class="value">{{managementKey.alias}}</div>
+                      <div class="buttons">
+                        <a class="btn btn-xs btn-warning" routerLink="/dids/preview/{{didId}}/update-management-key/{{managementKey.alias}}" (click)="formScreenOpen = true"><i class="fa fa-edit"></i></a>
+                        <button class="btn btn-xs btn-danger" (click)="removeManagementKey(managementKey)"><i class="fa fa-trash"></i></button>
+                        <button class="btn btn-xs btn-primary" (click)="collapse.toggle()"><i class="fa fa-plus"></i></button>
+                      </div>
+                    </div>
+                    <div mdbCollapse #collapse="bs-collapse">
+                      <div class="info-row">
+                        <div class="label">Type</div>
+                        <div class="value">{{managementKey.type}}</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="label">Controller</div>
+                        <div class="value">{{minDid(managementKey.controller)}}</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="label">Public Key</div>
+                        <div class="value">{{minKey(managementKey.publicKey)}}</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="label">Priority</div>
+                        <div class="value">{{managementKey.priority}}</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="label">Priority Requirement</div>
+                        <div class="value">{{managementKey.priorityRequirement >= 0 ? managementKey.priorityRequirement : 'N/A'}}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="nav-dkeys" role="tabpanel" aria-labelledby="nav-dkeys-tab">
+            <div class="row key-row">
+              <div class="col-12 col-sm-6" *ngFor="let didKey of didKeys">
+                <div class="collapsible collapsed">
+                  <div class="info-box">
+                    <div class="info-row alias-row">
+                      <div class="label">Alias</div>
+                      <div class="value">{{didKey.alias}}</div>
+                      <div class="buttons">
+                        <a class="btn btn-xs btn-warning" routerLink="/dids/preview/{{didId}}/update-did-key/{{didKey.alias}}"  (click)="formScreenOpen = true"><i class="fa fa-edit"></i></a>
+                        <button class="btn btn-xs btn-danger" (click)="removeDIDKey(didKey)"><i class="fa fa-trash"></i></button>
+                        <button class="btn btn-xs btn-default" (click)="collapse.toggle()"><i class="fa fa-plus"></i></button>
+                      </div>
+                    </div>
+                    <div mdbCollapse #collapse="bs-collapse">
+                      <div class="info-row">
+                        <div class="label">Purpose</div>
+                        <div class="value">{{didKey.purpose.join(', ')}}</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="label">Type</div>
+                        <div class="value">{{didKey.type}}</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="label">Controller</div>
+                        <div class="value">{{minDid(didKey.controller)}}</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="label">Public Key</div>
+                        <div class="value">{{minKey(didKey.publicKey)}}</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="label">Priority Requirement</div>
+                        <div class="value">{{didKey.priorityRequirement >= 0 ? didKey.priorityRequirement : 'N/A'}}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="didKeys.length == 0">
+                <p class="text-warning text-center">The DID does not have any DID Keys</p>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="nav-services" role="tabpanel" aria-labelledby="nav-services-tab">
+            <div class="row service-row">
+              <div class="col-12 col-sm-6" *ngFor="let service of services">
+                <div class="collapsible collapsed">
+                  <div class="info-box">
+                    <div class="info-row alias-row">
+                      <div class="label">Service type</div>
+                      <div class="value">{{service.type}}</div>
+                      <div class="buttons">
+                        <button class="btn btn-xs btn-danger" (click)="removeService(service)"><i class="fa fa-trash"></i></button>
+                        <button class="btn btn-xs btn-default" (click)="collapse.toggle()"><i class="fa fa-plus"></i></button>
+                      </div>
+                    </div>
+                    <div mdbCollapse #collapse="bs-collapse">
+                      <div class="info-row">
+                        <div class="label">Alias</div>
+                        <div class="value">{{service.alias}}</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="label">Service endpoint</div>
+                        <div class="value">{{service.endpoint}}</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="label">Priority Requirement</div>
+                        <div class="value">{{service.priorityRequirement ? service.priorityRequirement : 'N/A'}}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="services.length == 0">
+                <p class="text-warning text-center">The DID does not have any Services</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="formScreen" [ngClass]="{'active': formScreenOpen}">
+  <a class="closeForm" routerLink="/dids/preview/{{didId}}" (click)="closeFormScreen()"></a>
+  <div class="formContent">
+    <div class="scrollArea">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+<div class="fixed-bottom-button" *ngIf="pendingChanges">
+  <div class="container text-center">
+    <button class="btn btn-success" (click)="saveChanges()">Save changes</button>
+  </div>
+</div>

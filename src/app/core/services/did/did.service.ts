@@ -103,7 +103,7 @@ export class DIDService {
       [EntryType.UpdateDIDEntry, this.entrySchemaVersion, managementKeyId, signature],
       entry
     ]);
-    
+
     // change the api url with update endpoint
     // const updateApiUrl = '';
     // return this.recordEntry(updateApiUrl, data);
@@ -149,7 +149,7 @@ export class DIDService {
         'Content-Type': 'application/json'
       })
     };
-    
+
     return this.http.post(apiUrl, data, httpOptions);
   }
 
@@ -340,24 +340,27 @@ export class DIDService {
 
   private parseDocument(didDocument: DIDDocument): void {
     const managementKeys = this.extractManagementKeys(didDocument.managementKey);
-    this.store.dispatch(new AddOriginalManagementKeys(managementKeys));
-
+    
+    let didKeys = [];
     if (didDocument.didKey) {
-      const didKeys = this.extractDidKeys(didDocument.didKey);
-      this.store.dispatch(new AddOriginalDidKeys(didKeys));
+      didKeys = this.extractDidKeys(didDocument.didKey);
     }
 
+    let services = [];
     if (didDocument.service) {
-      const services = this.extractServices(didDocument.service);
-      this.store.dispatch(new AddOriginalServices(services));
+      services = this.extractServices(didDocument.service);
     }
+
+    this.store.dispatch(new AddOriginalManagementKeys(managementKeys));
+    this.store.dispatch(new AddOriginalDidKeys(didKeys));
+    this.store.dispatch(new AddOriginalServices(services));
   }
 
   private extractManagementKeys(documentManagementKeys: ManagementKeyEntryModel[]): ManagementKeyModel[] {
     return documentManagementKeys.map(k => new ManagementKeyModel(
       k.id.split('#')[1],
       k.priority,
-      k.type,
+      k.type.split(this.VerificationKeySuffix)[0],
       k.controller,
       k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem,
       undefined,
@@ -369,7 +372,7 @@ export class DIDService {
     return documentDidKeys.map(k => new DidKeyModel(
       k.id.split('#')[1],
       k.purpose,
-      k.type,
+      k.type.split(this.VerificationKeySuffix)[0],
       k.controller,
       k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem,
       undefined,

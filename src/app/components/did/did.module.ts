@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { ClickOutsideModule } from 'ng-click-outside';
 import { FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { HighlightJsModule, HIGHLIGHT_JS } from 'angular-highlight-js';
 import hljs from 'highlight.js/lib/highlight';
@@ -24,6 +25,7 @@ export function highlightJsFactory() {
   ],
   imports: [
     CommonModule,
+    ClickOutsideModule,
     DIDRoutingModule,
     FormsModule,
     HighlightJsModule.forRoot({
