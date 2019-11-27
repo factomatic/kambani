@@ -4,7 +4,7 @@ import { Store, select } from '@ngrx/store';
 
 import { actionRoutes } from '../../enums/action-routes';
 import { AppState } from '../../store/app.state';
-import { MoveToStep } from '../../store/action/action.actions';
+import { MoveToStep } from '../../store/workflow/workflow.actions';
 
 @Injectable()
 export class WorkflowService {
@@ -16,10 +16,10 @@ export class WorkflowService {
   constructor (
     private router: Router,
     private store: Store<AppState>) {
-    this.store.pipe(select(state => state.action))
-      .subscribe(action => {
-        this.selectedAction = action.selectedAction;
-        this.currentStepIndex = action.currentStepIndex;
+    this.store.pipe(select(state => state.workflow))
+      .subscribe(workflow => {
+        this.selectedAction = workflow.selectedAction;
+        this.currentStepIndex = workflow.currentStepIndex;
 
         if (this.selectedAction) {
           this.selectedActionRoutes = actionRoutes[this.selectedAction];

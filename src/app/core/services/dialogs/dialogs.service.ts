@@ -6,12 +6,10 @@ import { ModalOptions } from '../../interfaces/dialogs/modal-options';
 import { ModalSizeTypes } from '../../enums/modal-size-types';
 
 @Injectable()
-
 export class DialogsService {
-  public constructor(private modal: NgbModal) {
-  }
+  constructor(private modal: NgbModal) { }
 
-  public open(component: any, modalSize: ModalSizeTypes, message: string) {
+  open(component: any, modalSize: ModalSizeTypes, message: string) {
     const modalOptions = this.createModalOptions(modalSize);
     modalOptions.keyboard = false;
     modalOptions.backdrop = 'static';

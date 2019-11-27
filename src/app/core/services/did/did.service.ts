@@ -5,13 +5,14 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { Store, select } from '@ngrx/store';
 
-import { AddOriginalManagementKeys, AddOriginalDidKeys, AddOriginalServices } from '../../store/form/form.actions';
 import { AppState } from '../../store/app.state';
+import { CreateDIDState } from '../../store/create-did/create-did.state';
 import { DIDDocument } from '../../interfaces/did-document';
 import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { DidKeyModel } from '../../models/did-key.model';
 import { EntryType } from '../../enums/entry-type';
 import { environment } from 'src/environments/environment';
+import { InitializeDIDUpdate } from '../../store/update-did/update-did.actions';
 import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
 import { ManagementKeyModel } from '../../models/management-key.model';
 import { RevokeModel } from '../../interfaces/revoke-model';
@@ -19,37 +20,31 @@ import { ServiceEntryModel } from '../../interfaces/service-entry';
 import { ServiceModel } from '../../models/service.model';
 import { SignatureType } from '../../enums/signature-type';
 import { toHexString, calculateChainId } from '../../utils/helpers';
+import { UpdateDIDModel } from '../../models/update-did.model';
+import { UpdateDIDState } from '../../store/update-did/update-did.state';
 import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
 import { VaultService } from '../vault/vault.service';
 
 @Injectable()
 export class DIDService {
+  private createDIDState: CreateDIDState;
+  private updateDIDState: UpdateDIDState;
+  private id: string;
+  private nonce: string;
   private VerificationKeySuffix = 'VerificationKey';
   private apiUrl = environment.apiUrl;
   private didMethodSpecVersion = environment.didMethodSpecVersion;
   private entrySchemaVersion = environment.entrySchemaVersion;
-  private id: string;
-  private nonce: string;
-  private formManagementKeys: ManagementKeyModel[];
-  private formDidKeys: DidKeyModel[];
-  private formServices: ServiceModel[];
-  private originalManagementKeys: Set<ManagementKeyModel>;
-  private originalDidKeys: Set<DidKeyModel>;
-  private originalServices: Set<ServiceModel>;
 
   constructor(
     private http: HttpClient,
     private store: Store<AppState>,
     private vaultService: VaultService) {
     this.store
-      .pipe(select(state => state.form))
-      .subscribe(form => {
-        this.formManagementKeys = form.managementKeys;
-        this.formDidKeys = form.didKeys;
-        this.formServices = form.services;
-        this.originalManagementKeys = new Set(form.originalManagementKeys);
-        this.originalDidKeys = new Set(form.originalDidKeys);
-        this.originalServices = new Set(form.originalServices);
+      .pipe(select(state => state))
+      .subscribe(state => {
+        this.createDIDState = state.createDID;
+        this.updateDIDState = state.updateDID;
       });
   }
 
@@ -113,8 +108,11 @@ export class DIDService {
 
   loadDIDForUpdate(didId: string): void {
     this.id = didId;
-    const didDocument: DIDDocument = this.vaultService.getDIDPublicInfo(didId).didDocument;
-    this.parseDocument(didDocument);
+
+    if (!this.updateDIDState.dids.find(d => d.didId === didId)) {
+      const didDocument: DIDDocument = this.vaultService.getDIDPublicInfo(didId).didDocument;
+      this.parseDocument(didDocument);
+    }
   }
 
   revokeSigningKey(managementKeyId: string, updateEntry: UpdateEntryDocument): UpdateEntryDocument {
@@ -155,19 +153,19 @@ export class DIDService {
   }
 
   private generateDocument(): DIDDocument {
-    const managementKeys = this.formManagementKeys.map(k => (this.buildManagementKeyEntryObject(k)));
+    const managementKeys = this.createDIDState.managementKeys.map(k => (this.buildManagementKeyEntryObject(k)));
 
     const didDocument: DIDDocument = {
       'didMethodVersion': this.didMethodSpecVersion,
       'managementKey': managementKeys
     };
 
-    const didKeys = this.formDidKeys.map(k => (this.buildDidKeyEntryObject(k)));
+    const didKeys = this.createDIDState.didKeys.map(k => (this.buildDidKeyEntryObject(k)));
     if (didKeys.length > 0) {
       didDocument.didKey = didKeys;
     }
 
-    const services = this.formServices.map(s => (this.buildServiceEntryObject(s)));
+    const services = this.createDIDState.services.map(s => (this.buildServiceEntryObject(s)));
     if (services.length > 0) {
       didDocument.service = services;
     }
@@ -176,12 +174,14 @@ export class DIDService {
   }
 
   private generateUpdateEntry(): UpdateEntryDocument {
-    const newManagementKeys = this.getNew(this.originalManagementKeys, this.formManagementKeys);
-    const newDidKeys = this.getNew(this.originalDidKeys, this.formDidKeys);
-    const newServices = this.getNew(this.originalServices, this.formServices);
-    const revokedManagementKeys = this.getRevoked(this.originalManagementKeys, new Set(this.formManagementKeys));
-    const revokedDidKeys = this.getRevoked(this.originalDidKeys, new Set(this.formDidKeys));
-    const revokedServices = this.getRevoked(this.originalServices, new Set(this.formServices));
+    const didUpdateModel: UpdateDIDModel = this.updateDIDState.dids.find(d => d.didId === this.id);
+
+    const newManagementKeys = this.getNew(new Set(didUpdateModel.originalManagementKeys), didUpdateModel.managementKeys);
+    const newDidKeys = this.getNew(new Set(didUpdateModel.originalDidKeys), didUpdateModel.didKeys);
+    const newServices = this.getNew(new Set(didUpdateModel.originalServices), didUpdateModel.services);
+    const revokedManagementKeys = this.getRevoked(didUpdateModel.originalManagementKeys, new Set(didUpdateModel.managementKeys));
+    const revokedDidKeys = this.getRevoked(didUpdateModel.originalDidKeys, new Set(didUpdateModel.didKeys));
+    const revokedServices = this.getRevoked(didUpdateModel.originalServices, new Set(didUpdateModel.services));
 
     const updateEntry: UpdateEntryDocument = {};
 
@@ -352,9 +352,8 @@ export class DIDService {
       services = this.extractServices(didDocument.service);
     }
 
-    this.store.dispatch(new AddOriginalManagementKeys(managementKeys));
-    this.store.dispatch(new AddOriginalDidKeys(didKeys));
-    this.store.dispatch(new AddOriginalServices(services));
+    const updateDIDModel = new UpdateDIDModel(this.id, managementKeys, didKeys, services);
+    this.store.dispatch(new InitializeDIDUpdate(updateDIDModel));
   }
 
   private extractManagementKeys(documentManagementKeys: ManagementKeyEntryModel[]): ManagementKeyModel[] {
