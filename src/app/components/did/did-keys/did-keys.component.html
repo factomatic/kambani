@@ -1,6 +1,5 @@
 <div class="steps-content">
-  <h3 *ngIf="selectedAction === actionType.CreateAdvanced">Create DID keys</h3>
-  <h3 *ngIf="selectedAction === actionType.Update">Update DID keys</h3>
+  <h3>Create DID keys</h3>
   <div class="collapsible collapsed mb-5" *ngFor="let key of componentKeys">
     <h3 (click)="collapse.toggle(); toggleKey(key.keyModel);" class="withoutPlus">
       <span>{{key.keyModel.alias}}</span>

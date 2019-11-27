@@ -1,9 +1,5 @@
 <div class="steps-content">
-  <div class="alert alert-warning" role="alert" *ngIf="selectedAction === actionType.Update">
-    Warning! If you create a management key with the same priority as the key that you are going to use for the signing of the entry, the aforementioned key will be automatically revoked.
-  </div>
-  <h3 *ngIf="selectedAction === actionType.CreateAdvanced">Create management keys</h3>
-  <h3 *ngIf="selectedAction === actionType.Update">Update management keys</h3>
+  <h3>Create management keys</h3>
   <div class="collapsible collapsed mb-3" *ngFor="let key of componentKeys">
     <h3 (click)="collapse.toggle(); toggleKey(key.keyModel);" class="withoutPlus">
       <span>{{key.keyModel.alias}}</span>
@@ -191,6 +187,6 @@
 </div>
 
 <div class="button-footer">
-  <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()" *ngIf="selectedAction == actionType.CreateAdvanced">Back</button>
+  <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()">Back</button>
   <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToNext()">{{continueButtonText}}</button>
 </div>

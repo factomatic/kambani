@@ -30,7 +30,7 @@ export class FinalComponent extends BaseComponent implements OnInit {
     this.subscriptions.push(this.subscription);
   }
 
-  chooseAnotherAction() {
+  createAnotherDID() {
     this.router.navigate([SharedRoutes.Action]);
   }
 }

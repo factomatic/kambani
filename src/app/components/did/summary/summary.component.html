@@ -1,20 +1,8 @@
 <div class="steps-content">
   <h3>DID preview</h3>
-  <div class="alert alert-warning" role="alert" *ngIf="selectedAction === actionType.Update && !anyDIDChangesMade">
-    There are currently not any changes made to the DID.
-  </div>
-  <div class="alert alert-danger" role="alert" *ngIf="selectedAction === actionType.Update && anyDIDChangesMade && !selectedManagementKeyId">
-    There is no available management key to sign the entry with.
-  </div>
   <pre><code mwlHighlightJs [source]='entryPretified' language="json"></code></pre>
-  <div class="text-center" *ngIf="selectedAction === actionType.Update && anyDIDChangesMade && availableManagementKeys.length > 0">
-    <label for="selectKey">Choose key to sign with:</label>
-    <select class="form-control" id="selectKey" (ngModelChange)="onSelectChange($event)" [ngModel]="selectedManagementKeyId">
-      <option [value]="managementKey.id" *ngFor="let managementKey of availableManagementKeys">{{managementKey.id.split('#')[1]}}</option>
-    </select>
-  </div>
   <div class="button-footer">
     <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()">Back</button>
-    <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="recordOnChain()" [disabled]="selectedAction === actionType.Update && !selectedManagementKeyId">{{recordOnChainButtonName}}</button>
+    <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="recordOnChain()">{{recordOnChainButtonName}}</button>
   </div>
 </div>

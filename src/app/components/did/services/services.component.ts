@@ -5,7 +5,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Store, select } from '@ngrx/store';
 
 import { ActionType } from 'src/app/core/enums/action-type';
-import { AddService, RemoveService } from 'src/app/core/store/form/form.actions';
+import { AddService, RemoveService } from 'src/app/core/store/create-did/create-did.actions';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
 import { ComponentServiceModel } from 'src/app/core/models/component-service.model';
@@ -35,7 +35,6 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
   public typeTooltipMessage = TooltipMessages.ServiceTypeTooltip;
   public endpointTooltipMessage = TooltipMessages.ServiceEndpointTooltip;
   public continueButtonText: string;
-  public selectedAction: string;
 
   constructor(
     private fb: FormBuilder,
@@ -49,9 +48,8 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
     this.subscription = this.store
       .pipe(select(state => state))
       .subscribe(state => {
-        this.services = state.form.services.map(service => new ComponentServiceModel(service, DOWN_POSITION));
+        this.services = state.createDID.services.map(service => new ComponentServiceModel(service, DOWN_POSITION));
         this.continueButtonText = this.services.length > 0 ? 'Next' : 'Skip';
-        this.selectedAction = state.action.selectedAction;
       });
 
     this.subscriptions.push(this.subscription);

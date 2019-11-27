@@ -6,7 +6,7 @@ import { Store, select } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
 import { ActionType } from 'src/app/core/enums/action-type';
-import { AddDidKey, RemoveDidKey, UpdateDidKey } from 'src/app/core/store/form/form.actions';
+import { AddDIDKey, RemoveDIDKey, UpdateDIDKey } from 'src/app/core/store/create-did/create-did.actions';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
 import { ComponentKeyModel } from 'src/app/core/models/component-key.model';
@@ -40,7 +40,6 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
   public managementKeys: ManagementKeyModel[] = [];
   public actionDropdownTooltipMessage = TooltipMessages.AuthenticationDropdownTooltip;
   public continueButtonText: string;
-  public selectedAction: string;
 
   constructor(
     private cd: ChangeDetectorRef,
@@ -55,15 +54,14 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
 
   ngOnInit() {
     this.subscription = this.store
-      .pipe(select(state => state))
-      .subscribe(state => {
-        this.componentKeys = state.form.didKeys
+      .pipe(select(state => state.createDID))
+      .subscribe(createDIDState => {
+        this.componentKeys = createDIDState.didKeys
           .map(key => new ComponentKeyModel(Object.assign({}, key), DOWN_POSITION, true));
 
-        this.didKeys = state.form.didKeys;
-        this.managementKeys = state.form.managementKeys;
+        this.didKeys = createDIDState.didKeys;
+        this.managementKeys = createDIDState.managementKeys;
         this.continueButtonText = this.componentKeys.length > 0 ? 'Next' : 'Skip';
-        this.selectedAction = state.action.selectedAction;
       });
 
     this.subscriptions.push(this.subscription);
@@ -117,7 +115,7 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
           this.priorityRequirement.value
         );
 
-        this.store.dispatch(new AddDidKey(generatedKey));
+        this.store.dispatch(new AddDIDKey(generatedKey));
         this.createForm();
       });
   }
@@ -126,7 +124,7 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
     const confirmRef = this.modalService.open(ConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'key';
     confirmRef.result.then((result) => {
-      this.store.dispatch(new RemoveDidKey(key));
+      this.store.dispatch(new RemoveDIDKey(key));
       this.createForm();
     }).catch((error) => {
     });
@@ -147,7 +145,7 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
     const originalKey = this.didKeys.find(k => k.publicKey === updatedKey.publicKey);
 
     if (updatedKey.alias !== originalKey.alias || updatedKey.controller !== originalKey.controller) {
-      this.store.dispatch(new UpdateDidKey(componentKey.keyModel as DidKeyModel));
+      this.store.dispatch(new UpdateDIDKey(componentKey.keyModel as DidKeyModel));
       this.cd.detectChanges();
     }
   }

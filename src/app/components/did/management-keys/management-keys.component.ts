@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
 import { ActionType } from 'src/app/core/enums/action-type';
-import { AddManagementKey, RemoveManagementKey, UpdateManagementKey } from 'src/app/core/store/form/form.actions';
+import { AddManagementKey, RemoveManagementKey, UpdateManagementKey } from 'src/app/core/store/create-did/create-did.actions';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
 import { ConfirmModalComponent } from 'src/app/components/modals/confirm-modal/confirm-modal.component';
@@ -43,7 +43,6 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
   public controllerTooltipMessage = TooltipMessages.ControllerTooltip;
   public signatureTypeTooltipMessage = TooltipMessages.SignatureTypeTooltip;
   public continueButtonText: string;
-  public selectedAction: string;
 
   constructor(
     private cd: ChangeDetectorRef,
@@ -59,14 +58,13 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
 
   ngOnInit() {
     this.subscription = this.store
-      .pipe(select(state => state))
-      .subscribe(state => {
-        this.componentKeys = state.form.managementKeys.map(key => new ComponentKeyModel(Object.assign({}, key), DOWN_POSITION, true));
-        this.managementKeys = state.form.managementKeys;
-        this.didKeys = state.form.didKeys;
+      .pipe(select(state => state.createDID))
+      .subscribe(createDIDState => {
+        this.componentKeys = createDIDState.managementKeys.map(key => new ComponentKeyModel(Object.assign({}, key), DOWN_POSITION, true));
+        this.managementKeys = createDIDState.managementKeys;
+        this.didKeys = createDIDState.didKeys;
 
         this.continueButtonText = this.componentKeys.length > 0 ? 'Next' : 'Skip';
-        this.selectedAction = state.action.selectedAction;
       });
 
     this.subscriptions.push(this.subscription);
@@ -151,11 +149,9 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
   }
 
   goToNext() {
-    if (this.selectedAction === ActionType.CreateAdvanced) {
-      if (!this.managementKeys.find(mk => mk.priority === 0)) {
-        this.toastr.warning('Warning! You must have at least one management key created at priority 0 before continuing.');
-        return;
-      }
+    if (!this.managementKeys.find(mk => mk.priority === 0)) {
+      this.toastr.warning('Warning! You must have at least one management key created at priority 0 before continuing.');
+      return;
     }
 
     this.workflowService.moveToNextStep();
