@@ -4,7 +4,8 @@ import { Store } from '@ngrx/store';
 
 import { ActionType } from 'src/app/core/enums/action-type';
 import { AppState } from 'src/app/core/store/app.state';
-import { ClearForm, SelectAction } from 'src/app/core/store/action/action.actions';
+import { ClearCreateDIDState } from 'src/app/core/store/create-did/create-did.actions';
+import { ClearWorkflowState, SelectAction } from 'src/app/core/store/workflow/workflow.actions';
 import { CreateAdvancedInfoModalComponent } from '../../modals/create-advanced-info-modal/create-advanced-info-modal.component';
 import { CreateBasicInfoModalComponent } from '../../modals/create-basic-info-modal/create-basic-info-modal.component';
 import { KeysService } from 'src/app/core/services/keys/keys.service';
@@ -26,7 +27,8 @@ export class ActionComponent implements OnInit {
     private workflowService: WorkflowService) { }
 
   ngOnInit() {
-    this.store.dispatch(new ClearForm());
+    this.store.dispatch(new ClearWorkflowState());
+    this.store.dispatch(new ClearCreateDIDState());
     this.registerInfoModals();
   }
 
