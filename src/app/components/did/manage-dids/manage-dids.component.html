@@ -43,8 +43,8 @@
                   <div class="counter-label">{{allDIDsPublicInfo[didId].didDocument.service ? allDIDsPublicInfo[didId].didDocument.service.length : 0}}</div>
                 </td>
                 <td class="text-right">
-                  <a routerLink="/dids/preview/{{didId}}" class="btn btn-xs btn-primary"><i class="fa fa-search"></i></a>
-                  <button (click)="backupDid(didId)" class="btn btn-xs btn-success"><i class="fa fa-download"></i></button>
+                  <button class="btn btn-xs btn-primary" (click)="previewDid(didId)"><i class="fa fa-search"></i></button>
+                  <button class="btn btn-xs btn-success" (click)="backupDid(didId)"><i class="fa fa-download"></i></button>
                   <button class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
                 </td>
               </tr>

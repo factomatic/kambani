@@ -1,19 +1,18 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ToastrService } from 'ngx-toastr';
 
-import { ActionType } from 'src/app/core/enums/action-type';
 import { AppState } from 'src/app/core/store/app.state';
 import { BackupResultModel } from 'src/app/core/models/backup-result.model';
+import { ClearWorkflowState } from 'src/app/core/store/workflow/workflow.actions';
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { DIDService } from 'src/app/core/services/did/did.service';
 import { downloadFile } from 'src/app/core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
-import { SelectAction } from 'src/app/core/store/action/action.actions';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
-import { WorkflowService } from 'src/app/core/services/workflow/workflow.service';
 
 @Component({
   selector: 'app-manage-dids',
@@ -33,10 +32,10 @@ export class ManageDidsComponent implements OnInit {
   constructor(
     private dialogsService: DialogsService,
     private didService: DIDService,
+    private router: Router,
     private store: Store<AppState>,
     private toastr: ToastrService,
-    private vaultService: VaultService,
-    private workflowService: WorkflowService) { }
+    private vaultService: VaultService) { }
 
   ngOnInit() {
     chrome.tabs && chrome.tabs.getCurrent(function(tab) {
@@ -80,22 +79,21 @@ export class ManageDidsComponent implements OnInit {
       });
   }
 
+  previewDid(didId: string) {
+    this.didService.loadDIDForUpdate(didId);
+    this.router.navigate([`dids/preview/${didId}`]);
+  }
+
   editNickname(didId: string, nickname: string) {
     this.vaultService.updateDIDNickname(didId, nickname);
     this.allDIDsPublicInfo[didId].nickname = nickname;
     this.didEditNickname[didId] = false;
   }
 
-  updateDid(didId: string) {
-    this.store.dispatch(new SelectAction(ActionType.Update));
-    this.didService.loadDIDForUpdate(didId);
-    this.workflowService.moveToNextStep();
-    this.formScreenOpen = true;
-  }
-
   closeFormScreen() {
     this.formScreenOpen = false;
     this.getDIDsInfo();
+    this.store.dispatch(new ClearWorkflowState());
   }
 
   search(searchTerm: string) {
