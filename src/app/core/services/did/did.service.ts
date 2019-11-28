@@ -364,7 +364,7 @@ export class DIDService {
       k.controller,
       k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem,
       undefined,
-      k.priorityRequirement
+      k.priorityRequirement ? k.priorityRequirement : null
     ));
   }
 
@@ -376,7 +376,7 @@ export class DIDService {
       k.controller,
       k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem,
       undefined,
-      k.priorityRequirement
+      k.priorityRequirement ? k.priorityRequirement : null
     ));
   }
 
@@ -385,7 +385,7 @@ export class DIDService {
       s.type,
       s.serviceEndpoint,
       s.id.split('#')[1],
-      s.priorityRequirement
+      s.priorityRequirement ? s.priorityRequirement : null
     ));
   }
 }
