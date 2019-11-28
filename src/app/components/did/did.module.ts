@@ -11,6 +11,8 @@ import { NgModule } from '@angular/core';
 import { AliasValidator } from 'src/app/core/utils/alias.validator';
 import { didComponents } from '.';
 import { DIDRoutingModule } from './did.routing';
+import { PriorityMaxValidator } from 'src/app/core/utils/priority.max.validator';
+import { PriorityMinValidator } from 'src/app/core/utils/priority.min.validator';
 
 hljs.registerLanguage('json', json);
 
@@ -21,6 +23,8 @@ export function highlightJsFactory() {
 @NgModule({
   declarations: [
     AliasValidator,
+    PriorityMaxValidator,
+    PriorityMinValidator,
     ...didComponents
   ],
   imports: [
