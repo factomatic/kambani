@@ -24,7 +24,12 @@
             </thead>
             <tbody>
               <tr *ngFor="let didId of displayedDidIds">
-                <td><span>{{didId}}</span></td>
+                <td>
+                  <span>
+                    <a class="did-link" href="https://testnet.factoid.org/data?type=chain&key={{didId.split(':').pop()}}">{{didId}}</a>
+                  </span>
+                  <i class="far fa-copy copy-icon" (click)="copyDIDId(didId)"></i>
+              </td>
                 <td>
                   <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true">{{allDIDsPublicInfo[didId].nickname}}</a>
                   <div class="nickname-editable" *ngIf="didEditNickname[didId]">
@@ -51,14 +56,14 @@
             </tbody>
           </table>
         </div>
-        <div class="row" *ngIf="didIds.length > 10">
+        <div class="row" *ngIf="didIds.length > pageSize">
           <div class="col-6">
             <div class="paginator">
               <a (click)="changePage(currentPage - 1)" [ngClass]="currentPage == 1 ? 'disabled' : ''">Prev</a>
               <a (click)="changePage(currentPage + 1)" [ngClass]="currentStartIndex + pageSize < didIds.length ? '' : 'disabled'">Next</a>
             </div>
           </div>
-          <div class="col-6 text-right">
+          <div class="col-6 text-right" *ngIf="didIds.length > 0">
             {{currentStartIndex + 1}} - {{currentStartIndex + pageSize < didIds.length ? currentStartIndex + pageSize : didIds.length}} from {{didIds.length}}
           </div>
         </div>

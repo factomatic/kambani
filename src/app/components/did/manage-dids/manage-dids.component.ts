@@ -119,14 +119,24 @@ export class ManageDidsComponent implements OnInit {
     return Object.keys(this.allDIDsPublicInfo).length > 0;
   }
 
+  copyDIDId(didId: string) {
+    const selBox = document.createElement('textarea');
+    selBox.style.position = 'fixed';
+    selBox.style.left = '0';
+    selBox.style.top = '0';
+    selBox.style.opacity = '0';
+    selBox.value = didId;
+    document.body.appendChild(selBox);
+    selBox.focus();
+    selBox.select();
+    document.execCommand('copy');
+    document.body.removeChild(selBox);
+  }
+
   private getDIDsInfo() {
     this.allDIDsPublicInfo = this.vaultService.getAllDIDsPublicInfo();
     this.didIds = Object.keys(this.allDIDsPublicInfo);
     this.displayedDidIds = this.didIds.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
-
-    for(const didId in this.displayedDidIds) {
-      this.didEditNickname[didId] = false;
-    }
   }
 
   private postProcessDidBackupFile(encryptedFile: string, didId: string) {

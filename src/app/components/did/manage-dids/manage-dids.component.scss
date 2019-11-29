@@ -54,6 +54,15 @@ $mainColor: #2F5BE7;
   .table-striped tbody tr:nth-of-type(odd) {
     background-color: #fdfdfd;
   }
+  .did-link {
+    color: #333;
+  }
+  .copy-icon {
+    position: relative;
+    bottom: 5px;
+    margin-left: 15px;
+    cursor: pointer;
+  }
 }
 .paginator {
   a {
