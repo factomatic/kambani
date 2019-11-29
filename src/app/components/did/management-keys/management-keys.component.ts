@@ -90,7 +90,7 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
       alias: ['', [Validators.required,
       CustomValidators.uniqueKeyAlias(this.componentKeys.map(key => key.keyModel) as ManagementKeyModel[], this.didKeys)]],
       priority: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
-      priorityRequirement: [undefined, [Validators.min(0), Validators.max(100)]]
+      priorityRequirement: [null, [Validators.min(0), Validators.max(100)]]
     });
 
     this.cd.detectChanges();
@@ -139,11 +139,11 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
 
   confirm(componentKey: ComponentKeyModel) {
     componentKey.disabled = true;
-    const updatedKey = componentKey.keyModel;
+    const updatedKey = componentKey.keyModel as ManagementKeyModel;
     const originalKey = this.managementKeys.find(k => k.publicKey === updatedKey.publicKey);
 
-    if (updatedKey.alias !== originalKey.alias || updatedKey.controller !== originalKey.controller) {
-      this.store.dispatch(new UpdateManagementKey(componentKey.keyModel as ManagementKeyModel));
+    if (this.isKeyUpdated(updatedKey, originalKey)) {
+      this.store.dispatch(new UpdateManagementKey(updatedKey));
       this.cd.detectChanges();
     }
   }
@@ -179,5 +179,16 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
 
   get priorityRequirement() {
     return this.keyForm.get('priorityRequirement');
+  }
+
+  private isKeyUpdated(updatedKey: ManagementKeyModel, originalKey: ManagementKeyModel) {
+    if (updatedKey.alias !== originalKey.alias
+      || updatedKey.controller !== originalKey.controller
+      || updatedKey.priority !== originalKey.priority
+      || updatedKey.priorityRequirement !== originalKey.priorityRequirement) {
+      return true;
+    }
+
+    return false;
   }
 }
