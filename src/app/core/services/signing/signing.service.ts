@@ -15,6 +15,7 @@ import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { EntryType } from '../../enums/entry-type';
 import { environment } from 'src/environments/environment';
 import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
+import { ManagementKeyModel } from '../../models/management-key.model';
 import { RequestKeyType } from '../../enums/request-key-type';
 import { RevokeModel } from '../../interfaces/revoke-model';
 import { ServiceEntryModel } from '../../interfaces/service-entry';
@@ -87,17 +88,18 @@ export class SigningService {
     });
   }
 
-  signUpdateEntry(didId: string, selectedManagementKey: ManagementKeyEntryModel, entry: UpdateEntryDocument, vaultPassword: string): Observable<SignatureResultModel> {
+  signUpdateEntry(didId: string, signingKey: ManagementKeyModel, entry: UpdateEntryDocument, vaultPassword: string): Observable<SignatureResultModel> {
     return defer(async () => {
       try {
         const vault = this.vaultService.getVault();
         const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
         const managementKeys = decryptedVault[didId].managementKeys;
-        const privateKey = managementKeys[selectedManagementKey.id.split('#')[1]];
-        const signatureType = selectedManagementKey.type.replace('VerificationKey', '') as SignatureType;
+        const privateKey = managementKeys[signingKey.alias];
+        const signatureType = signingKey.type as SignatureType;
+        const signingKeyId = `${didId}#${signingKey.alias}`;
 
         const contentToSign = Buffer.from(calculateDoubleSha256(
-          EntryType.UpdateDIDEntry.concat(this.entrySchemaVersion, selectedManagementKey.id, JSON.stringify(entry))
+          EntryType.UpdateDIDEntry.concat(this.entrySchemaVersion, signingKeyId, JSON.stringify(entry))
         ));
 
         const signature = await this.getSignature(contentToSign, signatureType, privateKey);   
