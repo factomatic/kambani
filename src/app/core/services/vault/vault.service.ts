@@ -397,6 +397,12 @@ export class VaultService {
       const anyAddedManagementKeys = addObject != undefined && addObject.managementKey != undefined;
 
       if (anyRevokedManagementKeys || anyAddedManagementKeys) {
+        for (const managementKey of managementKeys) {
+          if (!managementKey.privateKey) {
+            managementKey.privateKey = managementKeysVaultDict[managementKey.alias];
+          }
+        }
+
         if (anyRevokedManagementKeys) {
           for (const revokeKeyObject of revokeObject.managementKey) {
             const keyAlias = revokeKeyObject.id.split('#')[1];
@@ -439,6 +445,12 @@ export class VaultService {
       const anyAddedDidKeys = addObject != undefined && addObject.didKey != undefined;
 
       if (anyRevokedDidKeys || anyAddedDidKeys) {
+        for (const didKey of didKeys) {
+          if (!didKey.privateKey) {
+            didKey.privateKey = didKeysVaultDict[didKey.alias];
+          }
+        }
+
         if (anyRevokedDidKeys) {
           for (const revokeKeyObject of revokeObject.didKey) {
             const keyAlias = revokeKeyObject.id.split('#')[1];
