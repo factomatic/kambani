@@ -176,12 +176,12 @@ export class DIDService {
   private generateUpdateEntry(): UpdateEntryDocument {
     const didUpdateModel: UpdateDIDModel = this.updateDIDState.dids.find(d => d.didId === this.id);
 
-    const newManagementKeys = this.getNew(new Set(didUpdateModel.originalManagementKeys), didUpdateModel.managementKeys);
-    const newDidKeys = this.getNew(new Set(didUpdateModel.originalDidKeys), didUpdateModel.didKeys);
-    const newServices = this.getNew(new Set(didUpdateModel.originalServices), didUpdateModel.services);
-    const revokedManagementKeys = this.getRevoked(didUpdateModel.originalManagementKeys, new Set(didUpdateModel.managementKeys));
-    const revokedDidKeys = this.getRevoked(didUpdateModel.originalDidKeys, new Set(didUpdateModel.didKeys));
-    const revokedServices = this.getRevoked(didUpdateModel.originalServices, new Set(didUpdateModel.services));
+    const newManagementKeys = this.getNew(didUpdateModel.originalManagementKeys, didUpdateModel.managementKeys);
+    const newDidKeys = this.getNew(didUpdateModel.originalDidKeys, didUpdateModel.didKeys);
+    const newServices = this.getNew(didUpdateModel.originalServices, didUpdateModel.services);
+    const revokedManagementKeys = this.getRevoked(didUpdateModel.originalManagementKeys, didUpdateModel.managementKeys);
+    const revokedDidKeys = this.getRevoked(didUpdateModel.originalDidKeys, didUpdateModel.didKeys);
+    const revokedServices = this.getRevoked(didUpdateModel.originalServices, didUpdateModel.services);
 
     const updateEntry: UpdateEntryDocument = {};
 
@@ -249,11 +249,12 @@ export class DIDService {
     return serviceEntryObject;
   }
 
-  private getNew(original, current) {
+  private getNew(original: any[], current: any[]) {
     const _new = [];
+    const originalStrArray = original.map(e => JSON.stringify(e));
 
     current.forEach(obj => {
-      if (!original.has(obj)) {
+      if (!originalStrArray.includes(JSON.stringify(obj))) {
         _new.push(obj);
       }
     });
@@ -261,11 +262,12 @@ export class DIDService {
     return _new;
   }
 
-  private getRevoked(original, current): RevokeModel[] {
+  private getRevoked(original: any[], current: any[]): RevokeModel[] {
     const revoked: RevokeModel[] = [];
+    const currentStrArray = current.map(e => JSON.stringify(e));
 
     original.forEach(obj => {
-      if (!current.has(obj)) {
+      if (!currentStrArray.includes(JSON.stringify(obj))) {
         revoked.push({ id: `${this.id}#${obj.alias}` });
       }
     });
@@ -364,7 +366,7 @@ export class DIDService {
       k.controller,
       k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem,
       undefined,
-      k.priorityRequirement ? k.priorityRequirement : null
+      k.priorityRequirement == undefined ? null : k.priorityRequirement
     ));
   }
 
@@ -376,7 +378,7 @@ export class DIDService {
       k.controller,
       k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem,
       undefined,
-      k.priorityRequirement ? k.priorityRequirement : null
+      k.priorityRequirement == undefined ? null : k.priorityRequirement
     ));
   }
 
@@ -385,7 +387,7 @@ export class DIDService {
       s.type,
       s.serviceEndpoint,
       s.id.split('#')[1],
-      s.priorityRequirement ? s.priorityRequirement : null
+      s.priorityRequirement == undefined ? null : s.priorityRequirement
     ));
   }
 }
