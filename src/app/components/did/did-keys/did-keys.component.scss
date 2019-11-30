@@ -27,6 +27,12 @@
   outline: none !important;
   border: none !important;
 }
+
+.checkbox-inline {
+  display: inline;
+  margin-left: 15px;
+}
+
 $mainColor: #2F5BE7;
 .steps-content {
   h3 {

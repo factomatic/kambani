@@ -1,6 +1,6 @@
 import { CollapseComponent } from 'angular-bootstrap-md';
 import { Component, OnInit, AfterViewInit, ViewChildren, ChangeDetectorRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, FormControl, ValidatorFn } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Store, select } from '@ngrx/store';
 import { Subscription } from 'rxjs';
@@ -33,12 +33,16 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
   @ViewChildren(CollapseComponent) collapses: CollapseComponent[];
   private subscription: Subscription;
   private didId: string;
-  public keyForm: FormGroup;
   public actionType = ActionType;
+  public actionDropdownTooltipMessage = TooltipMessages.AuthenticationDropdownTooltip;
+  public availablePurposes = [
+    {name: 'Public Key', value: PurposeType.PublicKey},
+    {name: 'Authentication Key', value: PurposeType.AuthenticationKey}
+  ];
+  public keyForm: FormGroup;
   public didKeys: DidKeyModel[] = [];
   public componentKeys: ComponentKeyModel[] = [];
   public managementKeys: ManagementKeyModel[] = [];
-  public actionDropdownTooltipMessage = TooltipMessages.AuthenticationDropdownTooltip;
   public continueButtonText: string;
 
   constructor(
@@ -83,7 +87,10 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
   createForm() {
     this.keyForm = this.fb.group({
       type: [SignatureType.EdDSA, [Validators.required]],
-      purpose: [PurposeType.PublicKey, [Validators.required]],
+      purposes: new FormArray([
+        new FormControl(false),
+        new FormControl(false)
+      ], this.validateCheckboxes()),
       controller: [this.didId, [Validators.required]],
       alias: ['', [
         Validators.required,
@@ -92,7 +99,7 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
           this.componentKeys.map(key => key.keyModel) as DidKeyModel[]
         )
       ]],
-      priorityRequirement: [undefined, [Validators.min(0), Validators.max(100)]]
+      priorityRequirement: [null, [Validators.min(0), Validators.max(100)]]
     });
 
     this.cd.detectChanges();
@@ -103,11 +110,15 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
       return;
     }
 
+    const selectedPurposes = this.keyForm.value.purposes
+      .map((selected, i) => selected ? this.availablePurposes[i].value : null)
+      .filter(p => p !== null);
+
     this.keysService.generateKeyPair(this.type.value)
       .subscribe(keyPair => {
         const generatedKey = new DidKeyModel(
           this.alias.value,
-          [this.purpose.value],
+          selectedPurposes,
           this.type.value,
           this.controller.value,
           keyPair.publicKey,
@@ -141,11 +152,21 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
 
   confirm(componentKey: ComponentKeyModel) {
     componentKey.disabled = true;
-    const updatedKey = componentKey.keyModel;
+    const updatedKey = componentKey.keyModel as DidKeyModel;
     const originalKey = this.didKeys.find(k => k.publicKey === updatedKey.publicKey);
 
-    if (updatedKey.alias !== originalKey.alias || updatedKey.controller !== originalKey.controller) {
-      this.store.dispatch(new UpdateDIDKey(componentKey.keyModel as DidKeyModel));
+    let purposeUpdated = false;
+    const updatedKeyPurposes = componentKey.purposes
+      .filter(p => p.checked)
+      .map(p => p.value);
+
+    if (JSON.stringify(updatedKeyPurposes) !== JSON.stringify(originalKey.purpose)) {
+      purposeUpdated = true;
+      componentKey.keyModel['purpose'] = updatedKeyPurposes;
+    }
+
+    if (this.isKeyUpdated(updatedKey, originalKey) || purposeUpdated) {
+      this.store.dispatch(new UpdateDIDKey(updatedKey));
       this.cd.detectChanges();
     }
   }
@@ -170,11 +191,33 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
     return this.keyForm.get('controller');
   }
 
-  get purpose() {
-    return this.keyForm.get('purpose');
+  get purposes() {
+    return <FormArray>this.keyForm.get('purposes');
   }
 
   get priorityRequirement() {
     return this.keyForm.get('priorityRequirement');
+  }
+
+  private validateCheckboxes() {
+    const validator: ValidatorFn = (formArray: FormArray) => {
+      const totalSelected = formArray.controls
+        .map(control => control.value)
+        .reduce((prev, next) => next ? prev + next : prev, 0);
+
+      return totalSelected > 0 ? null : { required: true };
+    };
+  
+    return validator;
+  }
+
+  private isKeyUpdated(updatedKey: DidKeyModel, originalKey: DidKeyModel) {
+    if (updatedKey.alias !== originalKey.alias
+      || updatedKey.controller !== originalKey.controller
+      || updatedKey.priorityRequirement !== originalKey.priorityRequirement) {
+      return true;
+    }
+
+    return false;
   }
 }

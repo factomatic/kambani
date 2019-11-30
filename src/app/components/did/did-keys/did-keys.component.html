@@ -11,12 +11,15 @@
     <div mdbCollapse #collapse="bs-collapse">
       <div class="form-group">
         <label class="control-label" for="purpose">Purpose type</label>
-        <input
-          type="text"
-          class="form-control input-md"
-          id="purpose"
-          value="{{key.keyModel.purpose}}"
-          disabled />
+        <div>
+          <label class="checkbox-inline" *ngFor="let purpose of key.purposes; let i = index;">
+            <input type="checkbox" [(ngModel)]="key.purposes[i].checked" [disabled]="key.disabled">
+            {{purpose.name}}
+          </label>
+          <div class="invalid-alert" *ngIf="!key.purposes[0].checked && !key.purposes[1].checked">
+            <p>Purpose type is required!</p>
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -66,15 +69,27 @@
       </div>
 
       <div class="form-group">
-        <label class="control-label" for="controller">Key (Base58)</label>
-        <input type="text" class="form-control input-md" id="controller" value="{{key.keyModel.publicKey}}" disabled />
+        <label class="control-label" for="keyPriorityRequirement">Priority Requirement</label>
+        <input
+          type="number"
+          class="form-control input-md"
+          id="keyPriorityRequirement"
+          #keyPriorityRequirement="ngModel"
+          [(ngModel)]="key.keyModel.priorityRequirement"
+          [ngClass]="{ 'invalid-border': keyPriorityRequirement.invalid, 'disabled': key.disabled }"
+          priorityminvalidator
+          prioritymaxvalidator />
+        <div class="invalid-alert" *ngIf="keyPriorityRequirement.errors && (keyPriorityRequirement.dirty || keyPriorityRequirement.touched)">
+          <p *ngIf="keyPriorityRequirement?.errors.priorityMin">Priority requirement must be a positive number!</p>
+          <p *ngIf="keyPriorityRequirement?.errors.priorityMax">Priority requirement must not be bigger than 100!</p>
+        </div>
       </div>
 
       <div class="form-group text-center">
         <button type="button" mdbBtn color="warning" mdbWavesEffect (click)="edit(key)" *ngIf="key.disabled">
-          <span class="glyphicon glyphicon-pencil"></span>
+            <i class="fas fa-edit"></i>
         </button>
-        <button type="button" mdbBtn color="success" mdbWavesEffect (click)="confirm(key)" *ngIf="!key.disabled" [disabled]="keyController.invalid || keyAlias.invalid">
+        <button type="button" mdbBtn color="success" mdbWavesEffect (click)="confirm(key)" *ngIf="!key.disabled" [disabled]="keyController.invalid || keyAlias.invalid || keyPriorityRequirement.invalid || (!key.purposes[0].checked && !key.purposes[1].checked)">
           <i class="fas fa-check"></i>
         </button>
       </div>
@@ -85,11 +100,12 @@
     <div mdbCollapse #collapse="bs-collapse">
       <form [formGroup]="keyForm" (ngSubmit)="generateKey()">
         <div class="form-group">
-          <label class="control-label" for="purpose">Purpose type</label>
-          <select class="form-control" formControlName="purpose" id="purpose">
-            <option value="publicKey">Public Key</option>
-            <option value="authentication">Authentication Key</option>
-          </select>
+          <label class="control-label">Purpose type</label>
+          <div>
+            <label class="checkbox-inline" *ngFor="let purpose of purposes.controls; let i=index">
+              <input type="checkbox" [formControl]="purpose"> {{availablePurposes[i].name}}
+            </label>
+          </div>
         </div>
 
         <div class="form-group">
