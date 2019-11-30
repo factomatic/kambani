@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Store, select } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
-import { AddManagementKey, UpdateManagementKey } from 'src/app/core/store/form/form.actions';
+import { AddManagementKey, UpdateManagementKey } from 'src/app/core/store/update-did/update-did.actions';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
 import CustomValidators from 'src/app/core/utils/customValidators';
@@ -49,10 +49,11 @@ export class ManagementKeyFormComponent extends BaseComponent implements OnInit 
     this.didId = this.route.parent.snapshot.params.id;
 
     this.subscription = this.store
-      .pipe(select(state => state.form))
-      .subscribe(form => {
-        this.managementKeys = form.managementKeys;
-        this.didKeys = form.didKeys;
+      .pipe(select(state => state.updateDID))
+      .subscribe(updateDIDState => {
+        const didUpdateModel = updateDIDState.dids.find(d => d.didId == this.didId);
+        this.managementKeys = didUpdateModel.managementKeys;
+        this.didKeys = didUpdateModel.didKeys;
       });
 
     this.subscriptions.push(this.subscription);
@@ -62,7 +63,7 @@ export class ManagementKeyFormComponent extends BaseComponent implements OnInit 
       this.keyModel = this.managementKeys.find(k => k.alias === keyAlias);
       this.mode = this.UpdateMode;
     } else {
-      this.keyModel = {type: SignatureType.EdDSA, controller: this.didId, alias: '', publicKey: '', priority: null, priorityRequirement: null};
+      this.keyModel = new ManagementKeyModel('', null, SignatureType.EdDSA, this.didId, '', '', null);
       this.mode = this.CreateMode;
     }
 
@@ -112,7 +113,7 @@ export class ManagementKeyFormComponent extends BaseComponent implements OnInit 
           this.priorityRequirement.value
         );
 
-        this.store.dispatch(new AddManagementKey(generatedKey));
+        this.store.dispatch(new AddManagementKey(this.didId, generatedKey));
       });
   }
 
@@ -123,24 +124,17 @@ export class ManagementKeyFormComponent extends BaseComponent implements OnInit 
       updatedKeyModel.alias = this.alias.value;
       updatedKeyModel.controller = this.controller.value;
       updatedKeyModel.priority = this.priority.value;
-      updatedKeyModel.priorityRequirement = this.priorityRequirement.value !== null
-        ? this.priorityRequirement.value
-        : undefined;
+      updatedKeyModel.priorityRequirement = this.priorityRequirement.value;
 
-      this.store.dispatch(new UpdateManagementKey(updatedKeyModel));
+      this.store.dispatch(new UpdateManagementKey(this.didId, updatedKeyModel));
     }
   }
 
   private isKeyUpdated() {
-    let priorityRequirementCurrentValue = undefined;
-    if (this.priorityRequirement.value !== null) {
-      priorityRequirementCurrentValue = this.priorityRequirement.value;
-    }
-
     if (this.alias.value !== this.keyModel.alias
       || this.controller.value !== this.keyModel.controller
       || this.priority.value !== this.keyModel.priority
-      || priorityRequirementCurrentValue !== this.keyModel.priorityRequirement) {
+      || this.priorityRequirement.value !== this.keyModel.priorityRequirement) {
       return true;
     }
 

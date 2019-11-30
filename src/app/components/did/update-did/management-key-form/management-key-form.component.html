@@ -85,6 +85,6 @@
 
   <div class="form-group text-center">
     <input type="submit" *ngIf="mode == CreateMode" mdbBtn color="success" class="btn btn-block" mdbWavesEffect value="Generate key" [disabled]="keyForm.invalid" />
-    <input type="submit" *ngIf="mode == UpdateMode" mdbBtn color="warning" class="btn btn-block" mdbWavesEffect value="Edit key" [disabled]="keyForm.invalid || keyForm.pristine" />
+    <input type="submit" *ngIf="mode == UpdateMode" mdbBtn color="success" class="btn btn-block" mdbWavesEffect value="Save" [disabled]="keyForm.invalid || keyForm.pristine" />
   </div>
 </form>

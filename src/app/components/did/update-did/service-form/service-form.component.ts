@@ -4,7 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
-import { AddService } from 'src/app/core/store/form/form.actions';
+import { AddService } from 'src/app/core/store/update-did/update-did.actions';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
 import CustomValidators from 'src/app/core/utils/customValidators';
@@ -44,9 +44,10 @@ export class ServiceFormComponent extends BaseComponent implements OnInit {
     this.didId = this.route.parent.snapshot.params.id;
 
     this.subscription = this.store
-      .pipe(select(state => state.form))
-      .subscribe(form => {
-        this.services = form.services;
+      .pipe(select(state => state.updateDID))
+      .subscribe(updateDIDState => {
+        const didUpdateModel = updateDIDState.dids.find(d => d.didId === this.didId);
+        this.services = didUpdateModel.services;
       });
     
     this.subscriptions.push(this.subscription);
@@ -77,7 +78,7 @@ export class ServiceFormComponent extends BaseComponent implements OnInit {
       this.priorityRequirement.value
     );
 
-    this.store.dispatch(new AddService(service));
+    this.store.dispatch(new AddService(this.didId, service));
 
     this.router.navigate([`dids/preview/${this.didId}`]);
     this.workflowService.closeUpdateForm();
