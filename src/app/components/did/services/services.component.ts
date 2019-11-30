@@ -71,7 +71,7 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
       type: ['', [Validators.required]],
       endpoint: ['', [Validators.required]],
       alias: ['', [Validators.required, CustomValidators.uniqueServiceAlias(this.services.map(s => s.serviceModel))]],
-      priorityRequirement: [undefined, [Validators.min(0), Validators.max(100)]]
+      priorityRequirement: [null, [Validators.min(0), Validators.max(100)]]
     });
   }
 

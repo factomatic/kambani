@@ -27,6 +27,11 @@
         <label class="control-label" for="alias">Alias</label>
         <input type="text" class="form-control input-md" id="alias" value="{{service.serviceModel.alias}}" disabled />
       </div>
+
+      <div class="form-group">
+        <label class="control-label" for="priorityRequirement">Priority Requirement</label>
+        <input type="text" class="form-control input-md" id="priorityRequirement" value="{{service.serviceModel.priorityRequirement !== null ? service.serviceModel.priorityRequirement : 'N/A' }}" disabled />
+      </div>
     </div>
   </div>
   <div class="collapsible collapsed">
