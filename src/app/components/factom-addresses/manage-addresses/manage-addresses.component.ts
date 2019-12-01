@@ -91,8 +91,8 @@ export class ManageAddressesComponent implements OnInit {
           this.vaultService
             .importFactomAddress(
               this.selectedAddressType,
-              `${this.selectedAddressType.toLowerCase()}-address`,
-              addressPair.public, addressPair.private,
+              addressPair.public,
+              addressPair.private,
               vaultPassword)
             .subscribe(result => {
               this.spinner.hide();

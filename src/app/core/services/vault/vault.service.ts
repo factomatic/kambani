@@ -36,6 +36,8 @@ export class VaultService {
           [FactomAddressType.EC]: {}
         }),
         createdDIDsCount: 0,
+        createdFCTAddressesCount: 0,
+        createdECAddressesCount: 0,
         signedRequestsCount: 0,
         signedRequestsData: JSON.stringify(new Array(7).fill(0)),
         dateOfLastSignedRequest: undefined
@@ -236,7 +238,7 @@ export class VaultService {
     this.localStorageStore.putState(newState);
   }
 
-  importFactomAddress(type: FactomAddressType, nickname: string, publicAddress: string, privateAddress: string, vaultPassword: string) {
+  importFactomAddress(type: FactomAddressType, publicAddress: string, privateAddress: string, vaultPassword: string, nickname?: string) {
     return defer(async () => {
       try {
         const state = this.localStorageStore.getState();
@@ -245,6 +247,14 @@ export class VaultService {
         decryptedVault[publicAddress] = privateAddress;
         const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
 
+        let fctAddressesCount = state.createdFCTAddressesCount;
+        let ecAddressesCount = state.createdECAddressesCount;
+        if (!nickname) {
+          nickname = type == FactomAddressType.FCT
+            ? `fct-address-${++fctAddressesCount}`
+            : `ec-address-${++ecAddressesCount}`;
+        }
+
         const factomAddressesPublicInfo = JSON.parse(state.factomAddressesPublicInfo);
         factomAddressesPublicInfo[type] = Object.assign({}, factomAddressesPublicInfo[type], {
           [publicAddress]: nickname
@@ -252,7 +262,9 @@ export class VaultService {
 
         const newState = Object.assign({}, state, {
           vault: encryptedVault,
-          factomAddressesPublicInfo: JSON.stringify(factomAddressesPublicInfo)
+          factomAddressesPublicInfo: JSON.stringify(factomAddressesPublicInfo),
+          createdFCTAddressesCount: fctAddressesCount,
+          createdECAddressesCount: ecAddressesCount
         });
 
         this.localStorageStore.putState(newState);

@@ -69,7 +69,12 @@ export class ImportAddressComponent implements OnInit {
         if (vaultPassword) {
           this.spinner.show();
           this.vaultService
-            .importFactomAddress(this.type.value, this.nickname.value, publicAddress, this.privateAddress.value, vaultPassword)
+            .importFactomAddress(
+              this.type.value,
+              publicAddress,
+              this.privateAddress.value,
+              vaultPassword,
+              this.nickname.value)
             .subscribe(result => {
               this.spinner.hide();
               if (result.success) {
