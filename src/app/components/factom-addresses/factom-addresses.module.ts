@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { ClickOutsideModule } from 'ng-click-outside';
 import { FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { MDBBootstrapModule } from 'angular-bootstrap-md';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
@@ -13,6 +14,7 @@ import { FactomAddressesRoutingModule } from './factom-addresses.routing';
   ],
   imports: [
     CommonModule,
+    ClickOutsideModule,
     FactomAddressesRoutingModule,
     FormsModule,
     MDBBootstrapModule.forRoot(),

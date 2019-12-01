@@ -33,7 +33,7 @@
                 <td>
                   <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true">{{allDIDsPublicInfo[didId].nickname}}</a>
                   <div class="nickname-editable" *ngIf="didEditNickname[didId]">
-                    <form (ngSubmit)="editNickname(didId, nickname.value)" (clickOutside)="editNickname(didId, nickname.value)" [attachOutsideOnClick]="didEditNickname[didId]" >
+                    <form (ngSubmit)="editNickname(didId, nickname.value)" (clickOutside)="editNickname(didId, nickname.value)" [attachOutsideOnClick]="true" >
                       <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}"  class="form-control" />
                     </form>
                   </div>
