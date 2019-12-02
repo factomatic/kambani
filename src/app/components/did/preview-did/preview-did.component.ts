@@ -178,11 +178,6 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
   }
 
   removeManagementKey(key: ManagementKeyModel) {
-    if (this.managementKeys.filter(mk => mk.priority == 0).length == 1 && key.priority == 0) {
-      this.toastr.error("You can not revoke all Management Keys at priority 0", null, {timeOut: 5000});
-      return;
-    }
-
     const confirmRef = this.modalService.open(ConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'key';
     confirmRef.result.then((result) => {
