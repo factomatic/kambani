@@ -3,7 +3,7 @@
     <div class="form-container">
       <div class="heading">
         <h1>
-          Create new Vault
+          Create new vault
         </h1>
       </div>
       <form [formGroup]="createVaultForm" (ngSubmit)="createVault()">
@@ -37,7 +37,6 @@
         <input type="submit" class="btn btn-primary" value="Create" [disabled]="createVaultForm.invalid" />
       </form>
       <div class="restore mt-5">
-        <p class="text-muted">Restore vault ?</p>
         <a class="text-warning" routerLink="/vault/restore">Import using vault backup file</a>
       </div>
     </div>
