@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { DeviceDetectorService } from 'ngx-device-detector';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
@@ -34,10 +33,8 @@ export class SummaryComponent extends BaseComponent implements OnInit {
   private managementKeys: ManagementKeyModel[];
   public entry: DIDDocument | UpdateEntryDocument;
   public entryPretified: string;
-  public recordOnChainButtonName = 'Record on-chain';
   
   constructor(
-    private deviceService: DeviceDetectorService,
     private dialogsService: DialogsService,
     private didService: DIDService,
     private router: Router,
@@ -61,16 +58,12 @@ export class SummaryComponent extends BaseComponent implements OnInit {
 
     this.subscriptions.push(this.subscription);
 
-    if (this.deviceService.isMobile()) {
-      this.recordOnChainButtonName = 'Record';
-    }
-
     this.entry = this.didService.generateEntry(EntryType.CreateDIDEntry);
     this.entryPretified = JSON.stringify(this.entry, null, 2);
   }
 
   recordOnChain() {
-    const dialogMessage = 'Enter your vault password to save your key(s)';
+    const dialogMessage = 'Enter your vault password to save your digital identity';
 
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
