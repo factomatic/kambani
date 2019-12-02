@@ -12,9 +12,6 @@ public static SignatureTypeTooltip = 'Both signature types allow you to sign mes
   public static AliasTooltip = 'A human-readable nickname for the key you are creating. ' +
   'It can help differentiate between different keys more easily if you are creating many.';
 
-  public static AuthenticationDropdownTooltip = 'Generate keys that will be used specifically for authentication purposes. ' +
-  'You can re-use keys created in the previous step.';
-
   public static ServicesHeaderTooltip = 'Register services used by the DID. These can be authentication providers, ' +
   'messaging hubs, credential repositories for verifiable claims, etc.';
 
@@ -25,14 +22,4 @@ public static SignatureTypeTooltip = 'Both signature types allow you to sign mes
   'CredentialRepositoryService, MessagingHub, etc.';
 
   public static ServiceEndpointTooltip = 'Specify the URL for the service, e.g. https://example.com/KYCProvider';
-
-  public static EncryptHeaderTooltipAdvancedMode = 'Choose a strong password to encrypt the private keys(s) of the DID.';
-
-  public static EncryptHeaderBoldPartTooltipAdvancedMode = 'Make sure you store the password in a safe location: ' +
-  'there is no password recovery if you lose your password and you will be unable to sign messages with your DID keys, if you lose it!';
-
-  public static EncryptHeaderTooltipBasicMode = 'Choose a strong password to encrypt the private key of the DID.';
-
-  public static EncryptHeaderBoldPartTooltipBasicMode = 'Make sure you store the password in a safe location: ' +
-  'there is no password recovery if you lose your password and you will be unable to sign messages with your DID key, if you lose it!';
 }

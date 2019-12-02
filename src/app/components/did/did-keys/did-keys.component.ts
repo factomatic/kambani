@@ -18,7 +18,6 @@ import { KeysService } from 'src/app/core/services/keys/keys.service';
 import { ManagementKeyModel } from 'src/app/core/models/management-key.model';
 import { PurposeType } from 'src/app/core/enums/purpose-type';
 import { SignatureType } from 'src/app/core/enums/signature-type';
-import { TooltipMessages } from 'src/app/core/utils/tooltip.messages';
 import { WorkflowService } from 'src/app/core/services/workflow/workflow.service';
 
 const UP_POSITION = 'up';
@@ -34,7 +33,6 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
   private subscription: Subscription;
   private didId: string;
   public actionType = ActionType;
-  public actionDropdownTooltipMessage = TooltipMessages.AuthenticationDropdownTooltip;
   public availablePurposes = [
     {name: 'Public Key', value: PurposeType.PublicKey},
     {name: 'Authentication Key', value: PurposeType.AuthenticationKey}
