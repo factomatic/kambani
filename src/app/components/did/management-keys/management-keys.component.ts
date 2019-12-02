@@ -42,7 +42,6 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
   public aliasTooltipMessage = TooltipMessages.AliasTooltip;
   public controllerTooltipMessage = TooltipMessages.ControllerTooltip;
   public signatureTypeTooltipMessage = TooltipMessages.SignatureTypeTooltip;
-  public continueButtonText: string;
 
   constructor(
     private cd: ChangeDetectorRef,
@@ -63,8 +62,6 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
         this.componentKeys = createDIDState.managementKeys.map(key => new ComponentKeyModel(Object.assign({}, key), DOWN_POSITION, true));
         this.managementKeys = createDIDState.managementKeys;
         this.didKeys = createDIDState.didKeys;
-
-        this.continueButtonText = this.componentKeys.length > 0 ? 'Next' : 'Skip';
       });
 
     this.subscriptions.push(this.subscription);
