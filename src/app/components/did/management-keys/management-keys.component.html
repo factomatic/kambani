@@ -108,7 +108,7 @@
         <div class="form-group">
           <label class="control-label" for="type">
             Signature type
-            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{signatureTypeTooltipMessage}}" tooltipClass="custom-tooltip"></i>
+            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{signatureTypeTooltipMessage}}" tooltipClass="custom-tooltip" placement="bottom"></i>
           </label>
           <select class="form-control" formControlName="type" id="type">
             <option value="Ed25519">Ed25519</option>
@@ -120,7 +120,7 @@
         <div class="form-group">
           <label class="control-label" for="controller">
             Key controller
-            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{controllerTooltipMessage}}" tooltipClass="custom-tooltip"></i>
+            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{controllerTooltipMessage}}" tooltipClass="custom-tooltip" placement="bottom"></i>
           </label>
           <input
             type="text"
@@ -139,7 +139,7 @@
         <div class="form-group">
           <label class="control-label" for="alias">
             Alias
-            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{aliasTooltipMessage}}" tooltipClass="custom-tooltip"></i>
+            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{aliasTooltipMessage}}" tooltipClass="custom-tooltip" placement="bottom"></i>
           </label>
           <input
             type="text"
@@ -199,5 +199,5 @@
 
 <div class="button-footer">
   <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()">Back</button>
-  <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToNext()">{{continueButtonText}}</button>
+  <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToNext()">Next</button>
 </div>
