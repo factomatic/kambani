@@ -48,10 +48,16 @@ $lightColor: #F8F8F8;
         &:active, &:hover{
             background: $mainColorHover;
         }
-        &:active, &:focus {
-            border-color: $mainColor;
+        &:active {
+            border-color: $mainColorHover!important;
+            background: $mainColorHover!important;
             outline: initial!important;
             box-shadow: 0 0 0 3px rgba(47, 91, 231, 0.45);
+        }
+        &:focus {
+            border-color: $mainColor;
+            outline: initial!important;
+            box-shadow: none;
         }
     }
     &.btn-success {
@@ -62,10 +68,15 @@ $lightColor: #F8F8F8;
             color: #4caf50;
             border: 1px solid #4caf50;
         }
-        &:active, &:focus {
+        &:active {
+            background-color: #409444;
+            border-color: #3d8b40;
+            box-shadow: 0 0 0 3px rgba(76,175,80,.5);
+        }
+        &:focus {
             background-color: #4caf50;
             border-color: #4caf50;
-            box-shadow: 0 0 0 3px rgba(76,175,80,.5);
+            box-shadow: none;
         }
         &:hover {
             color: #fff;
@@ -82,11 +93,17 @@ $lightColor: #F8F8F8;
             color: #ffc107;
             border: 1px solid #ffc107;
         }
-        &:active, &:focus {
+        &:active {
+            color: #47404f;
+            background-color: #e0a800;
+            border-color: #d39e00;
+            box-shadow: 0 0 0 3px rgba(255,193,7,.5);
+        }
+        &:focus {
             color: #47404f;
             background-color: #ffc107;
             border-color: #ffc107;
-            box-shadow: 0 0 0 3px rgba(255,193,7,.5);
+            box-shadow: none;
         }
         &:hover {
             color: #47404f;
@@ -103,11 +120,17 @@ $lightColor: #F8F8F8;
             color: #d22346;
             border: 1px solid #d22346;
         }
-        &:active, &:focus {
+        &:active {
+            color: #fff;
+            background-color: #b11e3b;
+            border-color: #a61c37;
+            box-shadow: 0 0 0 3px rgba(210,35,70,.5);
+        }
+        &:focus {
             color: #fff;
             background-color: #d22346;
             border-color: #d22346;
-            box-shadow: 0 0 0 3px rgba(210,35,70,.5);
+            box-shadow: none;
         }
         &:hover {
             color: #fff;
