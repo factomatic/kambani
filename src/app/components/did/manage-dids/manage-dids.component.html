@@ -5,8 +5,8 @@
         <div class="page-header">
           <div class="form-group header-search pull-left">
             <form>
-            <input type="search" #searchInput class="form-control" placeholder="Search" />
-            <button class="btn btn-primary" (click)="search(searchInput.value)"><i class="fa fa-search"></i></button>
+              <input type="search" #searchInput class="form-control" placeholder="Search" />
+              <button class="btn btn-primary" (click)="search(searchInput.value)"><i class="fa fa-search"></i></button>
             </form>
           </div>
           <a class="btn btn-success pull-right" routerLink="/dids/manage/action" (click)="formScreenOpen = true"><i class="fa fa-plus"></i> Create new</a>
@@ -33,7 +33,7 @@
                   <a (click)="copyDIDId(didId, copyButtonRef)" class="copy-didid" #copyButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy"><i class="far fa-copy copy-icon"></i></a>
               </td>
                 <td width="250" height="65">
-                  <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true">{{allDIDsPublicInfo[didId].nickname}}</a>
+                  <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true" data-toggle="tooltip" data-placement="top" title="Click to edit">{{allDIDsPublicInfo[didId].nickname}}</a>
                   <div class="nickname-editable" *ngIf="didEditNickname[didId]">
                     <form (ngSubmit)="editNickname(didId, nickname.value)" (clickOutside)="editNickname(didId, nickname.value)" [attachOutsideOnClick]="false" [delayClickOutsideInit]="true" >
                       <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}" autofocus class="form-control" />

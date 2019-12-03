@@ -28,7 +28,7 @@
                   <tr *ngFor="let publicAddress of displayedFCTAddresses">
                     <td><span>{{publicAddress}}</span></td>
                     <td width="250" height="65">
-                      <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true">{{fctAddressesInfo[publicAddress]}}</a>
+                      <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true" data-toggle="tooltip" data-placement="top" title="Click to edit">{{fctAddressesInfo[publicAddress]}}</a>
                       <div class="nickname-editable" *ngIf="editAddressNickname[publicAddress]">
                         <form 
                           (ngSubmit)="editNickname(publicAddress, FactomAddressType.FCT, nickname.value)"
@@ -77,7 +77,7 @@
                   <tr *ngFor="let publicAddress of displayedECAddresses">
                     <td><span>{{publicAddress}}</span></td>
                     <td width="250" height="65">
-                      <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true">{{ecAddressesInfo[publicAddress]}}</a>
+                      <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true" data-toggle="tooltip" data-placement="top" title="Click to edit">{{ecAddressesInfo[publicAddress]}}</a>
                       <div class="nickname-editable" *ngIf="editAddressNickname[publicAddress]">
                         <form 
                           (ngSubmit)="editNickname(publicAddress, FactomAddressType.EC, nickname.value)"
