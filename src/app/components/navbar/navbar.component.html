@@ -9,7 +9,7 @@
       </div>
     </div>
   </div>
-  <nav class="navbar" [ngClass]="{'active': openMobileNav}">
+  <nav class="navbar" [ngClass]="{'active': openMobileNav}" (click)="toggleNavigation()">
     <div class="container">
       <ul class="list-unstyled">
         <li class="nav-item">
