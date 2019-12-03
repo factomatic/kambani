@@ -24,6 +24,7 @@
     "@ngrx/store": "^8.5.1",
     "@types/chrome": "0.0.81",
     "angular": "^1.7.9",
+    "angular-autofocus-fix": "^0.1.2",
     "angular-bootstrap-md": "^7.5.4",
     "angular-highlight-js": "2.0.1",
     "bootstrap": "^4.3.1",

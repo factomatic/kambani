@@ -22,7 +22,7 @@
                 <th class="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody valign="center">
               <tr *ngFor="let didId of displayedDidIds">
                 <td>
                   <span>
@@ -30,11 +30,11 @@
                   </span>
                   <i class="far fa-copy copy-icon" (click)="copyDIDId(didId)" data-toggle="tooltip" data-placement="top" title="Click to copy"></i>
               </td>
-                <td>
+                <td width="250" height="65">
                   <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true">{{allDIDsPublicInfo[didId].nickname}}</a>
                   <div class="nickname-editable" *ngIf="didEditNickname[didId]">
-                    <form (ngSubmit)="editNickname(didId, nickname.value)" (clickOutside)="editNickname(didId, nickname.value)" [attachOutsideOnClick]="true" >
-                      <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}"  class="form-control" />
+                    <form (ngSubmit)="editNickname(didId, nickname.value)" (clickOutside)="editNickname(didId, nickname.value)" [attachOutsideOnClick]="false" [delayClickOutsideInit]="true" >
+                      <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}" autofocus class="form-control" />
                     </form>
                   </div>
                 </td>
