@@ -1,8 +1,11 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
+import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
+import { ClearCreateDIDState } from 'src/app/core/store/create-did/create-did.actions';
 import { SharedRoutes } from 'src/app/core/enums/shared-routes';
 
 @Component({
@@ -17,7 +20,8 @@ export class FinalComponent extends BaseComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router) {
+    private router: Router,
+    private store: Store<AppState>) {
     super();
   }
 
@@ -28,6 +32,7 @@ export class FinalComponent extends BaseComponent implements OnInit {
     });
 
     this.subscriptions.push(this.subscription);
+    this.store.dispatch(new ClearCreateDIDState());
   }
 
   createAnotherDID() {

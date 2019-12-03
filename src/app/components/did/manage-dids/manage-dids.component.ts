@@ -117,6 +117,7 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
         confirmRef.componentInstance.objectType = 'key';
         confirmRef.result.then((result) => {
           this.clearState();
+          this.store.dispatch(new ClearCreateDIDState());
         }).catch((error) => {
         });
     } else {
@@ -170,7 +171,6 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
     this.getDIDsInfo();
     this.didService.clearData();
     this.store.dispatch(new ClearWorkflowState());
-    this.store.dispatch(new ClearCreateDIDState());
     this.router.navigate(['dids/manage']);
   }
 
