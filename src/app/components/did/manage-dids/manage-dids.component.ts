@@ -147,7 +147,7 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
     return Object.keys(this.allDIDsPublicInfo).length > 0;
   }
 
-  copyDIDId(didId: string) {
+  copyDIDId(didId: string, element) {
     const selBox = document.createElement('textarea');
     selBox.style.position = 'fixed';
     selBox.style.left = '0';
@@ -159,6 +159,10 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
     selBox.select();
     document.execCommand('copy');
     document.body.removeChild(selBox);
+
+    element.classList.add('clicked');
+    setTimeout(() => {element.classList.remove('clicked')},2000);
+
   }
 
   private clearState() {

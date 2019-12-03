@@ -30,7 +30,7 @@
                   <span>
                     <a class="did-link" href="https://testnet.factoid.org/data?type=chain&key={{didId.split(':').pop()}}" target="_blank" data-toggle="tooltip" data-placement="top" title="Click to open in explorer">{{didId}}</a>
                   </span>
-                  <i class="far fa-copy copy-icon" (click)="copyDIDId(didId)" data-toggle="tooltip" data-placement="top" title="Click to copy"></i>
+                  <a (click)="copyDIDId(didId, copyButtonRef)" class="copy-didid" #copyButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy"><i class="far fa-copy copy-icon"></i></a>
               </td>
                 <td width="250" height="65">
                   <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true">{{allDIDsPublicInfo[didId].nickname}}</a>

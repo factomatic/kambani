@@ -58,10 +58,6 @@ $mainColor: #2F5BE7;
     color: #333;
   }
   .copy-icon {
-    position: relative;
-    bottom: 5px;
-    margin-left: 15px;
-    cursor: pointer;
   }
 }
 .paginator {
@@ -192,5 +188,42 @@ a {
   }
   button {
     float: right;
+  }
+}
+.copy-didid {
+  position: relative;
+  position: relative;
+  bottom: 5px;
+  margin-left: 15px;
+  cursor: pointer;
+  &::before {
+    content: "Copied!";
+    padding: 5px 15px;
+    color: #fff;
+    background: #4caf50;
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+    border-radius: 4px;
+    display: none;
+  }
+  &::after {
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid #4caf50;
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    content: "";
+    display: none;
+  }
+  &.clicked {
+    &::before, &::after {
+      display: inline-block;
+    }
   }
 }
