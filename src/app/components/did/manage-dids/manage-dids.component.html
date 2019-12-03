@@ -4,8 +4,10 @@
       <div class="page-content">
         <div class="page-header">
           <div class="form-group header-search pull-left">
+            <form>
             <input type="search" #searchInput class="form-control" placeholder="Search" />
             <button class="btn btn-primary" (click)="search(searchInput.value)"><i class="fa fa-search"></i></button>
+            </form>
           </div>
           <a class="btn btn-success pull-right" routerLink="/dids/manage/action" (click)="formScreenOpen = true"><i class="fa fa-plus"></i> Create new</a>
           <div class="clearfix"></div>
