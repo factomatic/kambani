@@ -91,7 +91,8 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
     this.createForm();
   }
 
-  removeService(service: ServiceModel) {
+  removeService(service: ServiceModel, event) {
+    event.stopPropagation();
     const confirmRef = this.modalService.open(RemoveConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'service';
     confirmRef.result.then((result) => {

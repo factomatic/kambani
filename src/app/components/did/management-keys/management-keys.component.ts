@@ -115,7 +115,8 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
       });
   }
 
-  removeKey(key: ManagementKeyModel) {
+  removeKey(key: ManagementKeyModel, event) {
+    event.stopPropagation();
     const confirmRef = this.modalService.open(RemoveConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'key';
     confirmRef.result.then((result) => {

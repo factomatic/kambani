@@ -129,7 +129,8 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
       });
   }
 
-  removeKey(key: DidKeyModel) {
+  removeKey(key: DidKeyModel, event) {
+    event.stopPropagation();
     const confirmRef = this.modalService.open(RemoveConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'key';
     confirmRef.result.then((result) => {
@@ -205,7 +206,7 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
 
       return totalSelected > 0 ? null : { required: true };
     };
-  
+
     return validator;
   }
 
