@@ -1,12 +1,18 @@
 import { Component, OnInit } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
-import { Store } from '@ngrx/store';
+import { Store, select } from '@ngrx/store';
+import { Subscription } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
 import { AppState } from 'src/app/core/store/app.state';
 import { BackupResultModel } from 'src/app/core/models/backup-result.model';
-import { ClearWorkflowState } from 'src/app/core/store/workflow/workflow.actions';
+import { BaseComponent } from '../../base.component';
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
+import { ClearCreateDIDState } from 'src/app/core/store/create-did/create-did.actions';
+import { ClearWorkflowState } from 'src/app/core/store/workflow/workflow.actions';
+import { ConfirmModalComponent } from '../../modals/confirm-modal/confirm-modal.component';
+import { CreateDIDState } from 'src/app/core/store/create-did/create-did.state';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { DIDService } from 'src/app/core/services/did/did.service';
 import { downloadFile } from 'src/app/core/utils/helpers';
@@ -19,7 +25,9 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
   templateUrl: './manage-dids.component.html',
   styleUrls: ['./manage-dids.component.scss']
 })
-export class ManageDidsComponent implements OnInit {
+export class ManageDidsComponent extends BaseComponent implements OnInit {
+  private subscription: Subscription;
+  private createDIDState: CreateDIDState;
   public didIds: string[] = [];
   public displayedDidIds: string[] = [];
   public allDIDsPublicInfo: object;
@@ -32,10 +40,13 @@ export class ManageDidsComponent implements OnInit {
   constructor(
     private dialogsService: DialogsService,
     private didService: DIDService,
+    private modalService: NgbModal,
     private router: Router,
     private store: Store<AppState>,
     private toastr: ToastrService,
-    private vaultService: VaultService) { }
+    private vaultService: VaultService) {
+      super();
+    }
 
   ngOnInit() {
     chrome.tabs && chrome.tabs.getCurrent(function(tab) {
@@ -56,6 +67,14 @@ export class ManageDidsComponent implements OnInit {
     });
 
     this.getDIDsInfo();
+
+    this.subscription = this.store
+      .pipe(select(state => state.createDID))
+      .subscribe(createDIDState => {
+        this.createDIDState = createDIDState;
+      });
+
+    this.subscriptions.push(this.subscription);
   }
 
   backupDid(didId: string) {
@@ -91,9 +110,18 @@ export class ManageDidsComponent implements OnInit {
   }
 
   closeFormScreen() {
-    this.formScreenOpen = false;
-    this.getDIDsInfo();
-    this.store.dispatch(new ClearWorkflowState());
+    if (this.createDIDState.managementKeys.length > 0
+      || this.createDIDState.didKeys.length > 0
+      || this.createDIDState.services.length > 0) {
+        const confirmRef = this.modalService.open(ConfirmModalComponent);
+        confirmRef.componentInstance.objectType = 'key';
+        confirmRef.result.then((result) => {
+          this.clearState();
+        }).catch((error) => {
+        });
+    } else {
+      this.clearState();
+    }
   }
 
   search(searchTerm: string) {
@@ -131,6 +159,15 @@ export class ManageDidsComponent implements OnInit {
     selBox.select();
     document.execCommand('copy');
     document.body.removeChild(selBox);
+  }
+
+  private clearState() {
+    this.formScreenOpen = false;
+    this.getDIDsInfo();
+    this.didService.clearData();
+    this.store.dispatch(new ClearWorkflowState());
+    this.store.dispatch(new ClearCreateDIDState());
+    this.router.navigate(['dids/manage']);
   }
 
   private getDIDsInfo() {
