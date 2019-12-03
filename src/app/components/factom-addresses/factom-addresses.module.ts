@@ -1,3 +1,4 @@
+import { AutofocusModule } from 'angular-autofocus-fix';
 import { CommonModule } from '@angular/common';
 import { ClickOutsideModule } from 'ng-click-outside';
 import { FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -13,6 +14,7 @@ import { FactomAddressesRoutingModule } from './factom-addresses.routing';
     ...factomAddressesComponents
   ],
   imports: [
+    AutofocusModule,
     CommonModule,
     ClickOutsideModule,
     FactomAddressesRoutingModule,

@@ -1,3 +1,4 @@
+import { AutofocusModule } from 'angular-autofocus-fix';
 import { CommonModule } from '@angular/common';
 import { ClickOutsideModule } from 'ng-click-outside';
 import { FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -13,7 +14,6 @@ import { didComponents } from '.';
 import { DIDRoutingModule } from './did.routing';
 import { PriorityMaxValidator } from 'src/app/core/utils/priority.max.validator';
 import { PriorityMinValidator } from 'src/app/core/utils/priority.min.validator';
-import { AutofocusModule } from 'angular-autofocus-fix';
 
 hljs.registerLanguage('json', json);
 
@@ -29,6 +29,7 @@ export function highlightJsFactory() {
     ...didComponents
   ],
   imports: [
+    AutofocusModule,
     CommonModule,
     ClickOutsideModule,
     DIDRoutingModule,
@@ -39,8 +40,7 @@ export function highlightJsFactory() {
     }),
     MDBBootstrapModule.forRoot(),
     NgbModule,
-    ReactiveFormsModule,
-    AutofocusModule
+    ReactiveFormsModule
   ],
   exports: [
     ...didComponents

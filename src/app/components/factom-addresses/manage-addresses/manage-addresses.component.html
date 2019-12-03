@@ -24,17 +24,18 @@
                     <th class="text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody valign="center">
                   <tr *ngFor="let publicAddress of displayedFCTAddresses">
                     <td><span>{{publicAddress}}</span></td>
-                    <td>
+                    <td width="250" height="65">
                       <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true">{{fctAddressesInfo[publicAddress]}}</a>
                       <div class="nickname-editable" *ngIf="editAddressNickname[publicAddress]">
                         <form 
                           (ngSubmit)="editNickname(publicAddress, FactomAddressType.FCT, nickname.value)"
                           (clickOutside)="editNickname(publicAddress, FactomAddressType.FCT, nickname.value)"
-                          [attachOutsideOnClick]="true">
-                          <input type="text" name="nickname" #nickname value="{{fctAddressesInfo[publicAddress]}}" class="form-control" />
+                          [attachOutsideOnClick]="false"
+                          [delayClickOutsideInit]="true">
+                          <input type="text" name="nickname" #nickname value="{{fctAddressesInfo[publicAddress]}}" autofocus class="form-control" />
                         </form>
                       </div>
                     </td>
