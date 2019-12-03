@@ -73,20 +73,18 @@
                     <th class="text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody valign="center">
                   <tr *ngFor="let publicAddress of displayedECAddresses">
                     <td><span>{{publicAddress}}</span></td>
-                    <td>
+                    <td width="250" height="65">
                       <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true">{{ecAddressesInfo[publicAddress]}}</a>
                       <div class="nickname-editable" *ngIf="editAddressNickname[publicAddress]">
-                        <form (ngSubmit)="editNickname(publicAddress, FactomAddressType.EC, nickname.value)">
-                          <input type="text" name="nickname" #nickname value="{{ecAddressesInfo[publicAddress]}}" class="form-control" />
-                          <button class="btn btn-danger" (click)="editAddressNickname[publicAddress] = false">
-                            <i class="fa fa-times"></i>
-                          </button>
-                          <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-save"></i>
-                          </button>
+                        <form 
+                          (ngSubmit)="editNickname(publicAddress, FactomAddressType.EC, nickname.value)"
+                          (clickOutside)="editNickname(publicAddress, FactomAddressType.EC, nickname.value)"
+                          [attachOutsideOnClick]="false"
+                          [delayClickOutsideInit]="true">
+                          <input type="text" name="nickname" #nickname value="{{ecAddressesInfo[publicAddress]}}" autofocus class="form-control" />
                         </form>
                       </div>
                     </td>
