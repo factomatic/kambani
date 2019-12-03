@@ -4,7 +4,7 @@
     <h3 (click)="collapse.toggle(); toggleKey(key.keyModel);" class="withoutPlus">
       <span>{{key.keyModel.alias}}</span>
       <i class="fas fa-caret-{{key.iconPosition}} text-primary"></i>
-      <button class="btn btn-sm btn-danger pull-right" (click)="removeKey(key.keyModel, $event)">
+      <button class="btn btn-xs btn-danger pull-right delete-button" (click)="removeKey(key.keyModel, $event)">
         <i class="fas fa-trash"></i>
       </button>
     </h3>

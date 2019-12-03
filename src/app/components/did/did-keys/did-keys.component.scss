@@ -53,6 +53,7 @@ $mainColor: #2F5BE7;
       text-align: left;
       position: relative;
       cursor: pointer;
+      margin-bottom: 0px;
       span {
         width: calc(100% - 80px);
         text-overflow: ellipsis;
@@ -101,4 +102,12 @@ padding: 10px 15px;
 -moz-box-shadow: 0px -4px 5px 0px rgba(179,179,179,1);
 box-shadow: 0px -4px 5px 0px rgba(179,179,179,1);
 background: #fff;
+}
+.delete-button {
+  i {
+    font-size: 12px;
+    margin-top: -5px;
+    display: inline-block;
+    vertical-align: middle;
+  }
 }
