@@ -1,5 +1,8 @@
 $mainColor: #253992;
 #main-header {
+  .mobile-menu-toggle {
+    display: none;
+  }
   .logo-section {
     background: $mainColor;
     padding: 15px 0px;
@@ -104,6 +107,81 @@ $mainColor: #253992;
           }
         }
     //   }
+    }
+  }
+}
+@media only screen and (max-width: 767px){
+  #main-header {
+    .mobile-menu-toggle {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 24px;
+        float : right;
+        margin-top: 7px;
+        margin-right: 15px;
+        @media only screen and (min-width: 768px){
+            display: none;
+        }
+        span, span:after, span:before {
+            position: absolute;
+            width: 40px;
+            height: 4px;
+            transition-timing-function: ease;
+            transition-duration: .15s;
+            transition-property: transform;
+            border-radius: 4px;
+            background-color: #fff;
+            display: block;
+            content: "";
+        }
+        span:before {
+            top: 10px;
+            transition-timing-function: ease;
+            transition-duration: .15s;
+            transition-property: transform,opacity;
+        }
+        span:after {
+            top: 20px;
+        }
+        &.active {
+            span {
+                transform: translate3d(0,10px,0) rotate(45deg);
+                &::before {
+                    transform: rotate(-45deg) translate3d(-5.71429px,-6px,0);
+                    opacity: 0;
+                }
+                &::after {
+                    transform: translate3d(0,-20px,0) rotate(-90deg);
+                }
+            }
+        }
+    }
+    .navbar {
+      height: 0px;
+      overflow: hidden;
+      transition: height 0.3s ease;
+      position: fixed;
+      top: 70px;
+      left: -100%;
+      width: 100%;
+      height: calc(100% - 70px);
+      z-index: 999;
+      text-align: center;
+      display: block;
+      padding-top: 100px;
+      transition: left 0.3s ease;
+      &.active {
+        left: 0px;
+      }
+      ul {
+         li {
+           float: none;
+         }
+      }
+      &.active {
+        height: 100%;
+      }
     }
   }
 }

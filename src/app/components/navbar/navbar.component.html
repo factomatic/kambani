@@ -3,10 +3,13 @@
     <div class="container">
       <div class="row">
         <div class="col-6 col-sm-6 col-xs-6 brand-name">WebSigner</div>
+        <div class="col-6 col-sm-6 col-xs-6">
+          <a href="javascript:;" class="mobile-menu-toggle" (click)="toggleNavigation()" [ngClass]="{'active': openMobileNav}"><span></span></a>
+        </div>
       </div>
     </div>
   </div>
-  <nav class="navbar">
+  <nav class="navbar" [ngClass]="{'active': openMobileNav}">
     <div class="container">
       <ul class="list-unstyled">
         <li class="nav-item">
