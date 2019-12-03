@@ -9,8 +9,8 @@ import { AddService, RemoveService } from 'src/app/core/store/create-did/create-
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
 import { ComponentServiceModel } from 'src/app/core/models/component-service.model';
-import { ConfirmModalComponent } from '../../modals/confirm-modal/confirm-modal.component';
 import CustomValidators from 'src/app/core/utils/customValidators';
+import { RemoveConfirmModalComponent } from '../../modals/remove-confirm-modal/remove-confirm-modal.component';
 import { ServiceModel } from 'src/app/core/models/service.model';
 import { Subscription } from 'rxjs';
 import { TooltipMessages } from 'src/app/core/utils/tooltip.messages';
@@ -92,7 +92,7 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
   }
 
   removeService(service: ServiceModel) {
-    const confirmRef = this.modalService.open(ConfirmModalComponent);
+    const confirmRef = this.modalService.open(RemoveConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'service';
     confirmRef.result.then((result) => {
       this.store.dispatch(new RemoveService(service));

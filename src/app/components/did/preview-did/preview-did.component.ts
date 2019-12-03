@@ -10,7 +10,6 @@ import * as updateDIDActions from 'src/app/core/store/update-did/update-did.acti
 import { AppState } from 'src/app/core/store/app.state';
 import { BackupResultModel } from 'src/app/core/models/backup-result.model';
 import { BaseComponent } from 'src/app/components/base.component';
-import { ConfirmModalComponent } from 'src/app/components/modals/confirm-modal/confirm-modal.component';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { DidKeyModel } from 'src/app/core/models/did-key.model';
 import { DIDService } from 'src/app/core/services/did/did.service';
@@ -20,6 +19,7 @@ import { ManagementKeyModel } from 'src/app/core/models/management-key.model';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
 import { PurposeType } from 'src/app/core/enums/purpose-type';
+import { RemoveConfirmModalComponent } from 'src/app/components/modals/remove-confirm-modal/remove-confirm-modal.component';
 import { ResultModel } from 'src/app/core/models/result.model';
 import { ServiceModel } from 'src/app/core/models/service.model';
 import { SharedRoutes } from 'src/app/core/enums/shared-routes';
@@ -178,7 +178,7 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
   }
 
   removeManagementKey(key: ManagementKeyModel) {
-    const confirmRef = this.modalService.open(ConfirmModalComponent);
+    const confirmRef = this.modalService.open(RemoveConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'key';
     confirmRef.result.then((result) => {
       this.store.dispatch(new updateDIDActions.RemoveManagementKey(this.didId, key));
@@ -187,7 +187,7 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
   }
 
   removeDIDKey(key: DidKeyModel) {
-    const confirmRef = this.modalService.open(ConfirmModalComponent);
+    const confirmRef = this.modalService.open(RemoveConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'key';
     confirmRef.result.then((result) => {
       this.store.dispatch(new updateDIDActions.RemoveDIDKey(this.didId, key));
@@ -196,7 +196,7 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
   }
 
   removeService(service: ServiceModel) {
-    const confirmRef = this.modalService.open(ConfirmModalComponent);
+    const confirmRef = this.modalService.open(RemoveConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'service';
     confirmRef.result.then((result) => {
       this.store.dispatch(new updateDIDActions.RemoveService(this.didId, service));

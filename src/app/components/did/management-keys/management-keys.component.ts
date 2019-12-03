@@ -10,13 +10,13 @@ import { ActionType } from 'src/app/core/enums/action-type';
 import { AddManagementKey, RemoveManagementKey, UpdateManagementKey } from 'src/app/core/store/create-did/create-did.actions';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
-import { ConfirmModalComponent } from 'src/app/components/modals/confirm-modal/confirm-modal.component';
 import { ComponentKeyModel } from 'src/app/core/models/component-key.model';
 import CustomValidators from 'src/app/core/utils/customValidators';
 import { DidKeyModel } from 'src/app/core/models/did-key.model';
 import { DIDService } from 'src/app/core/services/did/did.service';
 import { KeysService } from 'src/app/core/services/keys/keys.service';
 import { ManagementKeyModel } from 'src/app/core/models/management-key.model';
+import { RemoveConfirmModalComponent } from 'src/app/components/modals/remove-confirm-modal/remove-confirm-modal.component';
 import { SignatureType } from 'src/app/core/enums/signature-type';
 import { TooltipMessages } from 'src/app/core/utils/tooltip.messages';
 import { WorkflowService } from 'src/app/core/services/workflow/workflow.service';
@@ -116,7 +116,7 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
   }
 
   removeKey(key: ManagementKeyModel) {
-    const confirmRef = this.modalService.open(ConfirmModalComponent);
+    const confirmRef = this.modalService.open(RemoveConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'key';
     confirmRef.result.then((result) => {
       this.store.dispatch(new RemoveManagementKey(key));

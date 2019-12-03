@@ -10,13 +10,13 @@ import { AddDIDKey, RemoveDIDKey, UpdateDIDKey } from 'src/app/core/store/create
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
 import { ComponentKeyModel } from 'src/app/core/models/component-key.model';
-import { ConfirmModalComponent } from '../../modals/confirm-modal/confirm-modal.component';
 import CustomValidators from 'src/app/core/utils/customValidators';
 import { DidKeyModel } from 'src/app/core/models/did-key.model';
 import { DIDService } from 'src/app/core/services/did/did.service';
 import { KeysService } from 'src/app/core/services/keys/keys.service';
 import { ManagementKeyModel } from 'src/app/core/models/management-key.model';
 import { PurposeType } from 'src/app/core/enums/purpose-type';
+import { RemoveConfirmModalComponent } from '../../modals/remove-confirm-modal/remove-confirm-modal.component';
 import { SignatureType } from 'src/app/core/enums/signature-type';
 import { WorkflowService } from 'src/app/core/services/workflow/workflow.service';
 
@@ -130,7 +130,7 @@ export class DidKeysComponent extends BaseComponent implements OnInit, AfterView
   }
 
   removeKey(key: DidKeyModel) {
-    const confirmRef = this.modalService.open(ConfirmModalComponent);
+    const confirmRef = this.modalService.open(RemoveConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'key';
     confirmRef.result.then((result) => {
       this.store.dispatch(new RemoveDIDKey(key));
