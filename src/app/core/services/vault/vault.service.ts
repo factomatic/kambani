@@ -29,6 +29,7 @@ export class VaultService {
       const encryptedVault = await encryptor.encrypt(password, newVault);
 
       this.localStorageStore.putState({
+        version: environment.localStorageVersion,
         vault: encryptedVault,
         didsPublicInfo: JSON.stringify({}),
         factomAddressesPublicInfo: JSON.stringify({
@@ -549,7 +550,8 @@ export class VaultService {
   }
 
   private isValidState(state: any): boolean {
-    if (state.vault
+    if (state.version == environment.localStorageVersion
+      && state.vault
       && state.didsPublicInfo
       && state.factomAddressesPublicInfo
       && state.createdDIDsCount >= 0
