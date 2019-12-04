@@ -4,7 +4,7 @@
     <ng-template #tipContent>{{headerTooltipMessage}} <b>{{headerBoldPartTooltipMessage}}</b></ng-template>
     <i class="fas fa-info-circle fa-sm text-primary" [ngbTooltip]="tipContent" tooltipClass="custom-tooltip" placement="bottom"></i>
   </h3>
-  <div class="collapsible collapsed mb-5" *ngFor="let service of services">
+  <div class="collapsible collapsed mb-3" *ngFor="let service of services">
     <h3 (click)="collapse.toggle(); toggleService(service.serviceModel);" class="withoutPlus">
       {{service.serviceModel.alias}}
       <i class="fas fa-caret-{{service.iconPosition}} text-primary"></i>

@@ -163,7 +163,6 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
 
     element.classList.add('clicked');
     setTimeout(() => {element.classList.remove('clicked')},2000);
-
   }
 
   private clearState() {
