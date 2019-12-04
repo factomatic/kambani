@@ -152,15 +152,17 @@ export class VaultService {
       });
   }
 
-  restoreVault(encryptedVault: string, password: string): Observable<ResultModel> {
+  restoreVault(encryptedState: string, vaultPassword: string): Observable<ResultModel> {
     return defer(async () => {
       try {
-        this.localStorageStore.putState({
-          vault: encryptedVault,
-          didDocuments: JSON.stringify({})
-        });
+        const decryptedState = await encryptor.decrypt(vaultPassword, encryptedState);
+        if (this.isValidState(decryptedState)) {
+          this.localStorageStore.putState(decryptedState);
 
-        return new ResultModel(true, 'Restore was successful');
+          return new ResultModel(true, 'Successful restore');
+        }
+
+        return new ResultModel(false, 'Invalid vault backup');
       } catch {
         return new ResultModel(false, 'Invalid vault password or type of vault backup');
       }
@@ -184,7 +186,7 @@ export class VaultService {
     });
   }
 
-  backupSingleDIDFromVault(didId: string, vaultPassword: string) {
+  backupSingleDIDFromVault(didId: string, vaultPassword: string): Observable<BackupResultModel> {
     return defer(async () => {
       try {
         const state = this.localStorageStore.getState();
@@ -350,6 +352,20 @@ export class VaultService {
     });
   }
 
+  getEncryptedState(vaultPassword: string): Observable<BackupResultModel> {
+    return defer(async () => {
+      const decryptResult = await this.canDecryptVault(vaultPassword).toPromise();
+      if (!decryptResult.success) {
+        return new BackupResultModel(false, decryptResult.message);
+      }
+
+      const state = this.localStorageStore.getState();
+      const backup = await encryptor.encrypt(vaultPassword, state);
+
+      return new BackupResultModel(true, 'Successful vault backup', backup);
+    });
+  }
+
   getVault(): string {
     return this.localStorageStore.getState().vault;
   }
@@ -383,8 +399,10 @@ export class VaultService {
     return JSON.parse(this.localStorageStore.getState().factomAddressesPublicInfo)[FactomAddressType.EC];
   }
 
-  anyDIDs(): boolean {
-    return Object.keys(this.getAllDIDsPublicInfo()).length > 0;
+  anyDIDsOrAddresses(): boolean {
+    return this.getDIDsCount() > 0
+      || Object.keys(this.getFCTAddressesPublicInfo()).length > 0
+      || Object.keys(this.getECAddressesPublicInfo()).length > 0;
   }
 
   vaultExists(): boolean {
@@ -528,5 +546,20 @@ export class VaultService {
       return {
         anyChanges: false
       };
+  }
+
+  private isValidState(state: any): boolean {
+    if (state.vault
+      && state.didsPublicInfo
+      && state.factomAddressesPublicInfo
+      && state.createdDIDsCount >= 0
+      && state.createdFCTAddressesCount >= 0
+      && state.createdECAddressesCount >= 0
+      && state.signedRequestsCount >= 0
+      && state.signedRequestsData) {
+        return true;
+      }
+
+    return false;
   }
 }

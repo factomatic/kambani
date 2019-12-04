@@ -57,8 +57,9 @@ export class RestoreVaultComponent implements OnInit {
     }
 
     this.spinner.show();
+    const backupFile = this.preProcessEncryptedBackupFile(this.file);
     this.vaultService
-      .restoreVault(this.file, this.password.value)
+      .restoreVault(backupFile, this.password.value)
       .subscribe((result: ResultModel) => {
         if (result.success) {
           this.spinner.hide();
@@ -85,5 +86,16 @@ export class RestoreVaultComponent implements OnInit {
 
       fileReader.readAsText(files[0]);
     }
+  }
+
+  private preProcessEncryptedBackupFile(encryptedFile: string) {
+    const parsedFile = JSON.parse(encryptedFile);
+    const newFile = {
+      data: parsedFile.data,
+      iv: parsedFile.encryptionAlgo.iv,
+      salt: parsedFile.encryptionAlgo.salt
+    };
+
+    return JSON.stringify(newFile);
   }
 }
