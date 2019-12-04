@@ -17,7 +17,7 @@ $mainColor: #2F5BE7;
       tr {
         td:first-child {
           span {
-            width: 150px;
+            width: 165px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -56,6 +56,8 @@ $mainColor: #2F5BE7;
   }
   .did-link {
     color: #333;
+    font-family: monospace;
+    font-size: 16px;
   }
 }
 .paginator {
