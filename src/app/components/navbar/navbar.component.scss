@@ -2,6 +2,7 @@ $mainColor: #253992;
 #main-header {
   .mobile-menu-toggle {
     display: none;
+    cursor: pointer;
   }
   .logo-section {
     background: $mainColor;
