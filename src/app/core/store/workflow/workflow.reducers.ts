@@ -3,7 +3,8 @@ import { WorkflowActionTypes } from './workflow.actions';
 
 const initialState = {
   selectedAction: undefined,
-  currentStepIndex: 0
+  currentStepIndex: 0,
+  closeFormScreen: false
 };
 
 export function workflowReducers(state: WorkflowState = initialState, action) {
@@ -18,6 +19,10 @@ export function workflowReducers(state: WorkflowState = initialState, action) {
       return Object.assign({}, state, {
         selectedAction: action.payload,
         currentStepIndex: 0
+      });
+    case WorkflowActionTypes.CLOSE_FORM_SCREEN:
+      return Object.assign({}, state, {
+        closeFormScreen: true
       });
     default:
       return state;

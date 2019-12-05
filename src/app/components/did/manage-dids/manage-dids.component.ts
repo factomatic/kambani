@@ -79,9 +79,13 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
     this.getDIDsInfo();
 
     this.subscription = this.store
-      .pipe(select(state => state.createDID))
-      .subscribe(createDIDState => {
-        this.createDIDState = createDIDState;
+      .pipe(select(state => state))
+      .subscribe(state => {
+        this.createDIDState = state.createDID;
+        
+        if (state.workflow.closeFormScreen) {
+          this.clearState();
+        }
       });
 
     this.subscriptions.push(this.subscription);

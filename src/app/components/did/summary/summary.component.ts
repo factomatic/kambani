@@ -8,6 +8,8 @@ import { ToastrService } from 'ngx-toastr';
 import { ActionType } from 'src/app/core/enums/action-type';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
+import { ClearCreateDIDState } from 'src/app/core/store/create-did/create-did.actions';
+import { CloseFormScreen } from 'src/app/core/store/workflow/workflow.actions';
 import { DIDDocument } from 'src/app/core/interfaces/did-document';
 import { DidKeyModel } from 'src/app/core/models/did-key.model';
 import { DIDService } from 'src/app/core/services/did/did.service';
@@ -95,13 +97,14 @@ export class SummaryComponent extends BaseComponent implements OnInit {
                           this.spinner.hide();
 
                           if (result.success) {
-                            this.didService.clearData();
-                            this.workflowService.moveToNextStep({ queryParams: { url: recordResult.url, didId: this.didId } });
+                            this.store.dispatch(new ClearCreateDIDState());
+                            this.store.dispatch(new CloseFormScreen());
+                            this.toastr.success('You have successfully created a new Digital Identity');
                           } else {
                             /**
                             * this should never happen
                             */
-                            this.toastr.error('A problem occurred! Please, try to create a new Digital Identity.');
+                            this.toastr.error('A problem occurred! Please, try to create a new Digital Identity');
                             this.router.navigate([SharedRoutes.ManageDids]);
                           }
                         });
