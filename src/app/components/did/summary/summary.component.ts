@@ -63,7 +63,7 @@ export class SummaryComponent extends BaseComponent implements OnInit {
   }
 
   recordOnChain() {
-    const dialogMessage = 'Enter your vault password to save your digital identity';
+    const dialogMessage = 'Enter your vault password to save your Digital Identity';
 
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
@@ -97,7 +97,7 @@ export class SummaryComponent extends BaseComponent implements OnInit {
                             /**
                             * this should never happen
                             */
-                            this.toastr.error('A problem occurred! Please, try to create a new DID.');
+                            this.toastr.error('A problem occurred! Please, try to create a new Digital Identity.');
                             this.router.navigate([SharedRoutes.ManageDids]);
                           }
                         });

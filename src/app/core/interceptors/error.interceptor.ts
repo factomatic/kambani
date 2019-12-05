@@ -25,7 +25,7 @@ export class ErrorInterceptor implements HttpInterceptor {
         catchError((err: HttpErrorResponse) => {
         this.spinner.hide();
 
-        const errorMessage = 'A problem occurred while recording your DID. Please, try again!';
+        const errorMessage = 'A problem occurred while recording your entry. Please, try again!';
         this.toastr.error(errorMessage, 'Warning!');
 
         return throwError(err);

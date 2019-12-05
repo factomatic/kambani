@@ -75,7 +75,7 @@ export class VaultService {
           const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
 
           const createdDIDsCount = state.createdDIDsCount + 1;
-          const didNickname = `did-${createdDIDsCount}`;
+          const didNickname = `identity-${createdDIDsCount}`;
 
           const didsPublicInfo = JSON.parse(state.didsPublicInfo);
           didsPublicInfo[didId] = {
@@ -91,7 +91,7 @@ export class VaultService {
 
           this.localStorageStore.putState(newState);
 
-          return new ResultModel(true, 'DID was successfully saved');
+          return new ResultModel(true, 'The Identity was saved successfully');
         } catch {
           return new ResultModel(false, 'Incorrect vault password');
         }
@@ -146,7 +146,7 @@ export class VaultService {
 
           this.localStorageStore.putState(newState);
 
-          return new ResultModel(true, 'Vault state was successfully updated');
+          return new ResultModel(true, 'Vault state was updated successfully');
         } catch {
           return new ResultModel(false, 'Incorrect vault password');
         }
@@ -172,7 +172,7 @@ export class VaultService {
 
         this.localStorageStore.putState(newState);
 
-        return new ResultModel(true, 'DID was successfully deleted');
+        return new ResultModel(true, 'The Identity was deleted successfully');
       } catch {
         return new ResultModel(false, 'Incorrect vault password');
       }
@@ -221,7 +221,7 @@ export class VaultService {
         const didKeys = decryptedVault[didId];
         const didKeysBackup = await encryptor.encrypt(vaultPassword, didKeys);
 
-        return new BackupResultModel(true, 'Successful DID backup', didKeysBackup);
+        return new BackupResultModel(true, 'Successful Identity backup', didKeysBackup);
       } catch {
         return new BackupResultModel(false, 'Incorrect vault password');
       }

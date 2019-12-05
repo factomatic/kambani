@@ -1,5 +1,5 @@
 <div class="steps-content">
-  <h3>Create DID keys</h3>
+  <h3>Create Signing keys</h3>
   <div class="collapsible collapsed mb-3" *ngFor="let key of componentKeys">
     <h3 (click)="collapse.toggle(); toggleKey(key.keyModel);" class="withoutPlus">
       <span>{{key.keyModel.alias}}</span>
@@ -45,7 +45,7 @@
           required />
         <div class="invalid-alert" *ngIf="keyController.errors && (keyController.dirty || keyController.touched)">
           <p *ngIf="keyController?.errors.required">Key controller is required!</p>
-          <p *ngIf="keyController?.errors.pattern">Key controller must be a valid DID!</p>
+          <p *ngIf="keyController?.errors.pattern">Key controller must be a valid Identity!</p>
         </div>
       </div>
 
@@ -96,7 +96,7 @@
     </div>
   </div>
   <div class="collapsible collapsed">
-    <h3 (click)="collapse.toggle()">Generate DID Key</h3>
+    <h3 (click)="collapse.toggle()">Generate Signing Key</h3>
     <div mdbCollapse #collapse="bs-collapse">
       <form [formGroup]="keyForm" (ngSubmit)="generateKey()">
         <div class="form-group">
@@ -129,7 +129,7 @@
             [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
           <div *ngIf="controller.errors" class="invalid-feedback">
             <div *ngIf="controller['errors'].required">Key controller is required!</div>
-            <div *ngIf="controller['errors'].pattern">Key controller must be a valid DID!</div>
+            <div *ngIf="controller['errors'].pattern">Key controller must be a valid Identity!</div>
           </div>
         </div>
 

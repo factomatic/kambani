@@ -26,7 +26,7 @@
       [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
     <div *ngIf="controller.errors" class="invalid-feedback">
       <div *ngIf="controller['errors'].required">Key controller is required!</div>
-      <div *ngIf="controller['errors'].pattern">Key controller must be a valid DID!</div>
+      <div *ngIf="controller['errors'].pattern">Key controller must be a valid Identity!</div>
     </div>
   </div>
 

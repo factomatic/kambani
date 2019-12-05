@@ -16,7 +16,7 @@
           </div>
           <div class="col-12 col-md-4 text-md-right text-sm-right text-lg-right">
             <a *ngIf="currentMode == MGMTKeysMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-management-key" (click)="formScreenOpen = true">Add MGMT key</a>
-            <a *ngIf="currentMode == DIDKeysMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-did-key" (click)="formScreenOpen = true">Add DID key</a>
+            <a *ngIf="currentMode == DIDKeysMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-did-key" (click)="formScreenOpen = true">Add Signing key</a>
             <a *ngIf="currentMode == ServicesMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-service" (click)="formScreenOpen = true">Add service</a>
             <button class="btn btn-success action-btn" (click)="backupDid(didId)"><i class="fa fa-download"></i></button>
             <button class="btn btn-danger action-btn" (click)="removeDid(didId)"><i class="fa fa-trash"></i></button>
@@ -26,7 +26,7 @@
         <nav class="info-tables">
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
             <a class="nav-item nav-link active" id="nav-mkeys-tab" data-toggle="tab" href="#nav-mkeys" role="tab" aria-controls="nav-mkeys" aria-selected="true" (click)="currentMode = MGMTKeysMode">MGMT Keys</a>
-            <a class="nav-item nav-link" id="nav-dkeys-tab" data-toggle="tab" href="#nav-dkeys" role="tab" aria-controls="nav-dkeys" aria-selected="false" (click)="currentMode = DIDKeysMode">DID Keys</a>
+            <a class="nav-item nav-link" id="nav-dkeys-tab" data-toggle="tab" href="#nav-dkeys" role="tab" aria-controls="nav-dkeys" aria-selected="false" (click)="currentMode = DIDKeysMode">Signing Keys</a>
             <a class="nav-item nav-link" id="nav-services-tab" data-toggle="tab" href="#nav-services" role="tab" aria-controls="nav-services" aria-selected="false" (click)="currentMode = ServicesMode">Services</a>
           </div>
         </nav>
@@ -112,7 +112,7 @@
                 </div>
               </div>
               <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="didKeys.length == 0">
-                <p class="text-warning text-center">The DID does not have any DID Keys</p>
+                <p class="text-warning text-center">The Identity does not have any Signing Keys</p>
               </div>
             </div>
           </div>
@@ -147,7 +147,7 @@
                 </div>
               </div>
               <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="services.length == 0">
-                <p class="text-warning text-center">The DID does not have any Services</p>
+                <p class="text-warning text-center">The Identity does not have any Services</p>
               </div>
             </div>
           </div>

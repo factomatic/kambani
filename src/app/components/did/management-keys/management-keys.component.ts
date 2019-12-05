@@ -148,7 +148,7 @@ export class ManagementKeysComponent extends BaseComponent implements OnInit, Af
 
   goToNext() {
     if (!this.managementKeys.find(mk => mk.priority === 0)) {
-      this.toastr.warning('Warning! You must have at least one management key created at priority 0 before continuing.');
+      this.toastr.warning('Warning! You must have at least one Management key created at priority 0 before continuing.');
       return;
     }
 

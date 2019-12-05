@@ -5,7 +5,7 @@
         <div class="page-header">
           <div class="form-group header-search pull-left">
             <form>
-              <input type="search" #searchInput class="form-control" placeholder="Search" />
+              <input type="search" #searchInput class="form-control" placeholder="Search by nickname..." />
               <button class="btn btn-primary" (click)="search(searchInput.value)"><i class="fa fa-search"></i></button>
             </form>
           </div>
@@ -16,10 +16,10 @@
           <table class="table table-striped">
             <thead>
               <tr>
-                <th>DID</th>
+                <th>Identity</th>
                 <th>Nickname</th>
                 <th class="text-center">MGMT Keys</th>
-                <th class="text-center">DID Keys</th>
+                <th class="text-center">Signing Keys</th>
                 <th class="text-center">Services</th>
                 <th class="text-right">Actions</th>
               </tr>
@@ -71,10 +71,10 @@
         </div>
         <div class="row">
           <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!anyDID()">
-            <p class="text-warning text-center">You have not created any DIDs yet</p>
+            <p class="text-warning text-center">You have not created any Identities yet</p>
           </div>
           <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="anyDID() && (!didIds || didIds.length === 0)">
-            <p class="text-warning text-center">DID not found</p>
+            <p class="text-warning text-center">Identity not found</p>
           </div>
         </div>
       </div>

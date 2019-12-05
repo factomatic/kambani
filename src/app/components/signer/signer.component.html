@@ -16,7 +16,7 @@
             </div>
             <div *ngIf="requestKeyType == RequestKeyType.DIDKey || requestKeyType == RequestKeyType.ManagementKey">
               <div *ngIf="selectedDIDId">
-                <label for="selectDID">Choose DID to sign with:</label>
+                <label for="selectDID">Choose Identity to sign with:</label>
                 <select class="form-control" id="selectDID" [disabled]="didIdSpecified" (ngModelChange)="onSelectDIDChange($event)" [ngModel]="selectedDIDId">
                   <option [value]="didId" *ngFor="let didId of availableDIDIds">{{allDIDsPublicInfo[didId].nickname}}</option>
                 </select>
@@ -28,10 +28,10 @@
                 </select>
               </div>
               <div *ngIf="allDIDIds.length === 0" class="center mt-5">
-                <p class="text-warning text-center">You need to create a DID in order to sign the data.</p>
+                <p class="text-warning text-center">You need to create an Identity in order to sign the data.</p>
               </div>
               <div *ngIf="allDIDIds.length > 0 && RequestKeyType.DIDKey && didIdsWithDIDKeys === 0" class="center mt-5">
-                <p class="text-warning text-center">You need to create a DID with a DID Key in order to sign the data.</p>
+                <p class="text-warning text-center">You need to create an Identity with a Signing Key in order to sign the data.</p>
               </div>
             </div>
             <div *ngIf="requestKeyType == RequestKeyType.FCT || requestKeyType == RequestKeyType.EC">

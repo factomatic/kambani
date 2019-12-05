@@ -198,9 +198,9 @@ export class SignerComponent implements OnInit {
                 } else {
                   if (this.requestKeyType == RequestKeyType.DIDKey
                     && this.allDIDIds.includes(this.request.did)) {
-                    this.cancelSigning('The DID requested for signing does not have any DID keys!');
+                    this.cancelSigning('The Identity requested for signing does not have any Signing keys!');
                   } else {
-                    this.cancelSigning('The DID requested for signing does not exist!');
+                    this.cancelSigning('The Identity requested for signing does not exist!');
                   }
 
                   return;

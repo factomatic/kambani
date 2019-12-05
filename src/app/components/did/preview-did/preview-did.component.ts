@@ -150,7 +150,7 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
 
                             if (result.success) {
                               this.store.dispatch(new updateDIDActions.CompleteDIDUpdate(this.didId));
-                              this.toastr.success('DID updated successfully');
+                              this.toastr.success('Identity updated successfully');
                               this.router.navigate([SharedRoutes.ManageDids]);
                             } else {
                               /**
@@ -217,7 +217,7 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
   }
 
   backupDid(didId: string) {
-    const dialogMessage = 'Enter your vault password to open the vault and encrypt your DID';
+    const dialogMessage = 'Enter your vault password to open the vault and encrypt your Identity';
 
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
@@ -241,7 +241,7 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
     const signingKey = this.originalManagementKeys.filter(k => k.priority == 0)[0];
     const signingKeyId = `${this.didId}#${signingKey.alias}`;
     const deactivateEntry = "";
-    const dialogMessage = 'Enter your vault password to sign the entry and delete the DID';
+    const dialogMessage = 'Enter your vault password to sign the entry and delete the Identity';
 
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {

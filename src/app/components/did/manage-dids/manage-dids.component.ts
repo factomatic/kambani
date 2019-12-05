@@ -88,7 +88,7 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
   }
 
   backupDid(didId: string) {
-    const dialogMessage = 'Enter your vault password to open the vault and encrypt your DID';
+    const dialogMessage = 'Enter your vault password to open the vault and encrypt your Identity';
 
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
@@ -118,7 +118,7 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
     const signingKey = didDocument.managementKey.filter(k => k.priority == 0)[0];
     const signingKeyType = signingKey.type.split('VerificationKey')[0] as SignatureType;
     const deactivateEntry = "";
-    const dialogMessage = 'Enter your vault password to sign the entry and delete the DID';
+    const dialogMessage = 'Enter your vault password to sign the entry and delete the Identity';
 
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
