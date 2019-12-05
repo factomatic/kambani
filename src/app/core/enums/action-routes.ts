@@ -8,13 +8,11 @@ const actionRoutes = {
     CreateRoutes.ManagementKeys,
     CreateRoutes.DidKeys,
     CreateRoutes.Services,
-    CreateRoutes.Summary,
-    CreateRoutes.Final
+    CreateRoutes.Summary
   ],
   [ActionType.CreateBasic]: [
     SharedRoutes.Action,
-    CreateRoutes.Summary,
-    CreateRoutes.Final
+    CreateRoutes.Summary
   ]
 };
 
