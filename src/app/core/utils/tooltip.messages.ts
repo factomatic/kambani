@@ -1,8 +1,7 @@
 export class TooltipMessages {
-public static SignatureTypeTooltip = 'Both signature types allow you to sign messages ' +
-  'and differ only in the mathematics underpinning them. Ed25519 is the more modern signature type and has ' +
-  'a number of technical advantages over ECDSA, so unless you have a good reason to choose ECDSA, we strongly recommend ' +
-  'that you stick with the default.';
+  public static SignatureTypeTooltip = 'All signature types allow you to sign messages ' +
+  'and differ only in the mathematics underpinning them. Ed25519 has a number of technical advantages over RSA and ECDSA ' +
+  'and unless you have a good reason to choose an alternative you should stick with the default.';
 
   public static ControllerTooltip = 'The controller is the entity that will be making the signatures. ' +
   'This is usually the DID itself, but in case the DID is for a child, it can be the DID of the parent; ' +
