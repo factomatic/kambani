@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerService } from 'ngx-spinner';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { Subscription } from 'rxjs';
@@ -12,12 +13,19 @@ import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { ClearCreateDIDState } from 'src/app/core/store/create-did/create-did.actions';
 import { ClearWorkflowState } from 'src/app/core/store/workflow/workflow.actions';
 import { ConfirmModalComponent } from '../../modals/confirm-modal/confirm-modal.component';
+import { CompleteDIDUpdate } from 'src/app/core/store/update-did/update-did.actions';
 import { CreateDIDState } from 'src/app/core/store/create-did/create-did.state';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
+import { DIDDocument } from 'src/app/core/interfaces/did-document';
 import { DIDService } from 'src/app/core/services/did/did.service';
 import { downloadFile } from 'src/app/core/utils/helpers';
+import { EntryType } from 'src/app/core/enums/entry-type';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
+import { ResultModel } from 'src/app/core/models/result.model';
+import { SignatureResultModel } from 'src/app/core/models/signature-result.model';
+import { SignatureType } from 'src/app/core/enums/signature-type';
+import { SigningService } from 'src/app/core/services/signing/signing.service';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
@@ -42,6 +50,8 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
     private didService: DIDService,
     private modalService: NgbModal,
     private router: Router,
+    private signingService: SigningService,
+    private spinner: NgxSpinnerService,
     private store: Store<AppState>,
     private toastr: ToastrService,
     private vaultService: VaultService) {
@@ -101,6 +111,61 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
   previewDid(didId: string) {
     this.didService.loadDIDForUpdate(didId);
     this.router.navigate([`dids/preview/${didId}`]);
+  }
+
+  removeDid(didId: string) {
+    const didDocument = this.allDIDsPublicInfo[didId].didDocument as DIDDocument;
+    const signingKey = didDocument.managementKey.filter(k => k.priority == 0)[0];
+    const signingKeyType = signingKey.type.split('VerificationKey')[0] as SignatureType;
+    const deactivateEntry = "";
+    const dialogMessage = 'Enter your vault password to sign the entry and delete the DID';
+
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
+      .subscribe((vaultPassword: string) => {
+        if (vaultPassword) {
+          this.spinner.show();
+          this.signingService
+            .signDIDEntry(signingKey.id, signingKeyType, deactivateEntry, EntryType.DeactivateDIDEntry, vaultPassword)
+            .subscribe((result: SignatureResultModel) => {
+              if (result.success) {
+                this.didService
+                  .recordEntryOnChain(
+                    EntryType.DeactivateDIDEntry,
+                    deactivateEntry,
+                    signingKey.id,
+                    result.signatureBase64)
+                  .subscribe((recordResult: any) => {
+                    if (recordResult.error) {
+                      this.spinner.hide();
+                      this.toastr.error(recordResult.message);
+                    } else {
+                      this.vaultService
+                        .removeDIDFromVault(
+                          didId,
+                          vaultPassword)
+                        .subscribe((result: ResultModel) => {
+                          this.spinner.hide();
+
+                          if (result.success) {
+                            this.getDIDsInfo();
+                            this.store.dispatch(new CompleteDIDUpdate(didId));
+                            this.toastr.success(result.message);
+                          } else {
+                            /**
+                            * this should never happen
+                            */
+                            this.toastr.error('A problem occurred! Please, try again');
+                          }
+                        });
+                    }        
+                  });
+              } else {
+                this.spinner.hide();
+                this.toastr.error(result.message);
+              }
+            });
+        }
+      });
   }
 
   editNickname(didId: string, nickname: string) {

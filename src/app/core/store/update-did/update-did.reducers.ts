@@ -143,10 +143,7 @@ function cancelChanges(state: UpdateDIDState, didId: string) {
 
 function completeDIDUpdate(state: UpdateDIDState, didId: string) {
   const didsCopy = state.dids.filter(d => d.didId !== didId);
-  let didsWithPendingChangesCopy = state.didsWithPendingChanges.slice();
-  if (didsWithPendingChangesCopy.includes(didId)) {
-    didsWithPendingChangesCopy = didsWithPendingChangesCopy.filter(id => id !== didId);
-  }
+  const didsWithPendingChangesCopy = state.didsWithPendingChanges.filter(id => id !== didId);
 
   return Object.assign({}, state, {
     dids: didsCopy,

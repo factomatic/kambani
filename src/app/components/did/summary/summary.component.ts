@@ -74,7 +74,7 @@ export class SummaryComponent extends BaseComponent implements OnInit {
             .subscribe((result: ResultModel) => {
               if (result.success) {
                 this.didService
-                  .recordCreateEntryOnChain(this.entry as DIDDocument)
+                  .recordEntryOnChain(EntryType.CreateDIDEntry, this.entry)
                   .subscribe((recordResult: any) => {
                     if (recordResult.error) {
                       this.spinner.hide();

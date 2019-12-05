@@ -15,7 +15,6 @@ import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { EntryType } from '../../enums/entry-type';
 import { environment } from 'src/environments/environment';
 import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
-import { ManagementKeyModel } from '../../models/management-key.model';
 import { RequestKeyType } from '../../enums/request-key-type';
 import { RevokeModel } from '../../interfaces/revoke-model';
 import { ServiceEntryModel } from '../../interfaces/service-entry';
@@ -88,19 +87,29 @@ export class SigningService {
     });
   }
 
-  signUpdateEntry(didId: string, signingKey: ManagementKeyModel, entry: UpdateEntryDocument, vaultPassword: string): Observable<SignatureResultModel> {
+  signDIDEntry(fullDIDId: string, signatureType: SignatureType, entry: any, entryType: EntryType, vaultPassword: string): Observable<SignatureResultModel> {
     return defer(async () => {
       try {
         const vault = this.vaultService.getVault();
         const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
-        const managementKeys = decryptedVault[didId].managementKeys;
-        const privateKey = managementKeys[signingKey.alias];
-        const signatureType = signingKey.type as SignatureType;
-        const signingKeyId = `${didId}#${signingKey.alias}`;
 
-        const contentToSign = Buffer.from(calculateDoubleSha256(
-          EntryType.UpdateDIDEntry.concat(this.entrySchemaVersion, signingKeyId, JSON.stringify(entry))
-        ));
+        const fullDIDIdParts = fullDIDId.split('#');
+        const didId = fullDIDIdParts[0];
+        const keyAlias = fullDIDIdParts[1];
+
+        const managementKeys = decryptedVault[didId].managementKeys;
+        const privateKey = managementKeys[keyAlias];
+
+        let contentToSign;
+        if (entryType == EntryType.DeactivateDIDEntry) {
+          contentToSign = Buffer.from(calculateDoubleSha256(
+            entryType.concat(this.entrySchemaVersion, fullDIDId)
+          ));
+        } else {
+          contentToSign = Buffer.from(calculateDoubleSha256(
+            entryType.concat(this.entrySchemaVersion, fullDIDId, JSON.stringify(entry))
+          ));
+        }
 
         const signature = await this.getSignature(contentToSign, signatureType, privateKey);   
         const signatureBase64 = naclUtil.encodeBase64(signature);

@@ -64,44 +64,21 @@ export class DIDService {
     return this.generateDocument();
   }
 
-  recordCreateEntryOnChain(entry: DIDDocument): Observable<Object> {
-    const entrySize = this.calculateEntrySize(
-      [this.nonce],
-      [EntryType.CreateDIDEntry, this.entrySchemaVersion],
-      JSON.stringify(entry)
-    );
+  recordEntryOnChain(entryType: EntryType, entry: any, managementKeyId?: string, signature?: string): Observable<Object> {
+    const extIds = entryType == EntryType.CreateDIDEntry
+      ? [entryType, this.entrySchemaVersion, this.nonce]
+      : [entryType, this.entrySchemaVersion, managementKeyId, signature];
 
+    const entrySize = this.calculateEntrySize(extIds, JSON.stringify(entry));
     if (entrySize > environment.entrySizeLimit) {
-      return of({error: true, message: 'You have exceeded the entry size limit! Please remove some of your keys or services.'});
+      return of({error: true, message: 'You have exceeded the entry size limit!'});
     }
 
-    const data = JSON.stringify([
-      [EntryType.CreateDIDEntry, this.entrySchemaVersion, this.nonce],
-      entry
-    ]);
+    const data = JSON.stringify([extIds, entry]);
 
-    return this.recordEntry(this.apiUrl, data);
-  }
-
-  recordUpdateEntryOnChain(entry: UpdateEntryDocument, managementKeyId: string, signature: string): Observable<Object> {
-    const entrySize = this.calculateEntrySize(
-      [],
-      [EntryType.UpdateDIDEntry, this.entrySchemaVersion, managementKeyId, signature],
-      JSON.stringify(entry)
-    );
-
-    if (entrySize > environment.entrySizeLimit) {
-      return of({error: true, message: 'You have exceeded the entry size limit! Please remove some of your keys or services.'});
+    if (entryType == EntryType.CreateDIDEntry) {
+      return this.recordEntry(this.apiUrl, data);
     }
-
-    const data = JSON.stringify([
-      [EntryType.UpdateDIDEntry, this.entrySchemaVersion, managementKeyId, signature],
-      entry
-    ]);
-
-    // change the api url with update endpoint
-    // const updateApiUrl = '';
-    // return this.recordEntry(updateApiUrl, data);
 
     return of({data: ''});
   }
@@ -319,17 +296,17 @@ export class DIDService {
     return this.id;
   }
 
-  private calculateEntrySize(hexExtIds: string[], utf8ExtIds: string[], content: string): number {
+  private calculateEntrySize(extIds: string[], content: string): number {
     let totalEntrySize = 0;
     const fixedHeaderSize = 35;
-    totalEntrySize += fixedHeaderSize + 2 * hexExtIds.length + 2 * utf8ExtIds.length;
+    totalEntrySize += fixedHeaderSize + 2 * extIds.length;
 
-    totalEntrySize += hexExtIds.reduce((accumulator, currentHexExtId) => {
-      return accumulator + currentHexExtId.length / 2;
-    }, 0);
-
-    totalEntrySize += utf8ExtIds.reduce((accumulator, currentUtf8ExtId) => {
-      return accumulator + this.getBinarySize(currentUtf8ExtId);
+    totalEntrySize += extIds.reduce((accumulator, currentExtId) => {
+      if (this.isHexadecimal(currentExtId)) {
+        return accumulator + currentExtId.length / 2;
+      }
+      
+      return accumulator + this.getBinarySize(currentExtId);
     }, 0);
 
     totalEntrySize += this.getBinarySize(content);
@@ -339,6 +316,16 @@ export class DIDService {
 
   private getBinarySize(string): number {
     return Buffer.byteLength(string, 'utf8');
+  }
+
+  private isHexadecimal(str: string) {
+    const regexp = /^[0-9a-fA-F]+$/;
+  
+    if (regexp.test(str)) {
+      return true;
+    }
+    
+    return false;
   }
 
   private parseDocument(didDocument: DIDDocument): void {

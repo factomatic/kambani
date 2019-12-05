@@ -19,7 +19,7 @@
             <a *ngIf="currentMode == DIDKeysMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-did-key" (click)="formScreenOpen = true">Add DID key</a>
             <a *ngIf="currentMode == ServicesMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-service" (click)="formScreenOpen = true">Add service</a>
             <button class="btn btn-success action-btn" (click)="backupDid(didId)"><i class="fa fa-download"></i></button>
-            <button class="btn btn-danger action-btn"><i class="fa fa-trash"></i></button>
+            <button class="btn btn-danger action-btn" (click)="removeDid(didId)"><i class="fa fa-trash"></i></button>
             <div class="clearfix"></div>
           </div>
         </div>

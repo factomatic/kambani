@@ -153,6 +153,32 @@ export class VaultService {
       });
   }
 
+  removeDIDFromVault(didId: string, vaultPassword: string): Observable<ResultModel> {
+    return defer(async () => {
+      try {
+        const state = this.localStorageStore.getState();
+        let decryptedVault = await encryptor.decrypt(vaultPassword, state.vault);
+
+        let didsPublicInfo = JSON.parse(state.didsPublicInfo);
+        delete didsPublicInfo[didId];
+        delete decryptedVault[didId];
+
+        const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
+
+        const newState = Object.assign({}, state, {
+          vault: encryptedVault,
+          didsPublicInfo: JSON.stringify(didsPublicInfo)
+        });
+
+        this.localStorageStore.putState(newState);
+
+        return new ResultModel(true, 'DID was successfully deleted');
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
   restoreVault(encryptedState: string, vaultPassword: string): Observable<ResultModel> {
     return defer(async () => {
       try {

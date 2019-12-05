@@ -24,6 +24,7 @@ import { ResultModel } from 'src/app/core/models/result.model';
 import { ServiceModel } from 'src/app/core/models/service.model';
 import { SharedRoutes } from 'src/app/core/enums/shared-routes';
 import { SignatureResultModel } from 'src/app/core/models/signature-result.model';
+import { SignatureType } from 'src/app/core/enums/signature-type';
 import { SigningService } from 'src/app/core/services/signing/signing.service';
 import { UpdateEntryDocument } from 'src/app/core/interfaces/update-entry-document';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
@@ -123,12 +124,13 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
           if (vaultPassword) {
             this.spinner.show();
             this.signingService
-              .signUpdateEntry(this.didId, signingKey, entry as UpdateEntryDocument, vaultPassword)
+              .signDIDEntry(signingKeyId, signingKey.type as SignatureType, entry, EntryType.UpdateDIDEntry, vaultPassword)
               .subscribe((result: SignatureResultModel) => {
                 if (result.success) {
                   this.didService
-                    .recordUpdateEntryOnChain(
-                      entry as UpdateEntryDocument,
+                    .recordEntryOnChain(
+                      EntryType.UpdateDIDEntry,
+                      entry,
                       signingKeyId,
                       result.signatureBase64)
                     .subscribe((recordResult: any) => {
@@ -228,6 +230,60 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
                 const didBackupFile = this.postProcessDidBackupFile(result.backup, didId);
                 downloadFile(didBackupFile, `paper-did-UTC--${date.toISOString()}.txt`);
               } else {
+                this.toastr.error(result.message);
+              }
+            });
+        }
+      });
+  }
+
+  removeDid(didId: string) {
+    const signingKey = this.originalManagementKeys.filter(k => k.priority == 0)[0];
+    const signingKeyId = `${this.didId}#${signingKey.alias}`;
+    const deactivateEntry = "";
+    const dialogMessage = 'Enter your vault password to sign the entry and delete the DID';
+
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
+      .subscribe((vaultPassword: string) => {
+        if (vaultPassword) {
+          this.spinner.show();
+          this.signingService
+            .signDIDEntry(signingKeyId, signingKey.type as SignatureType, deactivateEntry, EntryType.DeactivateDIDEntry, vaultPassword)
+            .subscribe((result: SignatureResultModel) => {
+              if (result.success) {
+                this.didService
+                  .recordEntryOnChain(
+                    EntryType.DeactivateDIDEntry,
+                    deactivateEntry,
+                    signingKeyId,
+                    result.signatureBase64)
+                  .subscribe((recordResult: any) => {
+                    if (recordResult.error) {
+                      this.spinner.hide();
+                      this.toastr.error(recordResult.message);
+                    } else {
+                      this.vaultService
+                        .removeDIDFromVault(
+                          didId,
+                          vaultPassword)
+                        .subscribe((result: ResultModel) => {
+                          this.spinner.hide();
+
+                          if (result.success) {
+                            this.store.dispatch(new updateDIDActions.CompleteDIDUpdate(didId));
+                            this.toastr.success(result.message);
+                            this.router.navigate([SharedRoutes.ManageDids]);
+                          } else {
+                            /**
+                            * this should never happen
+                            */
+                            this.toastr.error('A problem occurred! Please, try again');
+                          }
+                        });
+                    }        
+                  });
+              } else {
+                this.spinner.hide();
                 this.toastr.error(result.message);
               }
             });
