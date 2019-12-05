@@ -5,6 +5,7 @@ import { Store, select } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
+import { ActionType } from 'src/app/core/enums/action-type';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
 import { DIDDocument } from 'src/app/core/interfaces/did-document';
@@ -31,8 +32,10 @@ export class SummaryComponent extends BaseComponent implements OnInit {
   private didId: string;
   private didKeys: DidKeyModel[];
   private managementKeys: ManagementKeyModel[];
+  public actionType = ActionType;
   public entry: DIDDocument | UpdateEntryDocument;
   public entryPretified: string;
+  public selectedAction: string;
   
   constructor(
     private dialogsService: DialogsService,
@@ -48,6 +51,7 @@ export class SummaryComponent extends BaseComponent implements OnInit {
 
   ngOnInit() {
     this.didId = this.didService.getId();
+    this.selectedAction = this.workflowService.getSelectedAction();
 
     this.subscription = this.store
       .pipe(select(state => state))
