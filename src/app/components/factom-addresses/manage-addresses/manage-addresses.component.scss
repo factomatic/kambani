@@ -39,7 +39,7 @@ $mainColor: #2F5BE7;
           // }
         }
         td:last-child {
-          a:not(:last-child) {
+          button:not(:last-child) {
             margin-right: 3px;
           }
         }

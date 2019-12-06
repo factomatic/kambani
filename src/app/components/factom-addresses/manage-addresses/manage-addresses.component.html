@@ -40,7 +40,8 @@
                       </div>
                     </td>
                     <td class="text-right">
-                      <button (click)="removeAddress(publicAddress, FactomAddressType.FCT)" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
+                      <button class="btn btn-xs btn-primary" (click)="viewPrivateAddress(publicAddress)" data-toggle="tooltip" data-placement="top" title="Click to view private address"><i class="fa fa-search"></i></button>
+                      <button class="btn btn-xs btn-danger" (click)="removeAddress(publicAddress, FactomAddressType.FCT)"><i class="fa fa-trash"></i></button>
                     </td>
                   </tr>
                 </tbody>
@@ -89,7 +90,8 @@
                       </div>
                     </td>
                     <td class="text-right">
-                      <button (click)="removeAddress(publicAddress, FactomAddressType.EC)" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
+                      <button class="btn btn-xs btn-primary" (click)="viewPrivateAddress(publicAddress)" data-toggle="tooltip" data-placement="top" title="Click to view private address"><i class="fa fa-search"></i></button>
+                      <button class="btn btn-xs btn-danger" (click)="removeAddress(publicAddress, FactomAddressType.EC)"><i class="fa fa-trash"></i></button>
                     </td>
                   </tr>
                 </tbody>
