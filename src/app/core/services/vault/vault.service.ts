@@ -43,6 +43,11 @@ export class VaultService {
         signedRequestsData: JSON.stringify(new Array(7).fill(0)),
         dateOfLastSignedRequest: undefined
       });
+
+      chrome.storage.sync.set({
+        fctAddresses: [],
+        ecAddresses: []
+      })
     });
   }
 
@@ -185,6 +190,16 @@ export class VaultService {
         const decryptedState = await encryptor.decrypt(vaultPassword, encryptedState);
         if (this.isValidState(decryptedState)) {
           this.localStorageStore.putState(decryptedState);
+
+          const fctPublicAddresses = Object.keys(this.getFCTAddressesPublicInfo());
+          const ecPublicAddresses = Object.keys(this.getECAddressesPublicInfo());
+
+          chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
+            addressesState.fctAddresses = fctPublicAddresses;
+            addressesState.ecAddresses = ecPublicAddresses;
+
+            chrome.storage.sync.set(addressesState);       
+          });
 
           return new ResultModel(true, 'Successful restore');
         }
