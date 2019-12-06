@@ -40,7 +40,7 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
   public displayedDidIds: string[] = [];
   public allDIDsPublicInfo: object;
   public formScreenOpen: boolean = false;
-  public pageSize: number = 10;
+  public pageSize: number = 6;
   public didEditNickname: boolean[] = [];
   public currentPage: number = 1;
   public currentStartIndex = 0;
@@ -183,7 +183,6 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
       || this.createDIDState.didKeys.length > 0
       || this.createDIDState.services.length > 0) {
         const confirmRef = this.modalService.open(ConfirmModalComponent);
-        confirmRef.componentInstance.objectType = 'key';
         confirmRef.result.then((result) => {
           this.clearState();
           this.store.dispatch(new ClearCreateDIDState());
