@@ -108,7 +108,6 @@ export class DIDService {
 
       revokeObject['managementKey'] = revokedManagementKeys;
       updateEntry.revoke = revokeObject;
-      return updateEntry;
     }
 
     return updateEntry;
