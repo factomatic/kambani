@@ -117,8 +117,6 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
       const signingKeyId = `${this.didId}#${signingKey.alias}`;
       const dialogMessage = 'Enter your vault password to sign the entry and update any key(s)';
 
-      console.log(entry);
-
       this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
         .subscribe((vaultPassword: string) => {
           if (vaultPassword) {
