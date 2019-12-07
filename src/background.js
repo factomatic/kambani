@@ -14,6 +14,9 @@ const DID_KEY_REQUEST_TYPE = 'didKey';
 const MANAGEMENT_KEY_REQUEST_TYPE = 'managementKey';
 const FCT_REQUEST_TYPE = 'fct';
 const EC_REQUEST_TYPE = 'ec';
+const BASIC_REQUEST = 'basic';
+const FCT_BURNING_REQUEST = 'fctBurning';
+const PEGNET_TRANSACTION_REQUEST = 'pegnetTransaction';
 
 (function() {
   let signingRequests = [];
@@ -153,7 +156,12 @@ const EC_REQUEST_TYPE = 'ec';
 }());
 
 function isValidRequest (requestContent) {
-  if (requestContent.requestId == undefined || requestContent.keyType == undefined || requestContent.data == undefined) {
+  if (requestContent.requestId == undefined || requestContent.requestType == undefined || requestContent.keyType == undefined || requestContent.data == undefined) {
+    return false;
+  }
+
+  const requestTypes = [BASIC_REQUEST, FCT_BURNING_REQUEST, PEGNET_TRANSACTION_REQUEST];
+  if (!requestTypes.includes(requestContent.requestType)) {
     return false;
   }
   
@@ -162,8 +170,15 @@ function isValidRequest (requestContent) {
     return false;
   }
 
+  if (requestContent.txType
+    && (requestContent.requestType !== PEGNET_TRANSACTION_REQUEST || !["conversion", "transfer"].includes(requestContent.txType))) {
+    return false;
+  }
+
   if (requestContent.did) {
-    if (requestContent.keyType == FCT_REQUEST_TYPE || requestContent.keyType == EC_REQUEST_TYPE) {
+    if (requestContent.requestType !== BASIC_REQUEST
+      || requestContent.keyType == FCT_REQUEST_TYPE
+      || requestContent.keyType == EC_REQUEST_TYPE) {
       return false;
     }
 
@@ -185,6 +200,16 @@ function isValidRequest (requestContent) {
       if (!requestContent.did) {
         return false;
       }
+    }
+  }
+
+  if ([FCT_BURNING_REQUEST, PEGNET_TRANSACTION_REQUEST].includes(requestContent.requestType)) {
+    if (requestContent.txMetadata == undefined || requestContent.keyType !== FCT_REQUEST_TYPE) {
+      return false;
+    }
+  } else {
+    if (requestContent.txMetadata !== undefined) {
+      return false;
     }
   }
 
