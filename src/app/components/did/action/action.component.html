@@ -4,11 +4,11 @@
     <div class="choose-action">
       <label [ngClass]="{'active': actionType=='create-basic'}">
         <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="create-basic">
-        Create Paper DID (Basic Mode)
+        Create Identity (Basic Mode)
       </label>
       <label [ngClass]="{'active': actionType=='create-advanced'}">
         <input type="radio" #action="ngModel" required name="action" [(ngModel)]="actionType" value="create-advanced">
-        Create Paper DID (Advanced Mode)
+        Create Identity (Advanced Mode)
       </label>
       <button class="btn btn-primary btn-block next-step" mdbBtn type="button" color="primary" mdbWavesEffect [disabled]="!actionForm.valid" (click)="goToNext()">Next</button>
     </div>

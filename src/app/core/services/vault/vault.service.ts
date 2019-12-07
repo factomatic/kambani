@@ -29,6 +29,7 @@ export class VaultService {
       const encryptedVault = await encryptor.encrypt(password, newVault);
 
       this.localStorageStore.putState({
+        version: environment.localStorageVersion,
         vault: encryptedVault,
         didsPublicInfo: JSON.stringify({}),
         factomAddressesPublicInfo: JSON.stringify({
@@ -36,10 +37,17 @@ export class VaultService {
           [FactomAddressType.EC]: {}
         }),
         createdDIDsCount: 0,
+        createdFCTAddressesCount: 0,
+        createdECAddressesCount: 0,
         signedRequestsCount: 0,
         signedRequestsData: JSON.stringify(new Array(7).fill(0)),
-        dateOfLastSignedRequest: undefined
+        dateOfLastShift: new Date().toDateString()
       });
+
+      chrome.storage.sync.set({
+        fctAddresses: [],
+        ecAddresses: []
+      })
     });
   }
 
@@ -72,7 +80,7 @@ export class VaultService {
           const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
 
           const createdDIDsCount = state.createdDIDsCount + 1;
-          const didNickname = `did-${createdDIDsCount}`;
+          const didNickname = `identity-${createdDIDsCount}`;
 
           const didsPublicInfo = JSON.parse(state.didsPublicInfo);
           didsPublicInfo[didId] = {
@@ -88,7 +96,7 @@ export class VaultService {
 
           this.localStorageStore.putState(newState);
 
-          return new ResultModel(true, 'DID was successfully saved');
+          return new ResultModel(true, 'The Identity was saved successfully');
         } catch {
           return new ResultModel(false, 'Incorrect vault password');
         }
@@ -143,22 +151,62 @@ export class VaultService {
 
           this.localStorageStore.putState(newState);
 
-          return new ResultModel(true, 'Vault state was successfully updated');
+          return new ResultModel(true, 'Vault state was updated successfully');
         } catch {
           return new ResultModel(false, 'Incorrect vault password');
         }
       });
   }
 
-  restoreVault(encryptedVault: string, password: string): Observable<ResultModel> {
+  removeDIDFromVault(didId: string, vaultPassword: string): Observable<ResultModel> {
     return defer(async () => {
       try {
-        this.localStorageStore.putState({
+        const state = this.localStorageStore.getState();
+        let decryptedVault = await encryptor.decrypt(vaultPassword, state.vault);
+
+        let didsPublicInfo = JSON.parse(state.didsPublicInfo);
+        delete didsPublicInfo[didId];
+        delete decryptedVault[didId];
+
+        const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
+
+        const newState = Object.assign({}, state, {
           vault: encryptedVault,
-          didDocuments: JSON.stringify({})
+          didsPublicInfo: JSON.stringify(didsPublicInfo)
         });
 
-        return new ResultModel(true, 'Restore was successful');
+        this.localStorageStore.putState(newState);
+
+        return new ResultModel(true, 'The Identity was deleted successfully');
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
+  restoreVault(encryptedState: string, vaultPassword: string): Observable<ResultModel> {
+    return defer(async () => {
+      try {
+        const decryptedState = await encryptor.decrypt(vaultPassword, encryptedState);
+        if (this.isValidState(decryptedState)) {
+          this.localStorageStore.putState(decryptedState);
+
+          const fctPublicAddresses = Object.keys(this.getFCTAddressesPublicInfo());
+          const ecPublicAddresses = Object.keys(this.getECAddressesPublicInfo());
+
+          chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
+            addressesState.fctAddresses = fctPublicAddresses;
+            addressesState.ecAddresses = ecPublicAddresses;
+
+            chrome.storage.sync.set(addressesState);       
+          });
+
+          this.updateSignedRequestsData();
+
+          return new ResultModel(true, 'Successful restore');
+        }
+
+        return new ResultModel(false, 'Invalid vault backup');
       } catch {
         return new ResultModel(false, 'Invalid vault password or type of vault backup');
       }
@@ -182,7 +230,7 @@ export class VaultService {
     });
   }
 
-  backupSingleDIDFromVault(didId: string, vaultPassword: string) {
+  backupSingleDIDFromVault(didId: string, vaultPassword: string): Observable<BackupResultModel> {
     return defer(async () => {
       try {
         const state = this.localStorageStore.getState();
@@ -190,31 +238,47 @@ export class VaultService {
         const didKeys = decryptedVault[didId];
         const didKeysBackup = await encryptor.encrypt(vaultPassword, didKeys);
 
-        return new BackupResultModel(true, 'Successful DID backup', didKeysBackup);
+        return new BackupResultModel(true, 'Successful Identity backup', didKeysBackup);
       } catch {
         return new BackupResultModel(false, 'Incorrect vault password');
       }
     });
   }
 
-  updateSignedRequests() {
+  updateSignedRequestsData() {
     const state = this.localStorageStore.getState();
-    let dateOfLastSignedRequest = state.dateOfLastSignedRequest;
+    let dateOfLastShift = state.dateOfLastShift;
     let signedRequestsData = JSON.parse(state.signedRequestsData);
 
-     // Sunday -> 0, Monday -> 1, ..., Saturday -> 6
-     let now = new Date();
-     if (dateOfLastSignedRequest == now.toDateString()) {
-       signedRequestsData[now.getDay()] += 1;
-     } else {
-       signedRequestsData[now.getDay()] = 1;
-       dateOfLastSignedRequest = now.toDateString();
-     }
+    let today = new Date().toDateString();
+    if (dateOfLastShift !== today) {
+      const diffTime = Date.parse(today) - Date.parse(dateOfLastShift);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays < 7) {
+        signedRequestsData = signedRequestsData.slice(diffDays, signedRequestsData.length).concat(new Array(diffDays).fill(0));
+      } else {
+        signedRequestsData = new Array(7).fill(0);
+      }
+      
+      dateOfLastShift = today;
+    }
+
+    const newState = Object.assign({}, state, {
+      signedRequestsData: JSON.stringify(signedRequestsData),
+      dateOfLastShift: dateOfLastShift
+    });
+
+    this.localStorageStore.putState(newState);
+  }
+
+  incrementSignedRequests() {
+    const state = this.localStorageStore.getState();
+    let signedRequestsData = JSON.parse(state.signedRequestsData);
+    signedRequestsData[signedRequestsData.length - 1] += 1;
 
     const newState = Object.assign({}, state, {
       signedRequestsCount: state.signedRequestsCount + 1,
-      signedRequestsData: JSON.stringify(signedRequestsData),
-      dateOfLastSignedRequest: dateOfLastSignedRequest
+      signedRequestsData: JSON.stringify(signedRequestsData)
     });
 
     this.localStorageStore.putState(newState);
@@ -236,7 +300,7 @@ export class VaultService {
     this.localStorageStore.putState(newState);
   }
 
-  importFactomAddress(type: FactomAddressType, nickname: string, publicAddress: string, privateAddress: string, vaultPassword: string) {
+  importFactomAddress(type: FactomAddressType, publicAddress: string, privateAddress: string, vaultPassword: string, nickname?: string) {
     return defer(async () => {
       try {
         const state = this.localStorageStore.getState();
@@ -245,6 +309,14 @@ export class VaultService {
         decryptedVault[publicAddress] = privateAddress;
         const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
 
+        let fctAddressesCount = state.createdFCTAddressesCount;
+        let ecAddressesCount = state.createdECAddressesCount;
+        if (!nickname) {
+          nickname = type == FactomAddressType.FCT
+            ? `fct-address-${++fctAddressesCount}`
+            : `ec-address-${++ecAddressesCount}`;
+        }
+
         const factomAddressesPublicInfo = JSON.parse(state.factomAddressesPublicInfo);
         factomAddressesPublicInfo[type] = Object.assign({}, factomAddressesPublicInfo[type], {
           [publicAddress]: nickname
@@ -252,7 +324,9 @@ export class VaultService {
 
         const newState = Object.assign({}, state, {
           vault: encryptedVault,
-          factomAddressesPublicInfo: JSON.stringify(factomAddressesPublicInfo)
+          factomAddressesPublicInfo: JSON.stringify(factomAddressesPublicInfo),
+          createdFCTAddressesCount: fctAddressesCount,
+          createdECAddressesCount: ecAddressesCount
         });
 
         this.localStorageStore.putState(newState);
@@ -338,6 +412,33 @@ export class VaultService {
     });
   }
 
+  getEncryptedState(vaultPassword: string): Observable<BackupResultModel> {
+    return defer(async () => {
+      const decryptResult = await this.canDecryptVault(vaultPassword).toPromise();
+      if (!decryptResult.success) {
+        return new BackupResultModel(false, decryptResult.message);
+      }
+
+      const state = this.localStorageStore.getState();
+      const backup = await encryptor.encrypt(vaultPassword, state);
+
+      return new BackupResultModel(true, 'Successful vault backup', backup);
+    });
+  }
+
+  getPrivateAddress(publicAddress: string, vaultPassword: string) {
+    return defer(async () => {
+      try {
+        const state = this.localStorageStore.getState();
+        const decryptedVault = await encryptor.decrypt(vaultPassword, state.vault);
+
+        return new ResultModel(true, decryptedVault[publicAddress]);
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
   getVault(): string {
     return this.localStorageStore.getState().vault;
   }
@@ -371,8 +472,10 @@ export class VaultService {
     return JSON.parse(this.localStorageStore.getState().factomAddressesPublicInfo)[FactomAddressType.EC];
   }
 
-  anyDIDs(): boolean {
-    return Object.keys(this.getAllDIDsPublicInfo()).length > 0;
+  anyDIDsOrAddresses(): boolean {
+    return this.getDIDsCount() > 0
+      || Object.keys(this.getFCTAddressesPublicInfo()).length > 0
+      || Object.keys(this.getECAddressesPublicInfo()).length > 0;
   }
 
   vaultExists(): boolean {
@@ -397,6 +500,12 @@ export class VaultService {
       const anyAddedManagementKeys = addObject != undefined && addObject.managementKey != undefined;
 
       if (anyRevokedManagementKeys || anyAddedManagementKeys) {
+        for (const managementKey of managementKeys) {
+          if (!managementKey.privateKey) {
+            managementKey.privateKey = managementKeysVaultDict[managementKey.alias];
+          }
+        }
+
         if (anyRevokedManagementKeys) {
           for (const revokeKeyObject of revokeObject.managementKey) {
             const keyAlias = revokeKeyObject.id.split('#')[1];
@@ -439,6 +548,12 @@ export class VaultService {
       const anyAddedDidKeys = addObject != undefined && addObject.didKey != undefined;
 
       if (anyRevokedDidKeys || anyAddedDidKeys) {
+        for (const didKey of didKeys) {
+          if (!didKey.privateKey) {
+            didKey.privateKey = didKeysVaultDict[didKey.alias];
+          }
+        }
+
         if (anyRevokedDidKeys) {
           for (const revokeKeyObject of revokeObject.didKey) {
             const keyAlias = revokeKeyObject.id.split('#')[1];
@@ -504,5 +619,21 @@ export class VaultService {
       return {
         anyChanges: false
       };
+  }
+
+  private isValidState(state: any): boolean {
+    if (state.version == environment.localStorageVersion
+      && state.vault
+      && state.didsPublicInfo
+      && state.factomAddressesPublicInfo
+      && state.createdDIDsCount >= 0
+      && state.createdFCTAddressesCount >= 0
+      && state.createdECAddressesCount >= 0
+      && state.signedRequestsCount >= 0
+      && state.signedRequestsData) {
+        return true;
+      }
+
+    return false;
   }
 }

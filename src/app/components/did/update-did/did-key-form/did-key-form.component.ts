@@ -1,10 +1,10 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, FormControl, ValidatorFn } from '@angular/forms';
 import { Store, select } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
-import { AddDidKey, UpdateDidKey } from 'src/app/core/store/form/form.actions';
+import { AddDIDKey, UpdateDIDKey } from 'src/app/core/store/update-did/update-did.actions';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
 import CustomValidators from 'src/app/core/utils/customValidators';
@@ -23,9 +23,14 @@ import { WorkflowService } from 'src/app/core/services/workflow/workflow.service
 })
 export class DidKeyFormComponent extends BaseComponent implements OnInit {
   private subscription: Subscription;
+  private purposesFormArray: FormArray;
   public aliasTooltipMessage = TooltipMessages.AliasTooltip;
   public controllerTooltipMessage = TooltipMessages.ControllerTooltip;
   public signatureTypeTooltipMessage = TooltipMessages.SignatureTypeTooltip;
+  public availablePurposes = [
+    {name: 'Public Key', value: PurposeType.PublicKey},
+    {name: 'Authentication Key', value: PurposeType.AuthenticationKey}
+  ];
   public CreateMode = 1;
   public UpdateMode = 2;
   public didId: string;
@@ -50,10 +55,11 @@ export class DidKeyFormComponent extends BaseComponent implements OnInit {
     this.didId = this.route.parent.snapshot.params.id;
 
     this.subscription = this.store
-      .pipe(select(state => state.form))
-      .subscribe(form => {
-        this.managementKeys = form.managementKeys;
-        this.didKeys = form.didKeys;
+      .pipe(select(state => state.updateDID))
+      .subscribe(updateDIDState => {
+        const didUpdateModel = updateDIDState.dids.find(d => d.didId == this.didId);
+        this.managementKeys = didUpdateModel.managementKeys;
+        this.didKeys = didUpdateModel.didKeys;
       });
     
     this.subscriptions.push(this.subscription);
@@ -62,9 +68,15 @@ export class DidKeyFormComponent extends BaseComponent implements OnInit {
       const keyAlias = this.route.snapshot.params.id;
       this.keyModel = this.didKeys.find(k => k.alias === keyAlias);
       this.mode = this.UpdateMode;
+      this.purposesFormArray = new FormArray([
+        new FormControl(this.keyModel.purpose.includes(PurposeType.PublicKey)),
+        new FormControl(this.keyModel.purpose.includes(PurposeType.AuthenticationKey))
+      ], this.validateCheckboxes());
+
     } else {
-      this.keyModel = {type: SignatureType.EdDSA, purpose: [PurposeType.PublicKey], controller: this.didId, alias: '', publicKey: '', priorityRequirement: null};
+      this.keyModel = new DidKeyModel('', [], SignatureType.EdDSA, this.didId, '', '', null);
       this.mode = this.CreateMode;
+      this.purposesFormArray = new FormArray([new FormControl(false), new FormControl(false)], this.validateCheckboxes());
     }
 
     this.createForm();
@@ -73,7 +85,7 @@ export class DidKeyFormComponent extends BaseComponent implements OnInit {
   createForm() {
     this.keyForm = this.fb.group({
       type: [this.keyModel.type, [Validators.required]],
-      purpose: [this.keyModel.purpose[0], [Validators.required]],
+      purposes: this.purposesFormArray,
       controller: [this.keyModel.controller, [Validators.required]],
       alias: [this.keyModel.alias, [
         Validators.required,
@@ -101,11 +113,15 @@ export class DidKeyFormComponent extends BaseComponent implements OnInit {
   }
 
   private generateKey() {
+    const selectedPurposes = this.keyForm.value.purposes
+      .map((selected, i) => selected ? this.availablePurposes[i].value : null)
+      .filter(p => p !== null);
+
     this.keysService.generateKeyPair(this.type.value)
       .subscribe(keyPair => {
         const generatedKey = new DidKeyModel(
           this.alias.value,
-          [this.purpose.value],
+          selectedPurposes,
           this.type.value,
           this.controller.value,
           keyPair.publicKey,
@@ -113,7 +129,7 @@ export class DidKeyFormComponent extends BaseComponent implements OnInit {
           this.priorityRequirement.value
         );
 
-        this.store.dispatch(new AddDidKey(generatedKey));
+        this.store.dispatch(new AddDIDKey(this.didId, generatedKey));
       });
   }
 
@@ -121,27 +137,36 @@ export class DidKeyFormComponent extends BaseComponent implements OnInit {
     if (this.isKeyUpdated()) {
       let updatedKeyModel = Object.assign({}, this.keyModel);
 
-      updatedKeyModel.alias = this.alias.value;
-      updatedKeyModel.purpose = [this.purpose.value];
-      updatedKeyModel.controller = this.controller.value;
-      updatedKeyModel.priorityRequirement = this.priorityRequirement.value !== null
-        ? this.priorityRequirement.value
-        : undefined;
+      const selectedPurposes = this.keyForm.value.purposes
+      .map((selected, i) => selected ? this.availablePurposes[i].value : null)
+      .filter(p => p !== null);
 
-      this.store.dispatch(new UpdateDidKey(updatedKeyModel));
+      updatedKeyModel.alias = this.alias.value;
+      updatedKeyModel.purpose = selectedPurposes;
+      updatedKeyModel.controller = this.controller.value;
+      updatedKeyModel.priorityRequirement = this.priorityRequirement.value;
+
+      this.store.dispatch(new UpdateDIDKey(this.didId, updatedKeyModel));
     }
   }
 
-  private isKeyUpdated() {
-    let priorityRequirementCurrentValue = undefined;
-    if (this.priorityRequirement.value !== null) {
-      priorityRequirementCurrentValue = this.priorityRequirement.value;
-    }
+  private validateCheckboxes() {
+    const validator: ValidatorFn = (formArray: FormArray) => {
+      const totalSelected = formArray.controls
+        .map(control => control.value)
+        .reduce((prev, next) => next ? prev + next : prev, 0);
 
+      return totalSelected > 0 ? null : { required: true };
+    };
+  
+    return validator;
+  }
+
+  private isKeyUpdated() {
     if (this.alias.value !== this.keyModel.alias
-      || this.purpose.value !== this.keyModel.purpose[0]
+      || this.purposes.value !== this.keyModel.purpose[0]
       || this.controller.value !== this.keyModel.controller
-      || priorityRequirementCurrentValue !== this.keyModel.priorityRequirement) {
+      || this.priorityRequirement.value !== this.keyModel.priorityRequirement) {
       return true;
     }
 
@@ -160,8 +185,8 @@ export class DidKeyFormComponent extends BaseComponent implements OnInit {
     return this.keyForm.get('controller');
   }
 
-  get purpose() {
-    return this.keyForm.get('purpose');
+  get purposes() {
+    return <FormArray>this.keyForm.get('purposes');
   }
 
   get priorityRequirement() {

@@ -16,17 +16,17 @@
           </div>
           <div class="col-12 col-md-4 text-md-right text-sm-right text-lg-right">
             <a *ngIf="currentMode == MGMTKeysMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-management-key" (click)="formScreenOpen = true">Add MGMT key</a>
-            <a *ngIf="currentMode == DIDKeysMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-did-key" (click)="formScreenOpen = true">Add DID key</a>
+            <a *ngIf="currentMode == DIDKeysMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-did-key" (click)="formScreenOpen = true">Add Signing key</a>
             <a *ngIf="currentMode == ServicesMode" class="btn btn-success add-new action-btn" routerLink="/dids/preview/{{didId}}/create-service" (click)="formScreenOpen = true">Add service</a>
-            <a class="btn btn-outline-success backup-btn action-btn" href="javascript:;"><i class="fa fa-download"></i></a>
-            <a class="btn btn-outline-danger action-btn" href="javascript:;"><i class="fa fa-trash"></i></a>
+            <button class="btn btn-success action-btn" (click)="backupDid(didId)"><i class="fa fa-download"></i></button>
+            <button class="btn btn-danger action-btn" (click)="removeDid(didId)"><i class="fa fa-trash"></i></button>
             <div class="clearfix"></div>
           </div>
         </div>
         <nav class="info-tables">
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
             <a class="nav-item nav-link active" id="nav-mkeys-tab" data-toggle="tab" href="#nav-mkeys" role="tab" aria-controls="nav-mkeys" aria-selected="true" (click)="currentMode = MGMTKeysMode">MGMT Keys</a>
-            <a class="nav-item nav-link" id="nav-dkeys-tab" data-toggle="tab" href="#nav-dkeys" role="tab" aria-controls="nav-dkeys" aria-selected="false" (click)="currentMode = DIDKeysMode">DID Keys</a>
+            <a class="nav-item nav-link" id="nav-dkeys-tab" data-toggle="tab" href="#nav-dkeys" role="tab" aria-controls="nav-dkeys" aria-selected="false" (click)="currentMode = DIDKeysMode">Signing Keys</a>
             <a class="nav-item nav-link" id="nav-services-tab" data-toggle="tab" href="#nav-services" role="tab" aria-controls="nav-services" aria-selected="false" (click)="currentMode = ServicesMode">Services</a>
           </div>
         </nav>
@@ -64,7 +64,7 @@
                       </div>
                       <div class="info-row">
                         <div class="label">Priority Requirement</div>
-                        <div class="value">{{managementKey.priorityRequirement >= 0 ? managementKey.priorityRequirement : 'N/A'}}</div>
+                        <div class="value">{{managementKey.priorityRequirement !== null ? managementKey.priorityRequirement : 'N/A'}}</div>
                       </div>
                     </div>
                   </div>
@@ -83,13 +83,13 @@
                       <div class="buttons">
                         <a class="btn btn-xs btn-warning" routerLink="/dids/preview/{{didId}}/update-did-key/{{didKey.alias}}"  (click)="formScreenOpen = true"><i class="fa fa-edit"></i></a>
                         <button class="btn btn-xs btn-danger" (click)="removeDIDKey(didKey)"><i class="fa fa-trash"></i></button>
-                        <button class="btn btn-xs btn-default" (click)="collapse.toggle()"><i class="fa fa-plus"></i></button>
+                        <button class="btn btn-xs btn-primary" (click)="collapse.toggle()"><i class="fa fa-plus"></i></button>
                       </div>
                     </div>
                     <div mdbCollapse #collapse="bs-collapse">
                       <div class="info-row">
                         <div class="label">Purpose</div>
-                        <div class="value">{{didKey.purpose.join(', ')}}</div>
+                        <div class="value">{{displayPurposes(didKey.purpose)}}</div>
                       </div>
                       <div class="info-row">
                         <div class="label">Type</div>
@@ -105,14 +105,14 @@
                       </div>
                       <div class="info-row">
                         <div class="label">Priority Requirement</div>
-                        <div class="value">{{didKey.priorityRequirement >= 0 ? didKey.priorityRequirement : 'N/A'}}</div>
+                        <div class="value">{{didKey.priorityRequirement !== null ? didKey.priorityRequirement : 'N/A'}}</div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="didKeys.length == 0">
-                <p class="text-warning text-center">The DID does not have any DID Keys</p>
+                <p class="text-warning text-center">The Identity does not have any Signing Keys</p>
               </div>
             </div>
           </div>
@@ -126,7 +126,7 @@
                       <div class="value">{{service.type}}</div>
                       <div class="buttons">
                         <button class="btn btn-xs btn-danger" (click)="removeService(service)"><i class="fa fa-trash"></i></button>
-                        <button class="btn btn-xs btn-default" (click)="collapse.toggle()"><i class="fa fa-plus"></i></button>
+                        <button class="btn btn-xs btn-primary" (click)="collapse.toggle()"><i class="fa fa-plus"></i></button>
                       </div>
                     </div>
                     <div mdbCollapse #collapse="bs-collapse">
@@ -140,14 +140,14 @@
                       </div>
                       <div class="info-row">
                         <div class="label">Priority Requirement</div>
-                        <div class="value">{{service.priorityRequirement ? service.priorityRequirement : 'N/A'}}</div>
+                        <div class="value">{{service.priorityRequirement !== null ? service.priorityRequirement : 'N/A'}}</div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="services.length == 0">
-                <p class="text-warning text-center">The DID does not have any Services</p>
+                <p class="text-warning text-center">The Identity does not have any Services</p>
               </div>
             </div>
           </div>
@@ -166,6 +166,7 @@
 </div>
 <div class="fixed-bottom-button" *ngIf="pendingChanges">
   <div class="container text-center">
-    <button class="btn btn-success" (click)="saveChanges()">Save changes</button>
+    <button class="btn btn-success" (click)="saveChanges()">Publish changes</button>
+    <button class="btn btn-primary ml-2" (click)="cancelChanges()">Cancel</button>
   </div>
 </div>

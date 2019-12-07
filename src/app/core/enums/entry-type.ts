@@ -1,4 +1,5 @@
 export enum EntryType {
   CreateDIDEntry = 'DIDManagement',
-  UpdateDIDEntry = 'DIDUpdate'
+  UpdateDIDEntry = 'DIDUpdate',
+  DeactivateDIDEntry = 'DIDDeactivation'
 }

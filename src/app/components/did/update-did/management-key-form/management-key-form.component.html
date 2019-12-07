@@ -2,7 +2,7 @@
   <div class="form-group">
     <label class="control-label" for="type">
       Signature type
-      <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{signatureTypeTooltipMessage}}" tooltipClass="custom-tooltip"></i>
+      <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{signatureTypeTooltipMessage}}" tooltipClass="custom-tooltip" placement="bottom"></i>
     </label>
     <select class="form-control" formControlName="type" id="type">
       <option value="Ed25519">Ed25519</option>
@@ -14,7 +14,7 @@
   <div class="form-group">
     <label class="control-label" for="controller">
       Key controller
-      <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{controllerTooltipMessage}}" tooltipClass="custom-tooltip"></i>
+      <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{controllerTooltipMessage}}" tooltipClass="custom-tooltip" placement="bottom"></i>
     </label>
     <input
       type="text"
@@ -26,14 +26,14 @@
       [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
     <div *ngIf="controller.errors" class="invalid-feedback">
       <div *ngIf="controller['errors'].required">Key controller is required!</div>
-      <div *ngIf="controller['errors'].pattern">Key controller must be a valid DID!</div>
+      <div *ngIf="controller['errors'].pattern">Key controller must be a valid Identity!</div>
     </div>
   </div>
 
   <div class="form-group">
     <label class="control-label" for="alias">
       Alias
-      <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{aliasTooltipMessage}}" tooltipClass="custom-tooltip"></i>
+      <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{aliasTooltipMessage}}" tooltipClass="custom-tooltip" placement="bottom"></i>
     </label>
     <input
       type="text"
@@ -85,6 +85,6 @@
 
   <div class="form-group text-center">
     <input type="submit" *ngIf="mode == CreateMode" mdbBtn color="success" class="btn btn-block" mdbWavesEffect value="Generate key" [disabled]="keyForm.invalid" />
-    <input type="submit" *ngIf="mode == UpdateMode" mdbBtn color="warning" class="btn btn-block" mdbWavesEffect value="Edit key" [disabled]="keyForm.invalid || keyForm.pristine" />
+    <input type="submit" *ngIf="mode == UpdateMode" mdbBtn color="success" class="btn btn-block" mdbWavesEffect value="Save" [disabled]="keyForm.invalid || keyForm.pristine" />
   </div>
 </form>

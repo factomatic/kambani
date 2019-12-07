@@ -33,11 +33,19 @@ window.addEventListener('GetECAddresses', (event) => {
   
 chrome.storage.onChanged.addListener(function(changes) {
   if (changes.fctAddresses) {
-    const fctAddressesOldValue = changes.fctAddresses.oldValue;
-    const fctAddressesNewValue = changes.fctAddresses.newValue;
+    let fctAddressesOldValue = changes.fctAddresses.oldValue;
+    let fctAddressesNewValue = changes.fctAddresses.newValue;
+    
+    if (fctAddressesOldValue == undefined) {
+      fctAddressesOldValue = []
+    }
+
+    if (fctAddressesNewValue == undefined) {
+      fctAddressesNewValue = []
+    }
 
     if (fctAddressesOldValue.length < fctAddressesNewValue.length) {
-      const addedFctAddress = fctAddressesNewValue.filter(addr => !fctAddressesOldValue.includes(addr))[0];
+      const addedFctAddress = fctAddressesNewValue.filter(addr => !fctAddressesOldValue.includes(addr));
 
       const event = new CustomEvent('FCTAddressesChanged', {
         detail: {
@@ -46,8 +54,8 @@ chrome.storage.onChanged.addListener(function(changes) {
       });
 
       window.dispatchEvent(event);
-    } else {
-      const removedFctAddress = fctAddressesOldValue.filter(addr => !fctAddressesNewValue.includes(addr))[0];
+    } else if (fctAddressesOldValue.length > fctAddressesNewValue.length) {
+      const removedFctAddress = fctAddressesOldValue.filter(addr => !fctAddressesNewValue.includes(addr));
 
       const event = new CustomEvent('FCTAddressesChanged', {
         detail: {
@@ -57,12 +65,22 @@ chrome.storage.onChanged.addListener(function(changes) {
 
       window.dispatchEvent(event);
     }
-  } else if (changes.ecAddresses) {
-    const ecAddressesOldValue = changes.ecAddresses.oldValue;
-    const ecAddressesNewValue = changes.ecAddresses.newValue;
+  }
+  
+  if (changes.ecAddresses) {
+    let ecAddressesOldValue = changes.ecAddresses.oldValue;
+    let ecAddressesNewValue = changes.ecAddresses.newValue;
+
+    if (ecAddressesOldValue == undefined) {
+      ecAddressesOldValue = []
+    }
+
+    if (ecAddressesNewValue == undefined) {
+      ecAddressesNewValue = []
+    }
 
     if (ecAddressesOldValue.length < ecAddressesNewValue.length) {
-      const addedEcAddress = ecAddressesNewValue.filter(addr => !ecAddressesOldValue.includes(addr))[0];
+      const addedEcAddress = ecAddressesNewValue.filter(addr => !ecAddressesOldValue.includes(addr));
 
       const event = new CustomEvent('ECAddressesChanged', {
         detail: {
@@ -71,8 +89,8 @@ chrome.storage.onChanged.addListener(function(changes) {
       });
 
       window.dispatchEvent(event);
-    } else {
-      const removedEcAddress = ecAddressesOldValue.filter(addr => !ecAddressesNewValue.includes(addr))[0];
+    } else if (ecAddressesOldValue.length > ecAddressesNewValue.length) {
+      const removedEcAddress = ecAddressesOldValue.filter(addr => !ecAddressesNewValue.includes(addr));
 
       const event = new CustomEvent('ECAddressesChanged', {
         detail: {

@@ -12,14 +12,10 @@ $mainColor: #2F5BE7;
     border-width: 2px;
     line-height: 35px;
     clear: both;
-    color: #353535;
     text-transform: uppercase;
     margin-bottom: 5px;
     &:not(:last-child){
       margin-right: 3px;
-    }
-    &:hover {
-      color: #fff;
     }
     &.add-new {
       color: #fff;

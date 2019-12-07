@@ -1,23 +1,25 @@
 <div class="steps-content">
-  <h3 *ngIf="selectedAction === actionType.CreateAdvanced">Create DID keys</h3>
-  <h3 *ngIf="selectedAction === actionType.Update">Update DID keys</h3>
-  <div class="collapsible collapsed mb-5" *ngFor="let key of componentKeys">
+  <h3>Create Signing keys</h3>
+  <div class="collapsible collapsed mb-3" *ngFor="let key of componentKeys">
     <h3 (click)="collapse.toggle(); toggleKey(key.keyModel);" class="withoutPlus">
       <span>{{key.keyModel.alias}}</span>
       <i class="fas fa-caret-{{key.iconPosition}} text-primary"></i>
-      <button class="btn btn-sm btn-danger pull-right" (click)="removeKey(key.keyModel)">
+      <button class="btn btn-xs btn-danger pull-right delete-button" (click)="removeKey(key.keyModel, $event)">
         <i class="fas fa-trash"></i>
       </button>
     </h3>
     <div mdbCollapse #collapse="bs-collapse">
       <div class="form-group">
         <label class="control-label" for="purpose">Purpose type</label>
-        <input
-          type="text"
-          class="form-control input-md"
-          id="purpose"
-          value="{{key.keyModel.purpose}}"
-          disabled />
+        <div>
+          <label class="checkbox-inline" *ngFor="let purpose of key.purposes; let i = index;">
+            <input type="checkbox" [(ngModel)]="key.purposes[i].checked" [disabled]="key.disabled">
+            {{purpose.name}}
+          </label>
+          <div class="invalid-alert" *ngIf="!key.purposes[0].checked && !key.purposes[1].checked">
+            <p>Purpose type is required!</p>
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -43,7 +45,7 @@
           required />
         <div class="invalid-alert" *ngIf="keyController.errors && (keyController.dirty || keyController.touched)">
           <p *ngIf="keyController?.errors.required">Key controller is required!</p>
-          <p *ngIf="keyController?.errors.pattern">Key controller must be a valid DID!</p>
+          <p *ngIf="keyController?.errors.pattern">Key controller must be a valid Identity!</p>
         </div>
       </div>
 
@@ -67,30 +69,43 @@
       </div>
 
       <div class="form-group">
-        <label class="control-label" for="controller">Key (Base58)</label>
-        <input type="text" class="form-control input-md" id="controller" value="{{key.keyModel.publicKey}}" disabled />
+        <label class="control-label" for="keyPriorityRequirement">Priority Requirement</label>
+        <input
+          type="number"
+          class="form-control input-md"
+          id="keyPriorityRequirement"
+          #keyPriorityRequirement="ngModel"
+          [(ngModel)]="key.keyModel.priorityRequirement"
+          [ngClass]="{ 'invalid-border': keyPriorityRequirement.invalid, 'disabled': key.disabled }"
+          priorityminvalidator
+          prioritymaxvalidator />
+        <div class="invalid-alert" *ngIf="keyPriorityRequirement.errors && (keyPriorityRequirement.dirty || keyPriorityRequirement.touched)">
+          <p *ngIf="keyPriorityRequirement?.errors.priorityMin">Priority requirement must be a positive number!</p>
+          <p *ngIf="keyPriorityRequirement?.errors.priorityMax">Priority requirement must not be bigger than 100!</p>
+        </div>
       </div>
 
       <div class="form-group text-center">
         <button type="button" mdbBtn color="warning" mdbWavesEffect (click)="edit(key)" *ngIf="key.disabled">
-          <span class="glyphicon glyphicon-pencil"></span>
+            <i class="fas fa-edit"></i>
         </button>
-        <button type="button" mdbBtn color="success" mdbWavesEffect (click)="confirm(key)" *ngIf="!key.disabled" [disabled]="keyController.invalid || keyAlias.invalid">
+        <button type="button" mdbBtn color="success" mdbWavesEffect (click)="confirm(key)" *ngIf="!key.disabled" [disabled]="keyController.invalid || keyAlias.invalid || keyPriorityRequirement.invalid || (!key.purposes[0].checked && !key.purposes[1].checked)">
           <i class="fas fa-check"></i>
         </button>
       </div>
     </div>
   </div>
   <div class="collapsible collapsed">
-    <h3 (click)="collapse.toggle()">Generate DID Key</h3>
+    <h3 (click)="collapse.toggle()">Generate Signing Key</h3>
     <div mdbCollapse #collapse="bs-collapse">
       <form [formGroup]="keyForm" (ngSubmit)="generateKey()">
         <div class="form-group">
-          <label class="control-label" for="purpose">Purpose type</label>
-          <select class="form-control" formControlName="purpose" id="purpose">
-            <option value="publicKey">Public Key</option>
-            <option value="authentication">Authentication Key</option>
-          </select>
+          <label class="control-label">Purpose type</label>
+          <div>
+            <label class="checkbox-inline" *ngFor="let purpose of purposes.controls; let i=index">
+              <input type="checkbox" [formControl]="purpose"> {{availablePurposes[i].name}}
+            </label>
+          </div>
         </div>
 
         <div class="form-group">
@@ -114,7 +129,7 @@
             [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
           <div *ngIf="controller.errors" class="invalid-feedback">
             <div *ngIf="controller['errors'].required">Key controller is required!</div>
-            <div *ngIf="controller['errors'].pattern">Key controller must be a valid DID!</div>
+            <div *ngIf="controller['errors'].pattern">Key controller must be a valid Identity!</div>
           </div>
         </div>
 

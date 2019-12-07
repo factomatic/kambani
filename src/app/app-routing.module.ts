@@ -10,7 +10,6 @@ import { ManagementKeyFormComponent } from './components/did/update-did/manageme
 import { PreviewDidComponent } from './components/did/preview-did/preview-did.component';
 import { ServiceFormComponent } from './components/did/update-did/service-form/service-form.component';
 import { SignerComponent } from './components/signer/signer.component';
-import { UpdateActionGuard } from './core/guards/update-action.guard';
 import { VaultGuard } from './core/guards/vault.guard';
 
 const routes: Routes = [
@@ -20,8 +19,7 @@ const routes: Routes = [
   { path: 'vault', loadChildren: './components/vault/vault.module#VaultModule' },
   { path: 'dids/manage', component: ManageDidsComponent, canActivate: [VaultGuard], children: [
     { path: 'action', component: ActionComponent },
-    { path: 'create', loadChildren: './components/did/did.module#DIDModule', canActivate: [ CreateActionGuard ] },
-    { path: 'update', loadChildren: './components/did/did.module#DIDModule', canActivate: [ UpdateActionGuard ] }
+    { path: 'create', loadChildren: './components/did/did.module#DIDModule', canActivate: [ CreateActionGuard ] }
   ] },
   { path: 'dids/preview/:id', component: PreviewDidComponent, canActivate: [VaultGuard], children: [
     { path: 'create-management-key', component: ManagementKeyFormComponent },

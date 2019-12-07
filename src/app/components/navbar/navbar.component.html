@@ -3,16 +3,13 @@
     <div class="container">
       <div class="row">
         <div class="col-6 col-sm-6 col-xs-6 brand-name">WebSigner</div>
-        <div class="col-xs-6 col-6 col-sm-6 text-right">
-          <a class="remove-vault" (click)="removeVault()">
-            <span class="close-icon"></span>
-            <span class="close-hint">Remove Vault</span>
-          </a>
+        <div class="col-6 col-sm-6 col-xs-6">
+          <a class="mobile-menu-toggle" (click)="toggleNavigation()" [ngClass]="{'active': openMobileNav}"><span></span></a>
         </div>
       </div>
     </div>
   </div>
-  <nav class="navbar">
+  <nav class="navbar" [ngClass]="{'active': openMobileNav}" (click)="toggleNavigation()">
     <div class="container">
       <ul class="list-unstyled">
         <li class="nav-item">
@@ -25,13 +22,16 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/dids/manage">Manage DIDs</a>
+          <a class="nav-link" routerLink="/dids/manage">Manage Identities</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="factom/addresses/manage">Manage Factom Addresses</a>
+          <a class="nav-link" routerLink="factom/addresses/manage">Manage Addresses</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/vault/backup">Backup</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" (click)="removeVault()">Remove Vault</a>
         </li>
       </ul>
     </div>

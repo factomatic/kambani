@@ -6,7 +6,7 @@ import { defer, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 
-import { AddManagementKey, AddDidKey } from '../../store/form/form.actions';
+import * as createDIDActions from '../../store/create-did/create-did.actions';
 import { AppState } from '../../store/app.state';
 import { DidKeyModel } from '../../models/did-key.model';
 import { DIDService } from '../did/did.service';
@@ -49,7 +49,7 @@ export class KeysService {
       keyPair.privateKey
     );
 
-    this.store.dispatch(new AddManagementKey(managementKey));
+    this.store.dispatch(new createDIDActions.AddManagementKey(managementKey));
 
     keyPair = this.generateEdDSAKeyPair();
     const didKeyAlias = 'default-public-key';
@@ -62,7 +62,7 @@ export class KeysService {
       keyPair.privateKey
     );
 
-    this.store.dispatch(new AddDidKey(didKey));
+    this.store.dispatch(new createDIDActions.AddDIDKey(didKey));
   }
 
   private generateEdDSAKeyPair(): KeyPairModel {

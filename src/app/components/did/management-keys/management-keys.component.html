@@ -1,18 +1,14 @@
 <div class="steps-content">
-  <div class="alert alert-warning" role="alert" *ngIf="selectedAction === actionType.Update">
-    Warning! If you create a management key with the same priority as the key that you are going to use for the signing of the entry, the aforementioned key will be automatically revoked.
-  </div>
-  <h3 *ngIf="selectedAction === actionType.CreateAdvanced">Create management keys</h3>
-  <h3 *ngIf="selectedAction === actionType.Update">Update management keys</h3>
+  <h3>Create management keys</h3>
   <div class="collapsible collapsed mb-3" *ngFor="let key of componentKeys">
     <h3 (click)="collapse.toggle(); toggleKey(key.keyModel);" class="withoutPlus">
       <span>{{key.keyModel.alias}}</span>
       <i class="fas fa-caret-{{key.iconPosition}} text-primary"></i>
-      <button class="btn btn-sm btn-danger pull-right" (click)="removeKey(key.keyModel)">
+      <button class="btn btn-xs btn-danger pull-right delete-button" (click)="removeKey(key.keyModel, $event)">
         <i class="fas fa-trash"></i>
       </button>
     </h3>
-    <div mdbCollapse #collapse="bs-collapse" class="editableArea">
+    <div mdbCollapse #collapse="bs-collapse">
       <div class="form-group">
         <label class="control-label" for="type">Signature type</label>
         <input
@@ -36,7 +32,7 @@
           required />
         <div class="invalid-alert" *ngIf="keyController.errors && (keyController.dirty || keyController.touched)">
           <p *ngIf="keyController?.errors.required">Key controller is required!</p>
-          <p *ngIf="keyController?.errors.pattern">Key controller must be a valid DID!</p>
+          <p *ngIf="keyController?.errors.pattern">Key controller must be a valid Identity!</p>
         </div>
       </div>
 
@@ -68,27 +64,38 @@
           #keyPriority="ngModel"
           [(ngModel)]="key.keyModel.priority"
           [ngClass]="{ 'invalid-border': keyPriority.invalid, 'disabled': key.disabled }"
+          priorityminvalidator
+          prioritymaxvalidator
           required />
         <div class="invalid-alert" *ngIf="keyPriority.errors && (keyPriority.dirty || keyPriority.touched)">
           <p *ngIf="keyPriority?.errors.required">Priority is required!</p>
+          <p *ngIf="keyPriority?.errors.priorityMin">Priority must be a positive number!</p>
+          <p *ngIf="keyPriority?.errors.priorityMax">Priority must not be bigger than 100!</p>
         </div>
       </div>
 
       <div class="form-group">
-        <label class="control-label" for="controller">Key (Base58)</label>
+        <label class="control-label" for="keyPriorityRequirement">Priority Requirement</label>
         <input
-          type="text"
+          type="number"
           class="form-control input-md"
-          id="controller"
-          value="{{key.keyModel.publicKey}}"
-          disabled />
+          id="keyPriorityRequirement"
+          #keyPriorityRequirement="ngModel"
+          [(ngModel)]="key.keyModel.priorityRequirement"
+          [ngClass]="{ 'invalid-border': keyPriorityRequirement.invalid, 'disabled': key.disabled }"
+          priorityminvalidator
+          prioritymaxvalidator />
+        <div class="invalid-alert" *ngIf="keyPriorityRequirement.errors && (keyPriorityRequirement.dirty || keyPriorityRequirement.touched)">
+          <p *ngIf="keyPriorityRequirement?.errors.priorityMin">Priority requirement must be a positive number!</p>
+          <p *ngIf="keyPriorityRequirement?.errors.priorityMax">Priority requirement must not be bigger than 100!</p>
+        </div>
       </div>
 
       <div class="form-group text-center">
         <button type="button" mdbBtn color="warning" mdbWavesEffect (click)="edit(key)" *ngIf="key.disabled">
           <i class="fas fa-edit"></i>
         </button>
-        <button type="button" mdbBtn color="success" mdbWavesEffect (click)="confirm(key)" *ngIf="!key.disabled" [disabled]="keyController.invalid || keyAlias.invalid">
+        <button type="button" mdbBtn color="success" mdbWavesEffect (click)="confirm(key)" *ngIf="!key.disabled" [disabled]="keyController.invalid || keyAlias.invalid || keyPriority.invalid || keyPriorityRequirement.invalid">
           <i class="fas fa-check"></i>
         </button>
       </div>
@@ -101,7 +108,7 @@
         <div class="form-group">
           <label class="control-label" for="type">
             Signature type
-            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{signatureTypeTooltipMessage}}" tooltipClass="custom-tooltip"></i>
+            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{signatureTypeTooltipMessage}}" tooltipClass="custom-tooltip" placement="bottom"></i>
           </label>
           <select class="form-control" formControlName="type" id="type">
             <option value="Ed25519">Ed25519</option>
@@ -113,7 +120,7 @@
         <div class="form-group">
           <label class="control-label" for="controller">
             Key controller
-            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{controllerTooltipMessage}}" tooltipClass="custom-tooltip"></i>
+            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{controllerTooltipMessage}}" tooltipClass="custom-tooltip" placement="bottom"></i>
           </label>
           <input
             type="text"
@@ -125,14 +132,14 @@
             [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
           <div *ngIf="controller.errors" class="invalid-feedback">
             <div *ngIf="controller['errors'].required">Key controller is required!</div>
-            <div *ngIf="controller['errors'].pattern">Key controller must be a valid DID!</div>
+            <div *ngIf="controller['errors'].pattern">Key controller must be a valid Identity!</div>
           </div>
         </div>
 
         <div class="form-group">
           <label class="control-label" for="alias">
             Alias
-            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{aliasTooltipMessage}}" tooltipClass="custom-tooltip"></i>
+            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{aliasTooltipMessage}}" tooltipClass="custom-tooltip" placement="bottom"></i>
           </label>
           <input
             type="text"
@@ -191,6 +198,6 @@
 </div>
 
 <div class="button-footer">
-  <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()" *ngIf="selectedAction == actionType.CreateAdvanced">Back</button>
-  <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToNext()">{{continueButtonText}}</button>
+  <button class="btn-primary pull-left" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToPrevious()">Back</button>
+  <button class="btn-primary pull-right" mdbBtn type="button" color="primary" mdbWavesEffect (click)="goToNext()">Next</button>
 </div>

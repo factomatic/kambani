@@ -31,6 +31,7 @@
                 <label for="privateAddress">Enter your private address:</label>
                 <textarea
                   class="form-control"
+                  spellcheck="false"
                   id="privateAddress"
                   formControlName="privateAddress"
                   [ngClass]="{ 'is-invalid': privateAddress.touched && privateAddress.errors }">

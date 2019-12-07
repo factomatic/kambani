@@ -1,15 +1,14 @@
 <div class="steps-content">
-  <h3 *ngIf="selectedAction === actionType.CreateAdvanced">
+  <h3>
     Add services
     <ng-template #tipContent>{{headerTooltipMessage}} <b>{{headerBoldPartTooltipMessage}}</b></ng-template>
     <i class="fas fa-info-circle fa-sm text-primary" [ngbTooltip]="tipContent" tooltipClass="custom-tooltip" placement="bottom"></i>
   </h3>
-  <h3 *ngIf="selectedAction === actionType.Update">Update services</h3>
-  <div class="collapsible collapsed mb-5" *ngFor="let service of services">
+  <div class="collapsible collapsed mb-3" *ngFor="let service of services">
     <h3 (click)="collapse.toggle(); toggleService(service.serviceModel);" class="withoutPlus">
       {{service.serviceModel.alias}}
       <i class="fas fa-caret-{{service.iconPosition}} text-primary"></i>
-      <button class="btn btn-sm btn-danger pull-right" (click)="removeService(service.serviceModel)">
+      <button class="btn btn-xs btn-danger pull-right delete-button" (click)="removeService(service.serviceModel, $event)"> 
         <i class="fas fa-trash"></i>
       </button>
     </h3>
@@ -28,6 +27,11 @@
         <label class="control-label" for="alias">Alias</label>
         <input type="text" class="form-control input-md" id="alias" value="{{service.serviceModel.alias}}" disabled />
       </div>
+
+      <div class="form-group">
+        <label class="control-label" for="priorityRequirement">Priority Requirement</label>
+        <input type="text" class="form-control input-md" id="priorityRequirement" value="{{service.serviceModel.priorityRequirement !== null ? service.serviceModel.priorityRequirement : 'N/A' }}" disabled />
+      </div>
     </div>
   </div>
   <div class="collapsible collapsed">
@@ -38,7 +42,7 @@
         <div class="form-group">
           <label class="control-label" for="type">
             Service type
-            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{typeTooltipMessage}}" tooltipClass="custom-tooltip"></i>
+            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{typeTooltipMessage}}" tooltipClass="custom-tooltip" placement="bottom"></i>
           </label>
           <input
             type="text"
@@ -55,7 +59,7 @@
         <div class="form-group">
           <label class="control-label" for="endpoint">
             Service endpoint
-            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{endpointTooltipMessage}}" tooltipClass="custom-tooltip"></i>
+            <i class="fas fa-info-circle fa-lg text-primary" ngbTooltip="{{endpointTooltipMessage}}" tooltipClass="custom-tooltip" placement="bottom"></i>
           </label>
           <input
             type="text"

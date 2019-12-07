@@ -4,8 +4,10 @@
       <div class="page-content">
         <div class="page-header">
           <div class="form-group header-search pull-left">
-            <input type="search" #searchInput class="form-control" placeholder="Search" />
-            <button class="btn btn-primary" (click)="search(searchInput.value)"><i class="fa fa-search"></i></button>
+            <form>
+              <input type="search" #searchInput class="form-control" placeholder="Search by nickname..." />
+              <button class="btn btn-primary" (click)="search(searchInput.value)"><i class="fa fa-search"></i></button>
+            </form>
           </div>
           <a class="btn btn-success pull-right" routerLink="/dids/manage/action" (click)="formScreenOpen = true"><i class="fa fa-plus"></i> Create new</a>
           <div class="clearfix"></div>
@@ -14,22 +16,27 @@
           <table class="table table-striped">
             <thead>
               <tr>
-                <th>DID</th>
+                <th>Identity</th>
                 <th>Nickname</th>
                 <th class="text-center">MGMT Keys</th>
-                <th class="text-center">DID Keys</th>
+                <th class="text-center">Signing Keys</th>
                 <th class="text-center">Services</th>
                 <th class="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody valign="center">
               <tr *ngFor="let didId of displayedDidIds">
-                <td><span>{{didId}}</span></td>
                 <td>
-                  <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true">{{allDIDsPublicInfo[didId].nickname}}</a>
+                  <span>
+                    <a class="did-link" href="https://testnet.factoid.org/data?type=chain&key={{didId.split(':').pop()}}" target="_blank" data-toggle="tooltip" data-placement="top" title="Click to open in explorer">{{didId}}</a>
+                  </span>
+                  <a (click)="copyDIDId(didId, copyButtonRef)" class="copy-didid" #copyButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy"><i class="far fa-copy"></i></a>
+              </td>
+                <td width="250" height="65">
+                  <a *ngIf="!didEditNickname[didId]" (click)="didEditNickname[didId] = true" data-toggle="tooltip" data-placement="top" title="Click to edit">{{allDIDsPublicInfo[didId].nickname}}</a>
                   <div class="nickname-editable" *ngIf="didEditNickname[didId]">
-                    <form (ngSubmit)="editNickname(didId, nickname.value)" (clickOutside)="editNickname(didId, nickname.value)" [attachOutsideOnClick]="didEditNickname[didId]" >
-                      <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}"  class="form-control" />
+                    <form (ngSubmit)="editNickname(didId, nickname.value)" (clickOutside)="editNickname(didId, nickname.value)" [attachOutsideOnClick]="false" [delayClickOutsideInit]="true" >
+                      <input type="text" name="nickname" #nickname value="{{allDIDsPublicInfo[didId].nickname}}" autofocus class="form-control" />
                     </form>
                   </div>
                 </td>
@@ -43,36 +50,36 @@
                   <div class="counter-label">{{allDIDsPublicInfo[didId].didDocument.service ? allDIDsPublicInfo[didId].didDocument.service.length : 0}}</div>
                 </td>
                 <td class="text-right">
-                  <a routerLink="/dids/preview/{{didId}}" class="btn btn-xs btn-primary"><i class="fa fa-search"></i></a>
-                  <button (click)="backupDid(didId)" class="btn btn-xs btn-success"><i class="fa fa-download"></i></button>
-                  <button class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
+                  <button class="btn btn-xs btn-primary" (click)="previewDid(didId)"><i class="fa fa-search"></i></button>
+                  <button class="btn btn-xs btn-success" (click)="backupDid(didId)"><i class="fa fa-download"></i></button>
+                  <button class="btn btn-xs btn-danger" (click)="removeDid(didId)"><i class="fa fa-trash"></i></button>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div class="row" *ngIf="didIds.length > 10">
+        <div class="row" *ngIf="didIds.length > pageSize">
           <div class="col-6">
             <div class="paginator">
               <a (click)="changePage(currentPage - 1)" [ngClass]="currentPage == 1 ? 'disabled' : ''">Prev</a>
               <a (click)="changePage(currentPage + 1)" [ngClass]="currentStartIndex + pageSize < didIds.length ? '' : 'disabled'">Next</a>
             </div>
           </div>
-          <div class="col-6 text-right">
+          <div class="col-6 text-right" *ngIf="didIds.length > 0">
             {{currentStartIndex + 1}} - {{currentStartIndex + pageSize < didIds.length ? currentStartIndex + pageSize : didIds.length}} from {{didIds.length}}
           </div>
         </div>
         <div class="row">
           <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="!anyDID()">
-            <p class="text-warning text-center">You have not created any DIDs yet</p>
+            <p class="text-warning text-center">You have not created any Identities yet</p>
           </div>
           <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="anyDID() && (!didIds || didIds.length === 0)">
-            <p class="text-warning text-center">DID not found</p>
+            <p class="text-warning text-center">Identity not found</p>
           </div>
         </div>
       </div>
       <div class="formScreen" [ngClass]="{'active': formScreenOpen}">
-        <a class="closeForm" routerLink="/dids/manage" (click)="closeFormScreen()"></a>
+        <a class="closeForm" (click)="closeFormScreen()"></a>
         <div class="formContent">
           <div class="scrollArea">
             <app-stepper></app-stepper>

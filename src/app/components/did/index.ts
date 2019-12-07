@@ -1,7 +1,6 @@
 import { ActionComponent } from './action/action.component';
 import { DidKeyFormComponent } from './update-did/did-key-form/did-key-form.component';
 import { DidKeysComponent } from './did-keys/did-keys.component';
-import { FinalComponent } from './final/final.component';
 import { ManageDidsComponent } from './manage-dids/manage-dids.component';
 import { ManagementKeyFormComponent } from './update-did/management-key-form/management-key-form.component';
 import { ManagementKeysComponent } from './management-keys/management-keys.component';
@@ -15,7 +14,6 @@ export const didComponents = [
   ActionComponent,
   DidKeyFormComponent,
   DidKeysComponent,
-  FinalComponent,
   ManageDidsComponent,
   ManagementKeyFormComponent,
   ManagementKeysComponent,

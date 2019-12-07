@@ -14,6 +14,7 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
 })
 export class NavbarComponent implements OnInit {
   public pendingRequestsCount = 0;
+  public openMobileNav: boolean;
 
   constructor(
     private dialogsService: DialogsService,
@@ -30,6 +31,10 @@ export class NavbarComponent implements OnInit {
     this.signingService.change.subscribe(pendingRequestsCount => {
       this.pendingRequestsCount = pendingRequestsCount;
     });
+  }
+
+  toggleNavigation() {
+    this.openMobileNav = !this.openMobileNav;
   }
 
   removeVault() {

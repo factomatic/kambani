@@ -1,10 +1,11 @@
 <form [formGroup]="keyForm" (ngSubmit)="saveForm()">
   <div class="form-group">
-    <label class="control-label" for="purpose">Purpose type</label>
-    <select class="form-control" formControlName="purpose" id="purpose">
-      <option value="publicKey">Public Key</option>
-      <option value="authentication">Authentication Key</option>
-    </select>
+    <label class="control-label">Purpose type</label>
+    <div>
+      <label class="checkbox-inline" *ngFor="let purpose of purposes.controls; let i=index">
+        <input type="checkbox" [formControl]="purpose"> {{availablePurposes[i].name}}
+      </label>
+    </div>
   </div>
 
   <div class="form-group">
@@ -28,7 +29,7 @@
       [ngClass]="{ 'is-invalid': controller.touched && controller.errors }" />
     <div *ngIf="controller.errors" class="invalid-feedback">
       <div *ngIf="controller['errors'].required">Key controller is required!</div>
-      <div *ngIf="controller['errors'].pattern">Key controller must be a valid DID!</div>
+      <div *ngIf="controller['errors'].pattern">Key controller must be a valid Identity!</div>
     </div>
   </div>
 
@@ -66,6 +67,6 @@
 
   <div class="form-group text-center">
     <input type="submit" *ngIf="mode == CreateMode" mdbBtn color="success" class="btn btn-block" mdbWavesEffect value="Generate key" [disabled]="keyForm.invalid" />
-    <input type="submit" *ngIf="mode == UpdateMode" mdbBtn color="warning" class="btn btn-block" mdbWavesEffect value="Edit key" [disabled]="keyForm.invalid || keyForm.pristine" />
+    <input type="submit" *ngIf="mode == UpdateMode" mdbBtn color="success" class="btn btn-block" mdbWavesEffect value="Save" [disabled]="keyForm.invalid || keyForm.pristine" />
   </div>
 </form>

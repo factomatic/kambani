@@ -29,9 +29,8 @@ export class HomeComponent implements OnInit {
   ngAfterViewInit() {
     const today = new Date().getDay();
     const labels = this.labels.slice(today + 1, this.labels.length).concat(this.labels.slice(0, today + 1));
-    const data = this.signedRequestsData.slice(today + 1, this.signedRequestsData.length).concat(this.signedRequestsData.slice(0, today + 1));
 
-    this.createChart(labels, data);
+    this.createChart(labels, this.signedRequestsData);
   }
 
   createChart(labels: string[], data: number[]) {

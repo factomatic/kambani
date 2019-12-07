@@ -24,25 +24,24 @@
                     <th class="text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody valign="center">
                   <tr *ngFor="let publicAddress of displayedFCTAddresses">
-                    <td><span>{{publicAddress}}</span></td>
-                    <td>
-                      <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true">{{fctAddressesInfo[publicAddress]}}</a>
+                    <td><span class="public-address">{{publicAddress}}</span></td>
+                    <td width="250" height="65">
+                      <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true" data-toggle="tooltip" data-placement="top" title="Click to edit">{{fctAddressesInfo[publicAddress]}}</a>
                       <div class="nickname-editable" *ngIf="editAddressNickname[publicAddress]">
-                        <form (ngSubmit)="editNickname(publicAddress, FactomAddressType.FCT, nickname.value)">
-                          <input type="text" name="nickname" #nickname value="{{fctAddressesInfo[publicAddress]}}" class="form-control" />
-                          <button class="btn btn-danger" (click)="editAddressNickname[publicAddress] = false">
-                            <i class="fa fa-times"></i>
-                          </button>
-                          <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-save"></i>
-                          </button>
+                        <form 
+                          (ngSubmit)="editNickname(publicAddress, FactomAddressType.FCT, nickname.value)"
+                          (clickOutside)="editNickname(publicAddress, FactomAddressType.FCT, nickname.value)"
+                          [attachOutsideOnClick]="false"
+                          [delayClickOutsideInit]="true">
+                          <input type="text" name="nickname" #nickname value="{{fctAddressesInfo[publicAddress]}}" autofocus class="form-control" />
                         </form>
                       </div>
                     </td>
                     <td class="text-right">
-                      <button (click)="removeAddress(publicAddress, FactomAddressType.FCT)" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
+                      <button class="btn btn-xs btn-primary" (click)="viewPrivateAddress(publicAddress)" data-toggle="tooltip" data-placement="top" title="Click to view private address"><i class="fa fa-search"></i></button>
+                      <button class="btn btn-xs btn-danger" (click)="removeAddress(publicAddress, FactomAddressType.FCT)"><i class="fa fa-trash"></i></button>
                     </td>
                   </tr>
                 </tbody>
@@ -75,25 +74,24 @@
                     <th class="text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody valign="center">
                   <tr *ngFor="let publicAddress of displayedECAddresses">
-                    <td><span>{{publicAddress}}</span></td>
-                    <td>
-                      <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true">{{ecAddressesInfo[publicAddress]}}</a>
+                    <td><span class="public-address">{{publicAddress}}</span></td>
+                    <td width="250" height="65">
+                      <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true" data-toggle="tooltip" data-placement="top" title="Click to edit">{{ecAddressesInfo[publicAddress]}}</a>
                       <div class="nickname-editable" *ngIf="editAddressNickname[publicAddress]">
-                        <form (ngSubmit)="editNickname(publicAddress, FactomAddressType.EC, nickname.value)">
-                          <input type="text" name="nickname" #nickname value="{{ecAddressesInfo[publicAddress]}}" class="form-control" />
-                          <button class="btn btn-danger" (click)="editAddressNickname[publicAddress] = false">
-                            <i class="fa fa-times"></i>
-                          </button>
-                          <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-save"></i>
-                          </button>
+                        <form 
+                          (ngSubmit)="editNickname(publicAddress, FactomAddressType.EC, nickname.value)"
+                          (clickOutside)="editNickname(publicAddress, FactomAddressType.EC, nickname.value)"
+                          [attachOutsideOnClick]="false"
+                          [delayClickOutsideInit]="true">
+                          <input type="text" name="nickname" #nickname value="{{ecAddressesInfo[publicAddress]}}" autofocus class="form-control" />
                         </form>
                       </div>
                     </td>
                     <td class="text-right">
-                      <button (click)="removeAddress(publicAddress, FactomAddressType.EC)" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
+                      <button class="btn btn-xs btn-primary" (click)="viewPrivateAddress(publicAddress)" data-toggle="tooltip" data-placement="top" title="Click to view private address"><i class="fa fa-search"></i></button>
+                      <button class="btn btn-xs btn-danger" (click)="removeAddress(publicAddress, FactomAddressType.EC)"><i class="fa fa-trash"></i></button>
                     </td>
                   </tr>
                 </tbody>

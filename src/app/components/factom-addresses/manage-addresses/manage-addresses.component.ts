@@ -1,5 +1,6 @@
 declare const Buffer;
 import { Component, OnInit } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { generateRandomFctAddress, generateRandomEcAddress } from 'factom';
@@ -10,6 +11,7 @@ import { FactomAddressType } from 'src/app/core/enums/factom-address-type';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
+import { PrivateAddressModalComponent } from '../../modals/private-address-modal/private-address-modal.component';
 
 @Component({
   selector: 'app-manage-addresses',
@@ -26,13 +28,13 @@ export class ManageAddressesComponent implements OnInit {
   public selectedAddressType: FactomAddressType = FactomAddressType.FCT;
   public FactomAddressType = FactomAddressType;
   public editAddressNickname: boolean[] = [];
-  public pageSize: number = 5;
+  public pageSize: number = 6;
   public currentPage: number = 1;
   public currentStartIndex = 0;
-  private removeAddressDialogMessage = `<b>Warning! Any funds that you have in this address will be irrevocably lost, if you have not backed up your private key</b>. If you want to continue, enter your vault password to remove the FCT/EC address`;
 
   constructor(
     private dialogsService: DialogsService,
+    private modalService: NgbModal,
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
     private vaultService: VaultService ) { }
@@ -91,8 +93,8 @@ export class ManageAddressesComponent implements OnInit {
           this.vaultService
             .importFactomAddress(
               this.selectedAddressType,
-              `${this.selectedAddressType.toLowerCase()}-address`,
-              addressPair.public, addressPair.private,
+              addressPair.public,
+              addressPair.private,
               vaultPassword)
             .subscribe(result => {
               this.spinner.hide();
@@ -107,8 +109,33 @@ export class ManageAddressesComponent implements OnInit {
       });
   }
 
+  viewPrivateAddress(publicAddress: string) {
+    const dialogMessage = 'Enter your vault password to view the private address';
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.Medium, dialogMessage)
+      .subscribe((vaultPassword: string) => {
+        if (vaultPassword) {
+          this.spinner.show();
+          this.vaultService
+            .getPrivateAddress(publicAddress, vaultPassword)
+            .subscribe(result => {
+              this.spinner.hide();
+              if (result.success && result.message) {
+                const confirmRef = this.modalService.open(PrivateAddressModalComponent);
+                confirmRef.componentInstance.publicAddress = publicAddress;
+                confirmRef.componentInstance.privateAddress = result.message;
+                confirmRef.result.then((result) => {
+                });
+              } else if (!result.success) {
+                this.toastr.error(result.message);
+              }
+            });
+        }
+      });
+  }
+
   removeAddress(publicAddress: string, type: FactomAddressType) {
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, this.removeAddressDialogMessage)
+    const dialogMessage = '<b>Warning! Any funds that you have in this address will be irrevocably lost, if you have not backed up your private key</b>. If you want to continue, enter your vault password to remove the FCT/EC address';
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {
           this.spinner.show();

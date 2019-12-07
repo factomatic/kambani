@@ -1,0 +1,12 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h4 class="modal-title">Remove {{capitalize(objectType)}}</h4>
+  </div>
+  <div class="modal-body mt-3">
+    <p>Do you really want to remove this {{objectType}}? This process cannot be undone.</p>
+  </div>
+  <div class="modal-footer justify-content-center mt-2">
+    <button type="button" class="btn-primary mr-3" mdbBtn color="primary" mdbWavesEffect data-dismiss="modal" (click)="activeModal.dismiss('Cross click')">Cancel</button>
+    <button type="button" class="btn-danger ml-3" mdbBtn color="danger" mdbWavesEffect (click)="activeModal.close('remove')">Remove</button>
+  </div>
+</div>

@@ -73,7 +73,7 @@ export class SigningService {
           signature = Buffer.from(nacl.sign.detached(dataToSign, keyPair.secretKey));
         }
 
-        this.vaultService.updateSignedRequests();
+        this.vaultService.incrementSignedRequests();
 
         return new SignatureDataModel(
           dataToSign,
@@ -87,18 +87,29 @@ export class SigningService {
     });
   }
 
-  signUpdateEntry(didId: string, selectedManagementKey: ManagementKeyEntryModel, entry: UpdateEntryDocument, vaultPassword: string): Observable<SignatureResultModel> {
+  signDIDEntry(fullDIDId: string, signatureType: SignatureType, entry: any, entryType: EntryType, vaultPassword: string): Observable<SignatureResultModel> {
     return defer(async () => {
       try {
         const vault = this.vaultService.getVault();
         const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
-        const managementKeys = decryptedVault[didId].managementKeys;
-        const privateKey = managementKeys[selectedManagementKey.id.split('#')[1]];
-        const signatureType = selectedManagementKey.type.replace('VerificationKey', '') as SignatureType;
 
-        const contentToSign = Buffer.from(calculateDoubleSha256(
-          EntryType.UpdateDIDEntry.concat(this.entrySchemaVersion, selectedManagementKey.id, JSON.stringify(entry))
-        ));
+        const fullDIDIdParts = fullDIDId.split('#');
+        const didId = fullDIDIdParts[0];
+        const keyAlias = fullDIDIdParts[1];
+
+        const managementKeys = decryptedVault[didId].managementKeys;
+        const privateKey = managementKeys[keyAlias];
+
+        let contentToSign;
+        if (entryType == EntryType.DeactivateDIDEntry) {
+          contentToSign = Buffer.from(calculateDoubleSha256(
+            entryType.concat(this.entrySchemaVersion, fullDIDId)
+          ));
+        } else {
+          contentToSign = Buffer.from(calculateDoubleSha256(
+            entryType.concat(this.entrySchemaVersion, fullDIDId, JSON.stringify(entry))
+          ));
+        }
 
         const signature = await this.getSignature(contentToSign, signatureType, privateKey);   
         const signatureBase64 = naclUtil.encodeBase64(signature);

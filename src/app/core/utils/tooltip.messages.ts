@@ -1,21 +1,17 @@
 export class TooltipMessages {
-public static SignatureTypeTooltip = 'Both signature types allow you to sign messages ' +
-  'and differ only in the mathematics underpinning them. Ed25519 is the more modern signature type and has ' +
-  'a number of technical advantages over ECDSA, so unless you have a good reason to choose ECDSA, we strongly recommend ' +
-  'that you stick with the default.';
+  public static SignatureTypeTooltip = 'All signature types allow you to sign messages ' +
+  'and differ only in the mathematics underpinning them. Ed25519 has a number of technical advantages over RSA and ECDSA ' +
+  'and unless you have a good reason to choose an alternative you should stick with the default.';
 
   public static ControllerTooltip = 'The controller is the entity that will be making the signatures. ' +
-  'This is usually the DID itself, but in case the DID is for a child, it can be the DID of the parent; ' +
-  'if it is a document, it can be the DID of the company owning the document, etc. By default the controller is ' +
-  'set to the DID you are currently creating. If the controller is a different DID, you should input the relevant DID instead.';
+  'This is usually the Identity itself, but in case the Identity is for a child, it can be the Identity of the parent; ' +
+  'if it is a document, it can be the Identity of the company owning the document, etc. By default the controller is ' +
+  'set to the Identity you are currently creating. If the controller is a different Identity, you should input the relevant Identity instead.';
 
   public static AliasTooltip = 'A human-readable nickname for the key you are creating. ' +
   'It can help differentiate between different keys more easily if you are creating many.';
 
-  public static AuthenticationDropdownTooltip = 'Generate keys that will be used specifically for authentication purposes. ' +
-  'You can re-use keys created in the previous step.';
-
-  public static ServicesHeaderTooltip = 'Register services used by the DID. These can be authentication providers, ' +
+  public static ServicesHeaderTooltip = 'Register services used by the Identity. These can be authentication providers, ' +
   'messaging hubs, credential repositories for verifiable claims, etc.';
 
   public static ServicesHeaderBoldPartTooltip = 'DO NOT put links to personally identifiable information ' +
@@ -25,14 +21,4 @@ public static SignatureTypeTooltip = 'Both signature types allow you to sign mes
   'CredentialRepositoryService, MessagingHub, etc.';
 
   public static ServiceEndpointTooltip = 'Specify the URL for the service, e.g. https://example.com/KYCProvider';
-
-  public static EncryptHeaderTooltipAdvancedMode = 'Choose a strong password to encrypt the private keys(s) of the DID.';
-
-  public static EncryptHeaderBoldPartTooltipAdvancedMode = 'Make sure you store the password in a safe location: ' +
-  'there is no password recovery if you lose your password and you will be unable to sign messages with your DID keys, if you lose it!';
-
-  public static EncryptHeaderTooltipBasicMode = 'Choose a strong password to encrypt the private key of the DID.';
-
-  public static EncryptHeaderBoldPartTooltipBasicMode = 'Make sure you store the password in a safe location: ' +
-  'there is no password recovery if you lose your password and you will be unable to sign messages with your DID key, if you lose it!';
 }

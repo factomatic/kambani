@@ -5,13 +5,14 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { Store, select } from '@ngrx/store';
 
-import { AddOriginalManagementKeys, AddOriginalDidKeys, AddOriginalServices } from '../../store/form/form.actions';
 import { AppState } from '../../store/app.state';
+import { CreateDIDState } from '../../store/create-did/create-did.state';
 import { DIDDocument } from '../../interfaces/did-document';
 import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { DidKeyModel } from '../../models/did-key.model';
 import { EntryType } from '../../enums/entry-type';
 import { environment } from 'src/environments/environment';
+import { InitializeDIDUpdate } from '../../store/update-did/update-did.actions';
 import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
 import { ManagementKeyModel } from '../../models/management-key.model';
 import { RevokeModel } from '../../interfaces/revoke-model';
@@ -19,37 +20,31 @@ import { ServiceEntryModel } from '../../interfaces/service-entry';
 import { ServiceModel } from '../../models/service.model';
 import { SignatureType } from '../../enums/signature-type';
 import { toHexString, calculateChainId } from '../../utils/helpers';
+import { UpdateDIDModel } from '../../models/update-did.model';
+import { UpdateDIDState } from '../../store/update-did/update-did.state';
 import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
 import { VaultService } from '../vault/vault.service';
 
 @Injectable()
 export class DIDService {
+  private createDIDState: CreateDIDState;
+  private updateDIDState: UpdateDIDState;
+  private id: string;
+  private nonce: string;
   private VerificationKeySuffix = 'VerificationKey';
   private apiUrl = environment.apiUrl;
   private didMethodSpecVersion = environment.didMethodSpecVersion;
   private entrySchemaVersion = environment.entrySchemaVersion;
-  private id: string;
-  private nonce: string;
-  private formManagementKeys: ManagementKeyModel[];
-  private formDidKeys: DidKeyModel[];
-  private formServices: ServiceModel[];
-  private originalManagementKeys: Set<ManagementKeyModel>;
-  private originalDidKeys: Set<DidKeyModel>;
-  private originalServices: Set<ServiceModel>;
 
   constructor(
     private http: HttpClient,
     private store: Store<AppState>,
     private vaultService: VaultService) {
     this.store
-      .pipe(select(state => state.form))
-      .subscribe(form => {
-        this.formManagementKeys = form.managementKeys;
-        this.formDidKeys = form.didKeys;
-        this.formServices = form.services;
-        this.originalManagementKeys = new Set(form.originalManagementKeys);
-        this.originalDidKeys = new Set(form.originalDidKeys);
-        this.originalServices = new Set(form.originalServices);
+      .pipe(select(state => state))
+      .subscribe(state => {
+        this.createDIDState = state.createDID;
+        this.updateDIDState = state.updateDID;
       });
   }
 
@@ -69,52 +64,32 @@ export class DIDService {
     return this.generateDocument();
   }
 
-  recordCreateEntryOnChain(entry: DIDDocument): Observable<Object> {
-    const entrySize = this.calculateEntrySize(
-      [this.nonce],
-      [EntryType.CreateDIDEntry, this.entrySchemaVersion],
-      JSON.stringify(entry)
-    );
+  recordEntryOnChain(entryType: EntryType, entry: any, managementKeyId?: string, signature?: string): Observable<Object> {
+    const extIds = entryType == EntryType.CreateDIDEntry
+      ? [entryType, this.entrySchemaVersion, this.nonce]
+      : [entryType, this.entrySchemaVersion, managementKeyId, signature];
 
+    const entrySize = this.calculateEntrySize(extIds, JSON.stringify(entry));
     if (entrySize > environment.entrySizeLimit) {
-      return of({error: true, message: 'You have exceeded the entry size limit! Please remove some of your keys or services.'});
+      return of({error: true, message: 'You have exceeded the entry size limit!'});
     }
 
-    const data = JSON.stringify([
-      [EntryType.CreateDIDEntry, this.entrySchemaVersion, this.nonce],
-      entry
-    ]);
+    const data = JSON.stringify([extIds, entry]);
 
-    return this.recordEntry(this.apiUrl, data);
-  }
-
-  recordUpdateEntryOnChain(entry: UpdateEntryDocument, managementKeyId: string, signature: string): Observable<Object> {
-    const entrySize = this.calculateEntrySize(
-      [],
-      [EntryType.UpdateDIDEntry, this.entrySchemaVersion, managementKeyId, signature],
-      JSON.stringify(entry)
-    );
-
-    if (entrySize > environment.entrySizeLimit) {
-      return of({error: true, message: 'You have exceeded the entry size limit! Please remove some of your keys or services.'});
+    if (entryType == EntryType.CreateDIDEntry) {
+      return this.recordEntry(this.apiUrl, data);
     }
-
-    const data = JSON.stringify([
-      [EntryType.UpdateDIDEntry, this.entrySchemaVersion, managementKeyId, signature],
-      entry
-    ]);
-
-    // change the api url with update endpoint
-    // const updateApiUrl = '';
-    // return this.recordEntry(updateApiUrl, data);
 
     return of({data: ''});
   }
 
   loadDIDForUpdate(didId: string): void {
     this.id = didId;
-    const didDocument: DIDDocument = this.vaultService.getDIDPublicInfo(didId).didDocument;
-    this.parseDocument(didDocument);
+
+    if (!this.updateDIDState.dids.find(d => d.didId === didId)) {
+      const didDocument: DIDDocument = this.vaultService.getDIDPublicInfo(didId).didDocument;
+      this.parseDocument(didDocument);
+    }
   }
 
   revokeSigningKey(managementKeyId: string, updateEntry: UpdateEntryDocument): UpdateEntryDocument {
@@ -154,19 +129,19 @@ export class DIDService {
   }
 
   private generateDocument(): DIDDocument {
-    const managementKeys = this.formManagementKeys.map(k => (this.buildManagementKeyEntryObject(k)));
+    const managementKeys = this.createDIDState.managementKeys.map(k => (this.buildManagementKeyEntryObject(k)));
 
     const didDocument: DIDDocument = {
       'didMethodVersion': this.didMethodSpecVersion,
       'managementKey': managementKeys
     };
 
-    const didKeys = this.formDidKeys.map(k => (this.buildDidKeyEntryObject(k)));
+    const didKeys = this.createDIDState.didKeys.map(k => (this.buildDidKeyEntryObject(k)));
     if (didKeys.length > 0) {
       didDocument.didKey = didKeys;
     }
 
-    const services = this.formServices.map(s => (this.buildServiceEntryObject(s)));
+    const services = this.createDIDState.services.map(s => (this.buildServiceEntryObject(s)));
     if (services.length > 0) {
       didDocument.service = services;
     }
@@ -175,12 +150,14 @@ export class DIDService {
   }
 
   private generateUpdateEntry(): UpdateEntryDocument {
-    const newManagementKeys = this.getNew(this.originalManagementKeys, this.formManagementKeys);
-    const newDidKeys = this.getNew(this.originalDidKeys, this.formDidKeys);
-    const newServices = this.getNew(this.originalServices, this.formServices);
-    const revokedManagementKeys = this.getRevoked(this.originalManagementKeys, new Set(this.formManagementKeys));
-    const revokedDidKeys = this.getRevoked(this.originalDidKeys, new Set(this.formDidKeys));
-    const revokedServices = this.getRevoked(this.originalServices, new Set(this.formServices));
+    const didUpdateModel: UpdateDIDModel = this.updateDIDState.dids.find(d => d.didId === this.id);
+
+    const newManagementKeys = this.getNew(didUpdateModel.originalManagementKeys, didUpdateModel.managementKeys);
+    const newDidKeys = this.getNew(didUpdateModel.originalDidKeys, didUpdateModel.didKeys);
+    const newServices = this.getNew(didUpdateModel.originalServices, didUpdateModel.services);
+    const revokedManagementKeys = this.getRevoked(didUpdateModel.originalManagementKeys, didUpdateModel.managementKeys);
+    const revokedDidKeys = this.getRevoked(didUpdateModel.originalDidKeys, didUpdateModel.didKeys);
+    const revokedServices = this.getRevoked(didUpdateModel.originalServices, didUpdateModel.services);
 
     const updateEntry: UpdateEntryDocument = {};
 
@@ -248,11 +225,12 @@ export class DIDService {
     return serviceEntryObject;
   }
 
-  private getNew(original, current) {
+  private getNew(original: any[], current: any[]) {
     const _new = [];
+    const originalStrArray = original.map(e => JSON.stringify(e));
 
     current.forEach(obj => {
-      if (!original.has(obj)) {
+      if (!originalStrArray.includes(JSON.stringify(obj))) {
         _new.push(obj);
       }
     });
@@ -260,11 +238,12 @@ export class DIDService {
     return _new;
   }
 
-  private getRevoked(original, current): RevokeModel[] {
+  private getRevoked(original: any[], current: any[]): RevokeModel[] {
     const revoked: RevokeModel[] = [];
+    const currentStrArray = current.map(e => JSON.stringify(e));
 
     original.forEach(obj => {
-      if (!current.has(obj)) {
+      if (!currentStrArray.includes(JSON.stringify(obj))) {
         revoked.push({ id: `${this.id}#${obj.alias}` });
       }
     });
@@ -316,17 +295,17 @@ export class DIDService {
     return this.id;
   }
 
-  private calculateEntrySize(hexExtIds: string[], utf8ExtIds: string[], content: string): number {
+  private calculateEntrySize(extIds: string[], content: string): number {
     let totalEntrySize = 0;
     const fixedHeaderSize = 35;
-    totalEntrySize += fixedHeaderSize + 2 * hexExtIds.length + 2 * utf8ExtIds.length;
+    totalEntrySize += fixedHeaderSize + 2 * extIds.length;
 
-    totalEntrySize += hexExtIds.reduce((accumulator, currentHexExtId) => {
-      return accumulator + currentHexExtId.length / 2;
-    }, 0);
-
-    totalEntrySize += utf8ExtIds.reduce((accumulator, currentUtf8ExtId) => {
-      return accumulator + this.getBinarySize(currentUtf8ExtId);
+    totalEntrySize += extIds.reduce((accumulator, currentExtId) => {
+      if (this.isHexadecimal(currentExtId)) {
+        return accumulator + currentExtId.length / 2;
+      }
+      
+      return accumulator + this.getBinarySize(currentExtId);
     }, 0);
 
     totalEntrySize += this.getBinarySize(content);
@@ -336,6 +315,16 @@ export class DIDService {
 
   private getBinarySize(string): number {
     return Buffer.byteLength(string, 'utf8');
+  }
+
+  private isHexadecimal(str: string) {
+    const regexp = /^[0-9a-fA-F]+$/;
+  
+    if (regexp.test(str)) {
+      return true;
+    }
+    
+    return false;
   }
 
   private parseDocument(didDocument: DIDDocument): void {
@@ -351,9 +340,8 @@ export class DIDService {
       services = this.extractServices(didDocument.service);
     }
 
-    this.store.dispatch(new AddOriginalManagementKeys(managementKeys));
-    this.store.dispatch(new AddOriginalDidKeys(didKeys));
-    this.store.dispatch(new AddOriginalServices(services));
+    const updateDIDModel = new UpdateDIDModel(this.id, managementKeys, didKeys, services);
+    this.store.dispatch(new InitializeDIDUpdate(updateDIDModel));
   }
 
   private extractManagementKeys(documentManagementKeys: ManagementKeyEntryModel[]): ManagementKeyModel[] {
@@ -364,7 +352,7 @@ export class DIDService {
       k.controller,
       k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem,
       undefined,
-      k.priorityRequirement
+      k.priorityRequirement == undefined ? null : k.priorityRequirement
     ));
   }
 
@@ -376,7 +364,7 @@ export class DIDService {
       k.controller,
       k.publicKeyBase58 ? k.publicKeyBase58 : k.publicKeyPem,
       undefined,
-      k.priorityRequirement
+      k.priorityRequirement == undefined ? null : k.priorityRequirement
     ));
   }
 
@@ -385,7 +373,7 @@ export class DIDService {
       s.type,
       s.serviceEndpoint,
       s.id.split('#')[1],
-      s.priorityRequirement
+      s.priorityRequirement == undefined ? null : s.priorityRequirement
     ));
   }
 }

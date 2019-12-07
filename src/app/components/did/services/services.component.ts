@@ -5,12 +5,12 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Store, select } from '@ngrx/store';
 
 import { ActionType } from 'src/app/core/enums/action-type';
-import { AddService, RemoveService } from 'src/app/core/store/form/form.actions';
+import { AddService, RemoveService } from 'src/app/core/store/create-did/create-did.actions';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
 import { ComponentServiceModel } from 'src/app/core/models/component-service.model';
-import { ConfirmModalComponent } from '../../modals/confirm-modal/confirm-modal.component';
 import CustomValidators from 'src/app/core/utils/customValidators';
+import { RemoveConfirmModalComponent } from '../../modals/remove-confirm-modal/remove-confirm-modal.component';
 import { ServiceModel } from 'src/app/core/models/service.model';
 import { Subscription } from 'rxjs';
 import { TooltipMessages } from 'src/app/core/utils/tooltip.messages';
@@ -35,7 +35,6 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
   public typeTooltipMessage = TooltipMessages.ServiceTypeTooltip;
   public endpointTooltipMessage = TooltipMessages.ServiceEndpointTooltip;
   public continueButtonText: string;
-  public selectedAction: string;
 
   constructor(
     private fb: FormBuilder,
@@ -49,9 +48,8 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
     this.subscription = this.store
       .pipe(select(state => state))
       .subscribe(state => {
-        this.services = state.form.services.map(service => new ComponentServiceModel(service, DOWN_POSITION));
+        this.services = state.createDID.services.map(service => new ComponentServiceModel(service, DOWN_POSITION));
         this.continueButtonText = this.services.length > 0 ? 'Next' : 'Skip';
-        this.selectedAction = state.action.selectedAction;
       });
 
     this.subscriptions.push(this.subscription);
@@ -73,7 +71,7 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
       type: ['', [Validators.required]],
       endpoint: ['', [Validators.required]],
       alias: ['', [Validators.required, CustomValidators.uniqueServiceAlias(this.services.map(s => s.serviceModel))]],
-      priorityRequirement: [undefined, [Validators.min(0), Validators.max(100)]]
+      priorityRequirement: [null, [Validators.min(0), Validators.max(100)]]
     });
   }
 
@@ -93,8 +91,9 @@ export class ServicesComponent extends BaseComponent implements OnInit, AfterVie
     this.createForm();
   }
 
-  removeService(service: ServiceModel) {
-    const confirmRef = this.modalService.open(ConfirmModalComponent);
+  removeService(service: ServiceModel, event) {
+    event.stopPropagation();
+    const confirmRef = this.modalService.open(RemoveConfirmModalComponent);
     confirmRef.componentInstance.objectType = 'service';
     confirmRef.result.then((result) => {
       this.store.dispatch(new RemoveService(service));
