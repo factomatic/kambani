@@ -76,11 +76,7 @@ export class DIDService {
 
     const data = JSON.stringify([extIds, entry]);
 
-    if (entryType == EntryType.CreateDIDEntry) {
-      return this.recordEntry(this.apiUrl, data);
-    }
-
-    return of({data: ''});
+    return this.recordEntry(this.apiUrl, data);
   }
 
   loadDIDForUpdate(didId: string): void {
