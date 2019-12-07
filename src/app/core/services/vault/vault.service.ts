@@ -41,7 +41,7 @@ export class VaultService {
         createdECAddressesCount: 0,
         signedRequestsCount: 0,
         signedRequestsData: JSON.stringify(new Array(7).fill(0)),
-        dateOfLastSignedRequest: undefined
+        dateOfLastShift: new Date().toDateString()
       });
 
       chrome.storage.sync.set({
@@ -201,6 +201,8 @@ export class VaultService {
             chrome.storage.sync.set(addressesState);       
           });
 
+          this.updateSignedRequestsData();
+
           return new ResultModel(true, 'Successful restore');
         }
 
@@ -243,24 +245,40 @@ export class VaultService {
     });
   }
 
-  updateSignedRequests() {
+  updateSignedRequestsData() {
     const state = this.localStorageStore.getState();
-    let dateOfLastSignedRequest = state.dateOfLastSignedRequest;
+    let dateOfLastShift = state.dateOfLastShift;
     let signedRequestsData = JSON.parse(state.signedRequestsData);
 
-     // Sunday -> 0, Monday -> 1, ..., Saturday -> 6
-     let now = new Date();
-     if (dateOfLastSignedRequest == now.toDateString()) {
-       signedRequestsData[now.getDay()] += 1;
-     } else {
-       signedRequestsData[now.getDay()] = 1;
-       dateOfLastSignedRequest = now.toDateString();
-     }
+    let today = new Date().toDateString();
+    if (dateOfLastShift !== today) {
+      const diffTime = Date.parse(today) - Date.parse(dateOfLastShift);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays < 7) {
+        signedRequestsData = signedRequestsData.slice(diffDays, signedRequestsData.length).concat(new Array(diffDays).fill(0));
+      } else {
+        signedRequestsData = new Array(7).fill(0);
+      }
+      
+      dateOfLastShift = today;
+    }
+
+    const newState = Object.assign({}, state, {
+      signedRequestsData: JSON.stringify(signedRequestsData),
+      dateOfLastShift: dateOfLastShift
+    });
+
+    this.localStorageStore.putState(newState);
+  }
+
+  incrementSignedRequests() {
+    const state = this.localStorageStore.getState();
+    let signedRequestsData = JSON.parse(state.signedRequestsData);
+    signedRequestsData[signedRequestsData.length - 1] += 1;
 
     const newState = Object.assign({}, state, {
       signedRequestsCount: state.signedRequestsCount + 1,
-      signedRequestsData: JSON.stringify(signedRequestsData),
-      dateOfLastSignedRequest: dateOfLastSignedRequest
+      signedRequestsData: JSON.stringify(signedRequestsData)
     });
 
     this.localStorageStore.putState(newState);

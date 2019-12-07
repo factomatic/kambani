@@ -73,7 +73,7 @@ export class SigningService {
           signature = Buffer.from(nacl.sign.detached(dataToSign, keyPair.secretKey));
         }
 
-        this.vaultService.updateSignedRequests();
+        this.vaultService.incrementSignedRequests();
 
         return new SignatureDataModel(
           dataToSign,

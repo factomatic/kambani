@@ -22,6 +22,10 @@ export class AppComponent implements OnInit {
     private zone: NgZone) { }
 
   ngOnInit() {
+    if (this.vaultService.vaultExists()) {
+      this.vaultService.updateSignedRequestsData();
+    }
+
     try {
       chrome.runtime.sendMessage({type: ChromeMessageType.CheckRequests}, (checkRequestsResponse) => {
         if (checkRequestsResponse.restoreVaultRequested) {
