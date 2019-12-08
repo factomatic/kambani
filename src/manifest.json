@@ -31,6 +31,13 @@
       "run_at": "document_start"
     }
   ],
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "clipboardWrite",
+    "notifications",
+    "https://testnet-api.factomatic.io/write-did"
+  ],
   "icons": {
     "16": "assets/kambani-logo.png",
     "48": "assets/kambani-logo.png",
