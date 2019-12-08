@@ -16,7 +16,7 @@ All private keys are stored encrypted in-memory and at-rest. Decryption of the p
 incoming message, or when importing them from an encrypted file.
 
 ## Build
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Run `ng build --aot` to build the project. The build artifacts will be stored in the `dist/` directory.
 Run `ng build --prod` for a production build. The build artifacts will be stored in the `dist/` directory.
 
 ## Local installation of the extension
