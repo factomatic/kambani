@@ -123,8 +123,9 @@ export class ManageAddressesComponent implements OnInit {
                 const confirmRef = this.modalService.open(PrivateAddressModalComponent);
                 confirmRef.componentInstance.publicAddress = publicAddress;
                 confirmRef.componentInstance.privateAddress = result.message;
-                confirmRef.result.then((result) => {
-                });
+                confirmRef.result
+                  .then((result) => {})
+                  .catch((error) => {});
               } else if (!result.success) {
                 this.toastr.error(result.message);
               }
