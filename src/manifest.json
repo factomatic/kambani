@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
-  "name":"Kambani Extension",
-  "version": "1.0.0",
+  "name":"Kambani",
+  "version": "0.1.0",
   "permissions": [
     "activeTab",
     "notifications",
