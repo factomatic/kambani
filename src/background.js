@@ -72,7 +72,7 @@ const PEGNET_TRANSACTION_REQUEST = 'pegnetTransaction';
             type: "basic",
             title: "Notification message",
             message: "New signing request received",
-            iconUrl: "assets/web-signer-logo.png"
+            iconUrl: "assets/kambani-logo.png"
           });
 
           return true;
