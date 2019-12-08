@@ -1,14 +1,15 @@
 {
   "manifest_version": 2,
-  "name":"Web Signer Extension",
-  "version": "1.0.0",
+  "name":"Kambani",
+  "description": "A Factom adresses and identity management system in your browser",
+  "version": "0.1.0",
   "permissions": [
     "activeTab",
     "notifications",
     "storage"
   ],
   "browser_action": {
-    "default_title": "Web Signer",
+    "default_title": "Kambani",
     "default_popup": "index.html"
   },
   "background": {
@@ -24,15 +25,23 @@
     },
     {
       "matches": [
-        "<all_urls>"
+        "http://localhost/*",
+        "https://factomatic.io/*"
       ],
       "js": ["factomAddressesContentScript.js"],
       "run_at": "document_start"
     }
   ],
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "clipboardWrite",
+    "notifications",
+    "https://testnet-api.factomatic.io/write-did"
+  ],
   "icons": {
-    "16": "assets/web-signer-logo.png",
-    "48": "assets/web-signer-logo.png",
-    "128": "assets/web-signer-logo.png"
+    "16": "assets/kambani-logo.png",
+    "48": "assets/kambani-logo.png",
+    "128": "assets/kambani-logo.png"
   }
 }

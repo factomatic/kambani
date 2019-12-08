@@ -14,6 +14,10 @@ function minifyDid(didId: string) {
   return didId.substring(0, 30) + '...' + didId.substring(didId.length - 10);
 }
 
+function minifyAddress(address: string) {
+  return address.substring(0, 20) + '...' + address.substring(address.length - 10);
+}
+
 function capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -140,6 +144,7 @@ function downloadFile(fileContent: string, fileName: string) {
 export {
   minifyPublicKey,
   minifyDid,
+  minifyAddress,
   convertPemToBinary,
   toHexString,
   calculateChainId,

@@ -87,6 +87,32 @@ export class SigningService {
     });
   }
 
+  signPegnetWalletTransaction(data: Buffer, fctPublicAddress: string, vaultPassword: string): Observable<SignatureDataModel> {
+    return defer(async () => {
+      try {
+        const vault = this.vaultService.getVault();
+        const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
+
+        const privateKey = addressToKey(decryptedVault[fctPublicAddress]);
+        const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
+        const publicKey = Buffer.from(keyPair.publicKey);
+        const signatureType = SignatureType.EdDSA;
+        const signature = Buffer.from(nacl.sign.detached(data, keyPair.secretKey));
+
+        this.vaultService.incrementSignedRequests();
+
+        return new SignatureDataModel(
+          data,
+          publicKey,
+          signature,
+          signatureType
+        );
+      } catch {
+        return undefined;
+      }
+    });
+  }
+
   signDIDEntry(fullDIDId: string, signatureType: SignatureType, entry: any, entryType: EntryType, vaultPassword: string): Observable<SignatureResultModel> {
     return defer(async () => {
       try {
