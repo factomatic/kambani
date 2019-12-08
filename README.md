@@ -28,7 +28,7 @@ To install the extension locally:
 1. Open a Chrome browser and go to the special URL `chrome://extensions`
 1. Make sure Developer Mode is switched on in the top-right corner
 1. Click on the `Load Unpacked` link in the top-left corner
-1. Choose the `dist/kambani-extension` folder in the project root directory
+1. Choose the `dist/kambani` folder in the project root directory
 
 The plugin should now be visible in your Chrome browser and be listed on the `chrome://extensions` page
 
