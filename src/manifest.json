@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name":"Kambani",
   "description": "A Factom adresses and identity management system in your browser.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "permissions": [
     "activeTab",
     "notifications",
