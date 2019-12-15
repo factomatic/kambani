@@ -28,6 +28,7 @@ export class SignerComponent implements OnInit {
   public dataToSign: string;
   public requestKeyType: string;
   public requestType: string;
+  public txType: string;
   public txMetadata: any;
   public from: string;
   public allDIDsPublicInfo = {};
@@ -200,6 +201,10 @@ export class SignerComponent implements OnInit {
           this.request = response.signingRequest.content;
           this.requestType = this.request.requestType;
           this.requestKeyType = this.request.keyType;
+
+          if (this.request.txType) {
+            this.txType = this.request.txType;
+          }
 
           if ((this.requestKeyType == RequestKeyType.DIDKey && this.didIdsWithDIDKeys.length > 0)
             || (this.requestKeyType == RequestKeyType.ManagementKey && this.allDIDIds.length > 0)) {

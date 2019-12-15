@@ -24,15 +24,32 @@
               </dl>
             </div>
             <div class="form-group" *ngIf="requestType == RequestType.PegnetTransaction">
-              <label for="exampleTextarea">PegNet Conversion Transaction:</label>
-              <dl>
-                <dt>Input Asset</dt>
-                <dd>{{txMetadata.inputAsset}}</dd>
-                <dt>Input Amount</dt>
-                <dd>{{txMetadata.inputAmount}}</dd>
-                <dt>Output Asset</dt>
-                <dd>{{txMetadata.outputAsset}}</dd>
-              </dl>
+              <div *ngIf="txType == 'conversion'">
+                <label for="exampleTextarea">PegNet Conversion Transaction:</label>
+                <dl>
+                  <dt>Address</dt>
+                  <dd>{{minifyAddress(selectedFactomAddress)}}</dd>
+                  <dt>Input Asset</dt>
+                  <dd>{{txMetadata.inputAsset}}</dd>
+                  <dt>Input Amount</dt>
+                  <dd>{{txMetadata.inputAmount}}</dd>
+                  <dt>Output Asset</dt>
+                  <dd>{{txMetadata.outputAsset}}</dd>
+                </dl>
+              </div>
+              <div *ngIf="txType == 'transfer'">
+                <label for="exampleTextarea">PegNet Transfer Transaction:</label>
+                <dl>
+                  <dt>From</dt>
+                  <dd>{{minifyAddress(selectedFactomAddress)}}</dd>
+                  <dt>To</dt>
+                  <dd>{{minifyAddress(txMetadata.outputAddress)}}</dd>
+                  <dt>Asset</dt>
+                  <dd>{{txMetadata.inputAsset}}</dd>
+                  <dt>Amount</dt>
+                  <dd>{{txMetadata.inputAmount}}</dd>
+                </dl>
+              </div>
             </div>
             <div *ngIf="requestKeyType == RequestKeyType.DIDKey || requestKeyType == RequestKeyType.ManagementKey">
               <div *ngIf="selectedDIDId">
