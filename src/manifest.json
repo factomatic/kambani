@@ -6,7 +6,10 @@
   "permissions": [
     "activeTab",
     "notifications",
-    "storage"
+    "storage",
+    "unlimitedStorage",
+    "clipboardWrite",
+    "https://testnet-api.factomatic.io/write-did"
   ],
   "browser_action": {
     "default_title": "Kambani",
@@ -31,13 +34,6 @@
       "js": ["factomAddressesContentScript.js"],
       "run_at": "document_start"
     }
-  ],
-  "permissions": [
-    "storage",
-    "unlimitedStorage",
-    "clipboardWrite",
-    "notifications",
-    "https://testnet-api.factomatic.io/write-did"
   ],
   "icons": {
     "16": "assets/kambani-logo.png",
