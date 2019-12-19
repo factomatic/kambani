@@ -155,6 +155,23 @@ export class ManageAddressesComponent implements OnInit {
       });
   }
 
+  copyAddress(address: string, element) {
+    const selBox = document.createElement('textarea');
+    selBox.style.position = 'fixed';
+    selBox.style.left = '0';
+    selBox.style.top = '0';
+    selBox.style.opacity = '0';
+    selBox.value = address;
+    document.body.appendChild(selBox);
+    selBox.focus();
+    selBox.select();
+    document.execCommand('copy');
+    document.body.removeChild(selBox);
+
+    element.classList.add('clicked');
+    setTimeout(() => {element.classList.remove('clicked')},2000);
+  }
+
   changePage (page) {
     this.currentPage = page;
     this.currentStartIndex = (this.currentPage - 1) * this.pageSize;
