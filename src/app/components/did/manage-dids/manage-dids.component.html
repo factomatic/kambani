@@ -4,9 +4,13 @@
       <div class="page-content">
         <div class="page-header">
           <div class="form-group header-search pull-left">
-            <form>
-              <input type="search" #searchInput class="form-control" placeholder="Search by nickname..." />
-              <button class="btn btn-primary" (click)="search(searchInput.value)"><i class="fa fa-search"></i></button>
+            <form class="form-inline" (submit)="$event.preventDefault()">
+              <i class="fa fa-search" aria-hidden="true"></i>
+              <input
+                class="form-control form-control-sm ml-2 w-75"
+                type="search"
+                placeholder="Search by nickname..."
+                (keyup)="searchChange($event)" />
             </form>
           </div>
           <a class="btn btn-success pull-right" routerLink="/dids/manage/action" (click)="formScreenOpen = true"><i class="fa fa-plus"></i> Create new</a>
