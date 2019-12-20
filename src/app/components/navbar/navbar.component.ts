@@ -46,4 +46,12 @@ export class NavbarComponent implements OnInit {
         }
       });
   }
+
+  checkIsActive(route: string) {
+    if (this.router.url.startsWith(route)) {
+      return true;
+    }
+
+    return false;
+  }
 }

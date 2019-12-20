@@ -18,56 +18,6 @@ $mainColor: #253992;
       -ms-user-select: none;
       user-select: none;
     }
-    .remove-vault {
-      cursor: pointer;
-      display: inline-block;
-      vertical-align: top;
-      height: 40px;
-      width: 40px;
-      text-align: center;
-      position: relative;
-      .close-icon {
-        margin-top: 11px;
-        width: 18px;
-        height: 18px;
-        background: url("/assets/close.svg");
-        background-size: 18px 18px;
-        display: inline-block;
-      }
-      .close-hint {
-        top: calc(100% + 30px);
-        position: absolute;
-        right: 0px;
-        white-space: nowrap;
-        background: #fff;
-        color: $mainColor;
-        padding: 3px 10px;
-        display: inline-block;
-        border-radius: 5px;
-        z-index: 999;
-        opacity: 0;
-        transition: all 0.3s ease;
-        &::before {
-          content: "";
-          display: inline-block;
-          border-left: 5px solid transparent;
-          border-right: 5px solid transparent;
-          border-bottom: 5px solid #fff;
-          top: -4px;
-          right: 7px;
-          position: absolute;
-        }
-        @media only screen and (max-width: 768px){
-            display: none;
-        }
-      }
-      &:hover {
-        .close-hint {
-          opacity: 1;
-          top: calc(100% + 5px);
-        }
-      }
-    }
   }
   .navbar {
     background: #fff;
@@ -77,43 +27,43 @@ $mainColor: #253992;
       overflow: hidden;
       width: 100%;
       margin-bottom: 0px;
-    //   @media only screen and (min-width: 768px){
-        position: relative;
-        li {
-          float: left;
-          &:not(:last-child){
-            margin-right: 15px;
-            @media only screen and (min-width: 768px){
-                margin-right: 25px;
-            }
-
+      position: relative;
+      li {
+        float: left;
+        &:not(:last-child){
+          margin-right: 15px;
+          @media only screen and (min-width: 768px){
+            margin-right: 25px;
           }
-          a {
-            color: $mainColor;
-            display: inline-block;
-            padding: 10px 0px;
-            cursor: pointer;
-            position: relative;
+        }
+        a {
+          color: $mainColor;
+          display: inline-block;
+          padding: 10px 0px;
+          cursor: pointer;
+          position: relative;
+          &::before {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: $mainColor;
+            opacity: 0;
+            display: block;
+            content: "";
+            transition: opacity 0.3s ease;
+          }
+          &:hover {
             &::before {
-              position: absolute;
-              bottom: 0;
-              left: 0;
-              width: 100%;
-              height: 1px;
-              background: $mainColor;
-              opacity: 0;
-              display: block;
-              content: "";
-              transition: opacity 0.3s ease;
-            }
-            &:hover {
-              &::before {
-                  opacity: 1;
-              }
+              opacity: 1;
             }
           }
         }
-    //   }
+        a.active {
+          border-bottom: 1px solid $mainColor;
+        }
+      }
     }
   }
 }
