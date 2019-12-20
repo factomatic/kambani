@@ -9,12 +9,12 @@
         </div>
         <nav class="info-tables">
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <a (click)="changeSelectedAddressType(FactomAddressType.FCT)" class="nav-item nav-link active" id="nav-fct-addresses-tab" data-toggle="tab" href="#nav-fct-addresses" role="tab" aria-controls="nav-fct-addresses" aria-selected="true">FCT Addresses</a>
-            <a (click)="changeSelectedAddressType(FactomAddressType.EC)" class="nav-item nav-link" id="nav-ec-addresses-tab" data-toggle="tab" href="#nav-ec-addresses" role="tab" aria-controls="nav-ec-addresses" aria-selected="false">EC Addresses</a>
+            <a (click)="changeSelectedAddressType(FactomAddressType.FCT)" class="nav-item nav-link" [ngClass]="{'active': selectedAddressType == FactomAddressType.FCT}" id="nav-fct-addresses-tab" data-toggle="tab" href="#nav-fct-addresses" role="tab" aria-controls="nav-fct-addresses" aria-selected="true">FCT Addresses</a>
+            <a (click)="changeSelectedAddressType(FactomAddressType.EC)" class="nav-item nav-link" [ngClass]="{'active': selectedAddressType == FactomAddressType.EC}" id="nav-ec-addresses-tab" data-toggle="tab" href="#nav-ec-addresses" role="tab" aria-controls="nav-ec-addresses" aria-selected="false">EC Addresses</a>
           </div>
         </nav>
         <div class="tab-content" id="nav-tabContent">
-          <div class="tab-pane fade show active" id="nav-fct-addresses" role="tabpanel" aria-labelledby="nav-fct-addresses-tab">
+          <div class="tab-pane fade show" [ngClass]="{'active': selectedAddressType == FactomAddressType.FCT}" id="nav-fct-addresses" role="tabpanel" aria-labelledby="nav-fct-addresses-tab">
             <div class="table-holder" *ngIf="fctAddresses.length > 0">
               <table class="table table-striped">
                 <thead>
@@ -67,7 +67,7 @@
               </div>
             </div>
           </div>
-          <div class="tab-pane fade" id="nav-ec-addresses" role="tabpanel" aria-labelledby="nav-ec-addresses-tab">
+          <div class="tab-pane fade show" [ngClass]="{'active': selectedAddressType == FactomAddressType.EC}" id="nav-ec-addresses" role="tabpanel" aria-labelledby="nav-ec-addresses-tab">
             <div class="table-holder" *ngIf="ecAddresses.length > 0">
               <table class="table table-striped">
                 <thead>

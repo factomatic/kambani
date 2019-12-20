@@ -1,10 +1,12 @@
 declare const Buffer;
+import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { generateRandomFctAddress, generateRandomEcAddress } from 'factom';
 
+import { BaseComponent } from '../../base.component';
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { FactomAddressType } from 'src/app/core/enums/factom-address-type';
@@ -18,7 +20,7 @@ import { PrivateAddressModalComponent } from '../../modals/private-address-modal
   templateUrl: './manage-addresses.component.html',
   styleUrls: ['./manage-addresses.component.scss']
 })
-export class ManageAddressesComponent implements OnInit {
+export class ManageAddressesComponent extends BaseComponent implements OnInit {
   public fctAddressesInfo = {};
   public ecAddressesInfo = {};
   public fctAddresses: string[] = [];
@@ -35,9 +37,12 @@ export class ManageAddressesComponent implements OnInit {
   constructor(
     private dialogsService: DialogsService,
     private modalService: NgbModal,
+    private route: ActivatedRoute,
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
-    private vaultService: VaultService ) { }
+    private vaultService: VaultService ) {
+      super();
+    }
 
   ngOnInit() {
     chrome.tabs && chrome.tabs.getCurrent(function(tab) {
@@ -58,6 +63,16 @@ export class ManageAddressesComponent implements OnInit {
     });
 
     this.getAddressesInfo();
+
+    const subscription = this.route.queryParams
+      .subscribe(params => {
+        console.log(params);
+        if (Object.keys(params).length > 0) {
+          this.selectedAddressType = params['page'];
+        }
+      });
+
+    this.subscriptions.push(subscription);
   }
 
   changeSelectedAddressType(addressType: FactomAddressType) {
