@@ -110,7 +110,7 @@ export class ManageAddressesComponent implements OnInit {
   }
 
   viewPrivateAddress(publicAddress: string) {
-    const dialogMessage = 'Enter your vault password to view the private address';
+    const dialogMessage = 'Enter your vault password to view the secret key';
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.Medium, dialogMessage)
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {

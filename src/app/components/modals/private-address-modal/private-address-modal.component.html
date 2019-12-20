@@ -1,6 +1,6 @@
 <div class="modal-content">
   <div class="modal-header">
-    <h4 class="modal-title">View Private Address</h4>
+    <h4 class="modal-title">View Secret Key</h4>
   </div>
   <div class="modal-body mt-3">
     <p>
@@ -9,7 +9,7 @@
       <span class="address">{{publicAddress}}</span>
     </p>
     <p>
-      Private Address
+      Secret Key
       <a (click)="copyAddress(privateAddress, copyPrivAddrButtonRef)" class="copy-address" #copyPrivAddrButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy public address"><i class="far fa-copy"></i></a>
       <span class="address">{{privateAddress}}</span>
     </p>
