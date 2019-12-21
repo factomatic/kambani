@@ -45,7 +45,8 @@ chrome.storage.onChanged.addListener(function(changes) {
     }
 
     if (fctAddressesOldValue.length < fctAddressesNewValue.length) {
-      const addedFctAddress = fctAddressesNewValue.filter(addr => !fctAddressesOldValue.includes(addr));
+      const oldFctAddresses = fctAddressesOldValue.map(addr => JSON.stringify(addr));
+      const addedFctAddress = fctAddressesNewValue.filter(addr => !oldFctAddresses.includes(JSON.stringify(addr)));
 
       const event = new CustomEvent('FCTAddressesChanged', {
         detail: {
@@ -55,10 +56,26 @@ chrome.storage.onChanged.addListener(function(changes) {
 
       window.dispatchEvent(event);
     } else if (fctAddressesOldValue.length > fctAddressesNewValue.length) {
-      const removedFctAddress = fctAddressesOldValue.filter(addr => !fctAddressesNewValue.includes(addr));
+      const currentFctAddresses = fctAddressesNewValue.map(addr => JSON.stringify(addr));
+      const removedFctAddress = fctAddressesOldValue.filter(addr => !currentFctAddresses.includes(JSON.stringify(addr)));
 
       const event = new CustomEvent('FCTAddressesChanged', {
         detail: {
+          "removed": removedFctAddress
+        }
+      });
+
+      window.dispatchEvent(event);
+    } else {
+      const oldFctAddresses = fctAddressesOldValue.map(addr => JSON.stringify(addr));
+      const addedFctAddress = fctAddressesNewValue.filter(addr => !oldFctAddresses.includes(JSON.stringify(addr)));
+
+      const currentFctAddresses = fctAddressesNewValue.map(addr => JSON.stringify(addr));
+      const removedFctAddress = fctAddressesOldValue.filter(addr => !currentFctAddresses.includes(JSON.stringify(addr)));
+
+      const event = new CustomEvent('FCTAddressesChanged', {
+        detail: {
+          "added": addedFctAddress,
           "removed": removedFctAddress
         }
       });
@@ -80,7 +97,8 @@ chrome.storage.onChanged.addListener(function(changes) {
     }
 
     if (ecAddressesOldValue.length < ecAddressesNewValue.length) {
-      const addedEcAddress = ecAddressesNewValue.filter(addr => !ecAddressesOldValue.includes(addr));
+      const oldEcAddresses = ecAddressesOldValue.map(addr => JSON.stringify(addr));
+      const addedEcAddress = ecAddressesNewValue.filter(addr => !oldEcAddresses.includes(JSON.stringify(addr)));
 
       const event = new CustomEvent('ECAddressesChanged', {
         detail: {
@@ -90,10 +108,26 @@ chrome.storage.onChanged.addListener(function(changes) {
 
       window.dispatchEvent(event);
     } else if (ecAddressesOldValue.length > ecAddressesNewValue.length) {
-      const removedEcAddress = ecAddressesOldValue.filter(addr => !ecAddressesNewValue.includes(addr));
+      const currentEcAddresses = ecAddressesNewValue.map(addr => JSON.stringify(addr));
+      const removedEcAddress = ecAddressesOldValue.filter(addr => !currentEcAddresses.includes(JSON.stringify(addr)));
 
       const event = new CustomEvent('ECAddressesChanged', {
         detail: {
+          "removed": removedEcAddress
+        }
+      });
+
+      window.dispatchEvent(event);
+    } else {
+      const oldEcAddresses = ecAddressesOldValue.map(addr => JSON.stringify(addr));
+      const addedEcAddress = ecAddressesNewValue.filter(addr => !oldEcAddresses.includes(JSON.stringify(addr)));
+
+      const currentEcAddresses = ecAddressesNewValue.map(addr => JSON.stringify(addr));
+      const removedEcAddress = ecAddressesOldValue.filter(addr => !currentEcAddresses.includes(JSON.stringify(addr)));
+
+      const event = new CustomEvent('ECAddressesChanged', {
+        detail: {
+          "added": addedEcAddress,
           "removed": removedEcAddress
         }
       });

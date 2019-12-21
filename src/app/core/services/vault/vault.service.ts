@@ -191,12 +191,23 @@ export class VaultService {
         if (this.isValidState(decryptedState)) {
           this.localStorageStore.putState(decryptedState);
 
-          const fctPublicAddresses = Object.keys(this.getFCTAddressesPublicInfo());
-          const ecPublicAddresses = Object.keys(this.getECAddressesPublicInfo());
+          const fctAddressesPublicInfo = this.getFCTAddressesPublicInfo();
+          const ecAddressesPublicInfo = this.getECAddressesPublicInfo();
 
           chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
-            addressesState.fctAddresses = fctPublicAddresses;
-            addressesState.ecAddresses = ecPublicAddresses;
+            let fctAddresses = [];
+            let ecAddresses = [];
+
+            for (const fctPublicAddress of Object.keys(fctAddressesPublicInfo)) {
+              fctAddresses.push({[fctPublicAddress]: fctAddressesPublicInfo[fctPublicAddress]});
+            }
+
+            for (const ecPublicAddress of Object.keys(ecAddressesPublicInfo)) {
+              ecAddresses.push({[ecPublicAddress]: ecAddressesPublicInfo[ecPublicAddress]});
+            }
+
+            addressesState.fctAddresses = fctAddresses;
+            addressesState.ecAddresses = ecAddresses;
 
             chrome.storage.sync.set(addressesState);       
           });
@@ -334,15 +345,15 @@ export class VaultService {
         chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
           if (type === FactomAddressType.FCT) {
             if (addressesState.fctAddresses) {
-              addressesState.fctAddresses.push(publicAddress);
+              addressesState.fctAddresses.push({[publicAddress]: nickname});
             } else {
-              addressesState.fctAddresses = [publicAddress];
+              addressesState.fctAddresses = [{[publicAddress]: nickname}];
             }
           } else if (type === FactomAddressType.EC) {
             if (addressesState.ecAddresses) {
-              addressesState.ecAddresses.push(publicAddress);
+              addressesState.ecAddresses.push({[publicAddress]: nickname});
             } else {
-              addressesState.ecAddresses = [publicAddress];
+              addressesState.ecAddresses = [{[publicAddress]: nickname}];
             }
           }
 
@@ -363,6 +374,18 @@ export class VaultService {
     if (factomAddressesPublicInfo[type][publicAddress]) {
       factomAddressesPublicInfo[type][publicAddress] = nickname;
     }
+
+    chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
+      if (type === FactomAddressType.FCT) {
+        addressesState.fctAddresses = addressesState.fctAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
+        addressesState.fctAddresses.push({[publicAddress]: nickname});
+      } else if (type === FactomAddressType.EC) {
+        addressesState.ecAddresses = addressesState.ecAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
+        addressesState.ecAddresses.push({[publicAddress]: nickname});
+      }
+
+      chrome.storage.sync.set(addressesState);       
+    });
 
     const newState = Object.assign({}, state, {
       factomAddressesPublicInfo: JSON.stringify(factomAddressesPublicInfo)
@@ -397,9 +420,9 @@ export class VaultService {
 
         chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
           if (type === FactomAddressType.FCT) {
-            addressesState.fctAddresses = addressesState.fctAddresses.filter(address => address !== publicAddress);
+            addressesState.fctAddresses = addressesState.fctAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
           } else if (type === FactomAddressType.EC) {
-            addressesState.ecAddresses = addressesState.ecAddresses.filter(address => address !== publicAddress);
+            addressesState.ecAddresses = addressesState.ecAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
           }
 
           chrome.storage.sync.set(addressesState);       
