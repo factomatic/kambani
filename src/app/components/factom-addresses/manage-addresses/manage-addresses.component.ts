@@ -84,12 +84,14 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
   }
 
   editNickname(publicAddress: string, type: FactomAddressType, nickname: string) {
-    this.vaultService.updateFactomAddressNickname(publicAddress, type, nickname);
+    if (nickname.length > 0) {
+      this.vaultService.updateFactomAddressNickname(publicAddress, type, nickname);
 
-    if (type == FactomAddressType.FCT) {
-      this.fctAddressesInfo[publicAddress] = nickname;
-    } else {
-      this.ecAddressesInfo[publicAddress] = nickname;
+      if (type == FactomAddressType.FCT) {
+        this.fctAddressesInfo[publicAddress] = nickname;
+      } else {
+        this.ecAddressesInfo[publicAddress] = nickname;
+      }
     }
 
     this.editAddressNickname[publicAddress] = false;
