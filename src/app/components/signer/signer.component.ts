@@ -361,7 +361,11 @@ export class SignerComponent implements OnInit {
 
             let selectedAddress;
             if (this.request.requestInfo) {
-              selectedAddress = this.request.requestInfo.inputAddress;
+              if (this.requestType == "data") {
+                selectedAddress = this.request.requestInfo.keyIdentifier;
+              } else {
+                selectedAddress = this.request.requestInfo.inputAddress;
+              }
             } else {
               selectedAddress = this.request.keyIdentifier;
             }
