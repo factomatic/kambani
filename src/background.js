@@ -67,6 +67,7 @@ const PEGNET_TRANSACTION_REQUEST = 'pegnetTransaction';
           });
 
           responseCallbacks.push(response);
+          currentSigningRequestIndex = -1;
 
           chrome.browserAction.getBadgeText({}, function(result) {
             const number = parseInt(result) + 1;
