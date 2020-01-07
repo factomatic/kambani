@@ -66,7 +66,6 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
 
     const subscription = this.route.queryParams
       .subscribe(params => {
-        console.log(params);
         if (Object.keys(params).length > 0) {
           this.selectedAddressType = params['page'];
         }
