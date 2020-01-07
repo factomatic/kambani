@@ -87,10 +87,17 @@ export class SignerComponent implements OnInit {
         if (vaultPassword) {
           this.spinner.show();
 
-          if (this.requestType == RequestType.Basic) {
-            const dataToSign = typeof this.request.data == "string"
-              ? this.request.data
-              : JSON.stringify(this.request.data);
+          if (this.requestType == RequestType.Basic || this.requestType == "data") {
+            let data;
+            if (this.requestType == "data") {
+              data = this.request.requestInfo.data;
+            } else {
+              data = this.request.data;
+            }
+
+            const dataToSign = typeof data == "string"
+              ? data
+              : JSON.stringify(data);
 
             const signingKeyOrAddress = this.selectedKeyId
               ? this.availableKeys.find(dk => dk.id == this.selectedKeyId)
@@ -169,7 +176,7 @@ export class SignerComponent implements OnInit {
   }
 
   private buildTransactionDataToSign() {
-    if (this.requestType == RequestType.PegnetTransaction) {
+    if (this.requestType == RequestType.PegnetTransaction || (this.requestType == "pegnet" && this.txType !== "burn")) {
       const unixSeconds = Math.round(new Date().getTime() / 1000);
       const entryContent = this.txType == 'transfer'
         ? this.buildTransferEntry()
@@ -183,9 +190,13 @@ export class SignerComponent implements OnInit {
       ]));
 
     } else {
+      const amount = this.txMetadata.amount !== undefined
+        ? this.txMetadata.amount
+        : this.txMetadata.inputAmount;
+
       const tx = Transaction
         .builder()
-        .input(this.selectedFactomAddress, this.txMetadata.amount * Math.pow(10, 8))
+        .input(this.selectedFactomAddress, amount * Math.pow(10, 8))
         .output('EC2BURNFCT2PEGNETooo1oooo1oooo1oooo1oooo1oooo19wthin', 0)
         .build();
 
@@ -269,10 +280,20 @@ export class SignerComponent implements OnInit {
           this.from = response.signingRequest.from;
           this.request = response.signingRequest.content;
           this.requestType = this.request.requestType;
-          this.requestKeyType = this.request.keyType;
 
-          if (this.request.txType) {
-            this.txType = this.request.txType;
+          if (this.request.requestInfo) {
+            if (this.requestType == "data") {
+              this.requestKeyType = this.request.requestInfo.keyType;
+            } else {
+              this.requestKeyType = RequestKeyType.FCT;
+              this.txType = this.request.requestInfo.txType;
+            }
+          } else {
+            this.requestKeyType = this.request.keyType;
+
+            if (this.request.txType) {
+              this.txType = this.request.txType;
+            }
           }
 
           if ((this.requestKeyType == RequestKeyType.DIDKey && this.didIdsWithDIDKeys.length > 0)
@@ -284,14 +305,24 @@ export class SignerComponent implements OnInit {
               this.availableKeys = this.getKeys(this.selectedDIDId);
               this.selectedKeyId = this.availableKeys[0].id;
 
-              if (this.request.did) {
-                if (this.availableDIDIds.includes(this.request.did)) {
-                  this.selectedDIDId = this.request.did;
+              if (this.request.did || (this.request.requestInfo && this.request.requestInfo.did)) {
+                const did = this.request.did !== undefined
+                  ? this.request.did
+                  : this.request.requestInfo.did;
+                
+                if (this.availableDIDIds.includes(did)) {
+                  this.selectedDIDId = did;
                   this.availableKeys = this.getKeys(this.selectedDIDId);
                   this.selectedKeyId = this.availableKeys[0].id;
                   this.didIdSpecified = true;
 
-                  const selectedKeyAlias = this.request.keyIdentifier;
+                  let selectedKeyAlias;
+                  if (this.request.requestInfo) {
+                    selectedKeyAlias = this.request.requestInfo.keyIdentifier;
+                  } else {
+                    selectedKeyAlias = this.request.keyIdentifier;
+                  }
+                  
                   if (selectedKeyAlias) {
                     const selectedKey = this.availableKeys.find(k => k.id.split('#')[1] == selectedKeyAlias);
                     if (selectedKey) {
@@ -299,7 +330,7 @@ export class SignerComponent implements OnInit {
                       this.keySpecified = true;
                     } else {
                       const keyType = this.requestKeyType == RequestKeyType.DIDKey
-                        ? 'DID Key'
+                        ? 'Signing Key'
                         : 'Management Key';
                       this.cancelSigning(`The ${keyType} requested for signing does not exist!`);
                       return;
@@ -307,7 +338,7 @@ export class SignerComponent implements OnInit {
                   }
                 } else {
                   if (this.requestKeyType == RequestKeyType.DIDKey
-                    && this.allDIDIds.includes(this.request.did)) {
+                    && this.allDIDIds.includes(did)) {
                     this.cancelSigning('The Identity requested for signing does not have any Signing keys!');
                   } else {
                     this.cancelSigning('The Identity requested for signing does not exist!');
@@ -328,7 +359,17 @@ export class SignerComponent implements OnInit {
 
             this.selectedFactomAddress = this.availableFactomAddresses[0];
 
-            const selectedAddress = this.request.keyIdentifier;
+            let selectedAddress;
+            if (this.request.requestInfo) {
+              if (this.requestType == "data") {
+                selectedAddress = this.request.requestInfo.keyIdentifier;
+              } else {
+                selectedAddress = this.request.requestInfo.inputAddress;
+              }
+            } else {
+              selectedAddress = this.request.keyIdentifier;
+            }
+
             if (selectedAddress) {
               if (this.availableFactomAddresses.includes(selectedAddress)) {
                 this.selectedFactomAddress = selectedAddress;
@@ -340,10 +381,23 @@ export class SignerComponent implements OnInit {
             }
           }
 
-          if (this.requestType == RequestType.Basic) {
-            this.dataToSign = JSON.stringify(this.request.data, null, 2);
+          if (this.requestType == RequestType.Basic || this.requestType == "data") {
+            if (this.request.data) {
+              this.dataToSign = JSON.stringify(this.request.data, null, 2);
+            } else {
+              this.dataToSign = JSON.stringify(this.request.requestInfo.data, null, 2);
+            }           
           } else {
-            this.txMetadata = this.request.txMetadata;
+            if (this.request.requestInfo) {
+              this.txMetadata = {
+                inputAmount: this.request.requestInfo.inputAmount,
+                inputAsset: this.request.requestInfo.inputAsset,
+                outputAsset: this.request.requestInfo.outputAsset,
+                outputAddress: this.request.requestInfo.outputAddress
+              };
+            } else {
+              this.txMetadata = this.request.txMetadata;
+            }
           }
         }
       });
