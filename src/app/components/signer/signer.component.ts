@@ -51,7 +51,6 @@ export class SignerComponent implements OnInit {
   public selectedFactomAddress: string;
   public factomAddressSpecified: boolean;
   public minifyAddress = minifyAddress;
-  private dialogMessage = 'Enter your vault password to sign the data';
 
   constructor(
     private dialogsService: DialogsService,
@@ -82,7 +81,12 @@ export class SignerComponent implements OnInit {
   }
 
   signData() {
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, this.dialogMessage)
+    let dialogMessage = 'Enter your vault password to sign the ';
+    dialogMessage += this.requestType == RequestType.Basic || this.requestType == 'data'
+      ? 'data'
+      : 'transaction';
+
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {
           this.spinner.show();
@@ -164,7 +168,7 @@ export class SignerComponent implements OnInit {
           }});
 
           this.spinner.hide();
-          this.toastr.success('Data successfully signed!', null, {timeOut: 1000});
+          this.toastr.success('Transaction successfully signed!', null, {timeOut: 1000});
           this.clearRequestData();
           this.getPendingRequestsCount();
           this.getSigningRequest();
