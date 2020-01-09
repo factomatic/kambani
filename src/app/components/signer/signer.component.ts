@@ -202,7 +202,7 @@ export class SignerComponent implements OnInit {
               
               chrome.runtime.sendMessage({type: ChromeMessageType.SendSigningRequestResponse, data: {
                 requestId: this.request.requestId,
-                transaction: tx
+                transaction: tx.marshalBinary().toString('hex')
               }});
     
               this.spinner.hide();
