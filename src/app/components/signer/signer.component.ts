@@ -13,6 +13,7 @@ import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
 import { RequestKeyType } from 'src/app/core/enums/request-key-type';
 import { RequestType } from 'src/app/core/enums/request-type';
+import { ResultModel } from 'src/app/core/models/result.model';
 import { SignatureDataModel } from 'src/app/core/models/signature-data.model';
 import { SigningService } from 'src/app/core/services/signing/signing.service';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
@@ -109,9 +110,7 @@ export class SignerComponent implements OnInit {
 
             this.signBasicRequest(dataToSign, signingKeyOrAddress, vaultPassword);
           } else {
-            const dataToSign = this.buildTransactionDataToSign();
-
-            this.signPegnetWalletRequest(dataToSign, this.selectedFactomAddress, vaultPassword);
+            this.signPegNetRequest(this.selectedFactomAddress, vaultPassword);
           }    
         }
       });
@@ -133,6 +132,14 @@ export class SignerComponent implements OnInit {
     this.skipSigningRequest();
     this.getPendingRequestsCount();
     this.getSigningRequest();
+  }
+
+  toHumanReadable(amount: number) {
+    if (this.requestType == RequestType.PegnetTransaction || this.requestType == RequestType.FCTBurning) {
+      return amount;
+    }
+
+    return amount / Math.pow(10, 8);
   }
 
   private signBasicRequest(dataToSign: string, signingKeyOrAddress: any, vaultPassword: string) {
@@ -157,54 +164,96 @@ export class SignerComponent implements OnInit {
       });
   }
 
-  private signPegnetWalletRequest(dataToSign: Buffer, fctPublicAddress: string, vaultPassword: string) {
-    this.signingService
-      .signPegnetWalletTransaction(dataToSign, fctPublicAddress, vaultPassword)
-      .subscribe((signatureData: SignatureDataModel) => {
-        if (signatureData) {
-          chrome.runtime.sendMessage({type: ChromeMessageType.SendSigningRequestResponse, data: {
-            requestId: this.request.requestId,
-            ...signatureData
-          }});
+  private signPegNetRequest(fctPublicAddress: string, vaultPassword: string) {
+    if (this.requestType == RequestType.PegnetTransaction || this.requestType == RequestType.FCTBurning) {
+      const dataToSign = Buffer.from(Object.values(this.request.data));
 
-          this.spinner.hide();
-          this.toastr.success('Transaction successfully signed!', null, {timeOut: 1000});
-          this.clearRequestData();
-          this.getPendingRequestsCount();
-          this.getSigningRequest();
-        } else {
-          this.spinner.hide();
-          this.toastr.error('Incorrect vault password');
-        }
-      });
-  }
+      this.signingService
+        .signPegNetTransaction(dataToSign, fctPublicAddress, vaultPassword)
+        .subscribe((signatureData: SignatureDataModel) => {
+          if (signatureData) {
+            chrome.runtime.sendMessage({type: ChromeMessageType.SendSigningRequestResponse, data: {
+              requestId: this.request.requestId,
+              ...signatureData
+            }});
 
-  private buildTransactionDataToSign() {
-    if (this.requestType == RequestType.PegnetTransaction || (this.requestType == "pegnet" && this.txType !== "burn")) {
-      const unixSeconds = Math.round(new Date().getTime() / 1000);
-      const entryContent = this.txType == 'transfer'
-        ? this.buildTransferEntry()
-        : this.buildConversionEntry();
-
-      return sha512(Buffer.concat([
-        Buffer.from('0'),
-        Buffer.from(unixSeconds.toString()),
-        Buffer.from('cffce0f409ebba4ed236d49d89c70e4bd1f1367d86402a3363366683265a242d', 'hex'),
-        Buffer.from(entryContent)
-      ]));
+            this.spinner.hide();
+            this.toastr.success('Transaction successfully signed!', null, {timeOut: 1000});
+            this.clearRequestData();
+            this.getPendingRequestsCount();
+            this.getSigningRequest();
+          } else {
+            this.spinner.hide();
+            this.toastr.error('Incorrect vault password');
+          }
+        });
 
     } else {
-      const amount = this.txMetadata.amount !== undefined
-        ? this.txMetadata.amount
-        : this.txMetadata.inputAmount;
+      if (this.txType == "burn") {
+        this.vaultService
+          .getPrivateAddress(this.selectedFactomAddress, vaultPassword)
+          .subscribe((result: ResultModel) => {
+            if (result.success) {
+              const tx = Transaction
+                .builder()
+                .input(result.message, this.txMetadata.inputAmount)
+                .output('EC2BURNFCT2PEGNETooo1oooo1oooo1oooo1oooo1oooo19wthin', 0)
+                .build();
+              
+              chrome.runtime.sendMessage({type: ChromeMessageType.SendSigningRequestResponse, data: {
+                requestId: this.request.requestId,
+                transaction: tx
+              }});
+    
+              this.spinner.hide();
+              this.toastr.success('Transaction successfully signed!', null, {timeOut: 1000});
+              this.clearRequestData();
+              this.getPendingRequestsCount();
+              this.getSigningRequest();
+            } else {
+              this.spinner.hide();
+              this.toastr.error(result.message);
+            }
+          });
 
-      const tx = Transaction
-        .builder()
-        .input(this.selectedFactomAddress, amount * Math.pow(10, 8))
-        .output('EC2BURNFCT2PEGNETooo1oooo1oooo1oooo1oooo1oooo19wthin', 0)
-        .build();
+      } else {
+        const unixSeconds = Math.round(new Date().getTime() / 1000).toString();
+        const entryContent = this.txType == 'transfer'
+          ? this.buildTransferEntry()
+          : this.buildConversionEntry();
 
-      return tx['marshalBinarySig'];
+        const dataToSign = sha512(Buffer.concat([
+          Buffer.from('0'),
+          Buffer.from(unixSeconds),
+          Buffer.from('cffce0f409ebba4ed236d49d89c70e4bd1f1367d86402a3363366683265a242d', 'hex'),
+          Buffer.from(entryContent)
+        ]));
+
+        this.signingService
+        .signPegNetTransaction(dataToSign, fctPublicAddress, vaultPassword)
+        .subscribe((signatureData: SignatureDataModel) => {
+          if (signatureData) {
+            console.log(signatureData);
+            const rcd = Buffer.concat([Buffer.from([1]), signatureData.publicKey]).toString('hex');
+            const signature = signatureData.signature.toString('hex');
+            const extIds = [unixSeconds, rcd, signature];
+            console.log(extIds);
+            chrome.runtime.sendMessage({type: ChromeMessageType.SendSigningRequestResponse, data: {
+              requestId: this.request.requestId,
+              entry: [extIds, entryContent]
+            }});
+
+            this.spinner.hide();
+            this.toastr.success('Transaction successfully signed!', null, {timeOut: 1000});
+            this.clearRequestData();
+            this.getPendingRequestsCount();
+            this.getSigningRequest();
+          } else {
+            this.spinner.hide();
+            this.toastr.error('Incorrect vault password');
+          }
+        });
+      }
     }
   }
 
@@ -214,7 +263,7 @@ export class SignerComponent implements OnInit {
       transactions: [{
           input: {
             address: this.selectedFactomAddress,
-            amount: this.txMetadata.inputAmount * Math.pow(10, 8),
+            amount: this.txMetadata.inputAmount,
             type: this.txMetadata.inputAsset
           },
           conversion: this.txMetadata.outputAsset,
@@ -227,19 +276,17 @@ export class SignerComponent implements OnInit {
   }
 
   private buildTransferEntry() {
-    const inputAmount = this.txMetadata.inputAmount * Math.pow(10, 8);
-
     return JSON.stringify({
       version: 1,
       transactions: [{
           input: {
             address: this.selectedFactomAddress,
-            amount: inputAmount,
+            amount: this.txMetadata.inputAmount,
             type: this.txMetadata.inputAsset
           },
           transfers: [{
             address: this.txMetadata.outputAddress,    
-            amount: inputAmount
+            amount: this.txMetadata.inputAmount
           }],
           metadata: {
             wallet: "https://pegnet.exchange"

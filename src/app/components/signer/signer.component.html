@@ -20,7 +20,7 @@
                 <dt>FCT Address</dt>
                 <dd>{{minifyAddress(selectedFactomAddress)}}</dd>
                 <dt>Amount</dt>
-                <dd>{{txMetadata.amount ? txMetadata.amount : txMetadata.inputAmount}} FCT</dd>
+                <dd>{{txMetadata.amount ? txMetadata.amount : toHumanReadable(txMetadata.inputAmount)}} FCT</dd>
               </dl>
             </div>
             <div class="form-group" *ngIf="requestType == RequestType.PegnetTransaction || requestType == 'pegnet'">
@@ -32,7 +32,7 @@
                   <dt>Input Asset</dt>
                   <dd>{{txMetadata.inputAsset}}</dd>
                   <dt>Input Amount</dt>
-                  <dd>{{txMetadata.inputAmount}}</dd>
+                  <dd>{{toHumanReadable(txMetadata.inputAmount)}}</dd>
                   <dt>Output Asset</dt>
                   <dd>{{txMetadata.outputAsset}}</dd>
                 </dl>
@@ -47,7 +47,7 @@
                   <dt>Asset</dt>
                   <dd>{{txMetadata.inputAsset}}</dd>
                   <dt>Amount</dt>
-                  <dd>{{txMetadata.inputAmount}}</dd>
+                  <dd>{{toHumanReadable(txMetadata.inputAmount)}}</dd>
                 </dl>
               </div>
             </div>
