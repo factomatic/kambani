@@ -233,11 +233,10 @@ export class SignerComponent implements OnInit {
         .signPegNetTransaction(dataToSign, fctPublicAddress, vaultPassword)
         .subscribe((signatureData: SignatureDataModel) => {
           if (signatureData) {
-            console.log(signatureData);
             const rcd = Buffer.concat([Buffer.from([1]), signatureData.publicKey]).toString('hex');
             const signature = signatureData.signature.toString('hex');
             const extIds = [unixSeconds, rcd, signature];
-            console.log(extIds);
+
             chrome.runtime.sendMessage({type: ChromeMessageType.SendSigningRequestResponse, data: {
               requestId: this.request.requestId,
               entry: [extIds, entryContent]
