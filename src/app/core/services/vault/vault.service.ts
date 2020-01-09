@@ -214,7 +214,7 @@ export class VaultService {
 
           this.updateSignedRequestsData();
 
-          return new ResultModel(true, 'Successful restore');
+          return new ResultModel(true, 'Vault successfully restored');
         }
 
         return new ResultModel(false, 'Invalid vault backup');
