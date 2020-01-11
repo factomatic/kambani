@@ -1,6 +1,8 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
+import { Transaction } from 'factom';
+import {sha512} from 'factom/src/util.js'
 
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
@@ -11,6 +13,7 @@ import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
 import { RequestKeyType } from 'src/app/core/enums/request-key-type';
 import { RequestType } from 'src/app/core/enums/request-type';
+import { ResultModel } from 'src/app/core/models/result.model';
 import { SignatureDataModel } from 'src/app/core/models/signature-data.model';
 import { SigningService } from 'src/app/core/services/signing/signing.service';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
@@ -49,7 +52,6 @@ export class SignerComponent implements OnInit {
   public selectedFactomAddress: string;
   public factomAddressSpecified: boolean;
   public minifyAddress = minifyAddress;
-  private dialogMessage = 'Enter your vault password to sign the data';
 
   constructor(
     private dialogsService: DialogsService,
@@ -80,15 +82,27 @@ export class SignerComponent implements OnInit {
   }
 
   signData() {
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, this.dialogMessage)
+    let dialogMessage = 'Enter your vault password to sign the ';
+    dialogMessage += this.requestType == RequestType.Basic || this.requestType == 'data'
+      ? 'data'
+      : 'transaction';
+
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {
           this.spinner.show();
 
-          if (this.requestType == RequestType.Basic) {
-            const dataToSign = typeof this.request.data == "string"
-              ? this.request.data
-              : JSON.stringify(this.request.data);
+          if (this.requestType == RequestType.Basic || this.requestType == "data") {
+            let data;
+            if (this.requestType == "data") {
+              data = this.request.requestInfo.data;
+            } else {
+              data = this.request.data;
+            }
+
+            const dataToSign = typeof data == "string"
+              ? data
+              : JSON.stringify(data);
 
             const signingKeyOrAddress = this.selectedKeyId
               ? this.availableKeys.find(dk => dk.id == this.selectedKeyId)
@@ -96,8 +110,7 @@ export class SignerComponent implements OnInit {
 
             this.signBasicRequest(dataToSign, signingKeyOrAddress, vaultPassword);
           } else {
-            const dataToSign = Buffer.from(Object.values(this.request.data));
-            this.signPegnetWalletRequest(dataToSign, this.selectedFactomAddress, vaultPassword);
+            this.signPegNetRequest(this.selectedFactomAddress, vaultPassword);
           }    
         }
       });
@@ -119,6 +132,14 @@ export class SignerComponent implements OnInit {
     this.skipSigningRequest();
     this.getPendingRequestsCount();
     this.getSigningRequest();
+  }
+
+  toHumanReadable(amount: number) {
+    if (this.requestType == RequestType.PegnetTransaction || this.requestType == RequestType.FCTBurning) {
+      return amount;
+    }
+
+    return amount / Math.pow(10, 8);
   }
 
   private signBasicRequest(dataToSign: string, signingKeyOrAddress: any, vaultPassword: string) {
@@ -143,26 +164,135 @@ export class SignerComponent implements OnInit {
       });
   }
 
-  private signPegnetWalletRequest(dataToSign: Buffer, fctPublicAddress: string, vaultPassword: string) {
-    this.signingService
-      .signPegnetWalletTransaction(dataToSign, fctPublicAddress, vaultPassword)
-      .subscribe((signatureData: SignatureDataModel) => {
-        if (signatureData) {
-          chrome.runtime.sendMessage({type: ChromeMessageType.SendSigningRequestResponse, data: {
-            requestId: this.request.requestId,
-            ...signatureData
-          }});
+  private signPegNetRequest(fctPublicAddress: string, vaultPassword: string) {
+    if (this.requestType == RequestType.PegnetTransaction || this.requestType == RequestType.FCTBurning) {
+      const dataToSign = Buffer.from(Object.values(this.request.data));
 
-          this.spinner.hide();
-          this.toastr.success('Data successfully signed!', null, {timeOut: 1000});
-          this.clearRequestData();
-          this.getPendingRequestsCount();
-          this.getSigningRequest();
-        } else {
-          this.spinner.hide();
-          this.toastr.error('Incorrect vault password');
+      this.signingService
+        .signPegNetTransaction(dataToSign, fctPublicAddress, vaultPassword)
+        .subscribe((signatureData: SignatureDataModel) => {
+          if (signatureData) {
+            chrome.runtime.sendMessage({type: ChromeMessageType.SendSigningRequestResponse, data: {
+              requestId: this.request.requestId,
+              ...signatureData
+            }});
+
+            this.spinner.hide();
+            this.toastr.success('Transaction successfully signed!', null, {timeOut: 1000});
+            this.clearRequestData();
+            this.getPendingRequestsCount();
+            this.getSigningRequest();
+          } else {
+            this.spinner.hide();
+            this.toastr.error('Incorrect vault password');
+          }
+        });
+
+    } else {
+      if (this.txType == "burn") {
+        this.vaultService
+          .getPrivateAddress(this.selectedFactomAddress, vaultPassword)
+          .subscribe((result: ResultModel) => {
+            if (result.success) {
+              const tx = Transaction
+                .builder()
+                .input(result.message, this.txMetadata.inputAmount)
+                .output('EC2BURNFCT2PEGNETooo1oooo1oooo1oooo1oooo1oooo19wthin', 0)
+                .build();
+              
+              chrome.runtime.sendMessage({type: ChromeMessageType.SendSigningRequestResponse, data: {
+                requestId: this.request.requestId,
+                transaction: tx.marshalBinary().toString('hex')
+              }});
+    
+              this.spinner.hide();
+              this.toastr.success('Transaction successfully signed!', null, {timeOut: 1000});
+              this.clearRequestData();
+              this.getPendingRequestsCount();
+              this.getSigningRequest();
+            } else {
+              this.spinner.hide();
+              this.toastr.error(result.message);
+            }
+          });
+
+      } else {
+        const unixSeconds = Math.round(new Date().getTime() / 1000).toString();
+        const entryContent = this.txType == 'transfer'
+          ? this.buildTransferEntry()
+          : this.buildConversionEntry();
+
+        const dataToSign = sha512(Buffer.concat([
+          Buffer.from('0'),
+          Buffer.from(unixSeconds),
+          Buffer.from('cffce0f409ebba4ed236d49d89c70e4bd1f1367d86402a3363366683265a242d', 'hex'),
+          Buffer.from(entryContent)
+        ]));
+
+        this.signingService
+        .signPegNetTransaction(dataToSign, fctPublicAddress, vaultPassword)
+        .subscribe((signatureData: SignatureDataModel) => {
+          if (signatureData) {
+            const rcd = Buffer.concat([Buffer.from([1]), signatureData.publicKey]).toString('hex');
+            const signature = signatureData.signature.toString('hex');
+            const extIds = [unixSeconds, rcd, signature];
+
+            chrome.runtime.sendMessage({type: ChromeMessageType.SendSigningRequestResponse, data: {
+              requestId: this.request.requestId,
+              entry: [extIds, entryContent]
+            }});
+
+            this.spinner.hide();
+            this.toastr.success('Transaction successfully signed!', null, {timeOut: 1000});
+            this.clearRequestData();
+            this.getPendingRequestsCount();
+            this.getSigningRequest();
+          } else {
+            this.spinner.hide();
+            this.toastr.error('Incorrect vault password');
+          }
+        });
+      }
+    }
+  }
+
+  private buildConversionEntry() {
+    return JSON.stringify({
+      version: 1,
+      transactions: [{
+          input: {
+            address: this.selectedFactomAddress,
+            amount: this.txMetadata.inputAmount,
+            type: this.txMetadata.inputAsset
+          },
+          conversion: this.txMetadata.outputAsset,
+          metadata: {
+            wallet: 'https://pegnet.exchange'
+          }
         }
-      });
+      ],
+    });
+  }
+
+  private buildTransferEntry() {
+    return JSON.stringify({
+      version: 1,
+      transactions: [{
+          input: {
+            address: this.selectedFactomAddress,
+            amount: this.txMetadata.inputAmount,
+            type: this.txMetadata.inputAsset
+          },
+          transfers: [{
+            address: this.txMetadata.outputAddress,    
+            amount: this.txMetadata.inputAmount
+          }],
+          metadata: {
+            wallet: "https://pegnet.exchange"
+          }
+        }
+      ],
+    });
   }
 
   private getAllAvailableSigningKeys() {
@@ -200,10 +330,20 @@ export class SignerComponent implements OnInit {
           this.from = response.signingRequest.from;
           this.request = response.signingRequest.content;
           this.requestType = this.request.requestType;
-          this.requestKeyType = this.request.keyType;
 
-          if (this.request.txType) {
-            this.txType = this.request.txType;
+          if (this.request.requestInfo) {
+            if (this.requestType == "data") {
+              this.requestKeyType = this.request.requestInfo.keyType;
+            } else {
+              this.requestKeyType = RequestKeyType.FCT;
+              this.txType = this.request.requestInfo.txType;
+            }
+          } else {
+            this.requestKeyType = this.request.keyType;
+
+            if (this.request.txType) {
+              this.txType = this.request.txType;
+            }
           }
 
           if ((this.requestKeyType == RequestKeyType.DIDKey && this.didIdsWithDIDKeys.length > 0)
@@ -215,14 +355,24 @@ export class SignerComponent implements OnInit {
               this.availableKeys = this.getKeys(this.selectedDIDId);
               this.selectedKeyId = this.availableKeys[0].id;
 
-              if (this.request.did) {
-                if (this.availableDIDIds.includes(this.request.did)) {
-                  this.selectedDIDId = this.request.did;
+              if (this.request.did || (this.request.requestInfo && this.request.requestInfo.did)) {
+                const did = this.request.did !== undefined
+                  ? this.request.did
+                  : this.request.requestInfo.did;
+                
+                if (this.availableDIDIds.includes(did)) {
+                  this.selectedDIDId = did;
                   this.availableKeys = this.getKeys(this.selectedDIDId);
                   this.selectedKeyId = this.availableKeys[0].id;
                   this.didIdSpecified = true;
 
-                  const selectedKeyAlias = this.request.keyIdentifier;
+                  let selectedKeyAlias;
+                  if (this.request.requestInfo) {
+                    selectedKeyAlias = this.request.requestInfo.keyIdentifier;
+                  } else {
+                    selectedKeyAlias = this.request.keyIdentifier;
+                  }
+                  
                   if (selectedKeyAlias) {
                     const selectedKey = this.availableKeys.find(k => k.id.split('#')[1] == selectedKeyAlias);
                     if (selectedKey) {
@@ -230,7 +380,7 @@ export class SignerComponent implements OnInit {
                       this.keySpecified = true;
                     } else {
                       const keyType = this.requestKeyType == RequestKeyType.DIDKey
-                        ? 'DID Key'
+                        ? 'Signing Key'
                         : 'Management Key';
                       this.cancelSigning(`The ${keyType} requested for signing does not exist!`);
                       return;
@@ -238,7 +388,7 @@ export class SignerComponent implements OnInit {
                   }
                 } else {
                   if (this.requestKeyType == RequestKeyType.DIDKey
-                    && this.allDIDIds.includes(this.request.did)) {
+                    && this.allDIDIds.includes(did)) {
                     this.cancelSigning('The Identity requested for signing does not have any Signing keys!');
                   } else {
                     this.cancelSigning('The Identity requested for signing does not exist!');
@@ -259,7 +409,17 @@ export class SignerComponent implements OnInit {
 
             this.selectedFactomAddress = this.availableFactomAddresses[0];
 
-            const selectedAddress = this.request.keyIdentifier;
+            let selectedAddress;
+            if (this.request.requestInfo) {
+              if (this.requestType == "data") {
+                selectedAddress = this.request.requestInfo.keyIdentifier;
+              } else {
+                selectedAddress = this.request.requestInfo.inputAddress;
+              }
+            } else {
+              selectedAddress = this.request.keyIdentifier;
+            }
+
             if (selectedAddress) {
               if (this.availableFactomAddresses.includes(selectedAddress)) {
                 this.selectedFactomAddress = selectedAddress;
@@ -271,10 +431,23 @@ export class SignerComponent implements OnInit {
             }
           }
 
-          if (this.requestType == RequestType.Basic) {
-            this.dataToSign = JSON.stringify(this.request.data, null, 2);
+          if (this.requestType == RequestType.Basic || this.requestType == "data") {
+            if (this.request.data) {
+              this.dataToSign = JSON.stringify(this.request.data, null, 2);
+            } else {
+              this.dataToSign = JSON.stringify(this.request.requestInfo.data, null, 2);
+            }           
           } else {
-            this.txMetadata = this.request.txMetadata;
+            if (this.request.requestInfo) {
+              this.txMetadata = {
+                inputAmount: this.request.requestInfo.inputAmount,
+                inputAsset: this.request.requestInfo.inputAsset,
+                outputAsset: this.request.requestInfo.outputAsset,
+                outputAddress: this.request.requestInfo.outputAddress
+              };
+            } else {
+              this.txMetadata = this.request.txMetadata;
+            }
           }
         }
       });

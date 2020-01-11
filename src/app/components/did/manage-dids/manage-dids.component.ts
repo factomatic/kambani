@@ -193,7 +193,8 @@ export class ManageDidsComponent extends BaseComponent implements OnInit {
     }
   }
 
-  search(searchTerm: string) {
+  searchChange(event) {
+    const searchTerm = event.target.value;
     this.didIds = [];
     for (const didId in this.allDIDsPublicInfo) {
       if (this.allDIDsPublicInfo[didId].nickname.includes(searchTerm)) {

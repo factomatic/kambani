@@ -80,12 +80,6 @@ function calculateChainId(extIds) {
   return fullHash.hex();
 }
 
-function calculateSha512(content: string): string {
-  const hash = sha512.create();
-  hash.update(content);
-  return hash.hex();
-}
-
 function calculateDoubleSha256(content: string) {
   const hash = sha256.update(content);
   const hash2 = sha256.update(hash.digest());
@@ -148,7 +142,6 @@ export {
   convertPemToBinary,
   toHexString,
   calculateChainId,
-  calculateSha512,
   calculateDoubleSha256,
   capitalize,
   exportPemKeys,

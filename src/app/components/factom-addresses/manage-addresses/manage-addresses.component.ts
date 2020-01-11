@@ -1,10 +1,12 @@
 declare const Buffer;
+import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { generateRandomFctAddress, generateRandomEcAddress } from 'factom';
 
+import { BaseComponent } from '../../base.component';
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { FactomAddressType } from 'src/app/core/enums/factom-address-type';
@@ -18,7 +20,7 @@ import { PrivateAddressModalComponent } from '../../modals/private-address-modal
   templateUrl: './manage-addresses.component.html',
   styleUrls: ['./manage-addresses.component.scss']
 })
-export class ManageAddressesComponent implements OnInit {
+export class ManageAddressesComponent extends BaseComponent implements OnInit {
   public fctAddressesInfo = {};
   public ecAddressesInfo = {};
   public fctAddresses: string[] = [];
@@ -35,9 +37,12 @@ export class ManageAddressesComponent implements OnInit {
   constructor(
     private dialogsService: DialogsService,
     private modalService: NgbModal,
+    private route: ActivatedRoute,
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
-    private vaultService: VaultService ) { }
+    private vaultService: VaultService ) {
+      super();
+    }
 
   ngOnInit() {
     chrome.tabs && chrome.tabs.getCurrent(function(tab) {
@@ -58,6 +63,15 @@ export class ManageAddressesComponent implements OnInit {
     });
 
     this.getAddressesInfo();
+
+    const subscription = this.route.queryParams
+      .subscribe(params => {
+        if (Object.keys(params).length > 0) {
+          this.selectedAddressType = params['page'];
+        }
+      });
+
+    this.subscriptions.push(subscription);
   }
 
   changeSelectedAddressType(addressType: FactomAddressType) {
@@ -69,12 +83,14 @@ export class ManageAddressesComponent implements OnInit {
   }
 
   editNickname(publicAddress: string, type: FactomAddressType, nickname: string) {
-    this.vaultService.updateFactomAddressNickname(publicAddress, type, nickname);
+    if (nickname.length > 0) {
+      this.vaultService.updateFactomAddressNickname(publicAddress, type, nickname);
 
-    if (type == FactomAddressType.FCT) {
-      this.fctAddressesInfo[publicAddress] = nickname;
-    } else {
-      this.ecAddressesInfo[publicAddress] = nickname;
+      if (type == FactomAddressType.FCT) {
+        this.fctAddressesInfo[publicAddress] = nickname;
+      } else {
+        this.ecAddressesInfo[publicAddress] = nickname;
+      }
     }
 
     this.editAddressNickname[publicAddress] = false;
@@ -110,7 +126,7 @@ export class ManageAddressesComponent implements OnInit {
   }
 
   viewPrivateAddress(publicAddress: string) {
-    const dialogMessage = 'Enter your vault password to view the private address';
+    const dialogMessage = 'Enter your vault password to view the secret key';
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.Medium, dialogMessage)
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {
@@ -153,6 +169,23 @@ export class ManageAddressesComponent implements OnInit {
             });
         }
       });
+  }
+
+  copyAddress(address: string, element) {
+    const selBox = document.createElement('textarea');
+    selBox.style.position = 'fixed';
+    selBox.style.left = '0';
+    selBox.style.top = '0';
+    selBox.style.opacity = '0';
+    selBox.value = address;
+    document.body.appendChild(selBox);
+    selBox.focus();
+    selBox.select();
+    document.execCommand('copy');
+    document.body.removeChild(selBox);
+
+    element.classList.add('clicked');
+    setTimeout(() => {element.classList.remove('clicked')},2000);
   }
 
   changePage (page) {

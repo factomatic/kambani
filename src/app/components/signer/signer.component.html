@@ -10,20 +10,20 @@
           <div class="mt-3 col-xs-12 col-md-6 offset-md-3" *ngIf="request">
             <p class="mb-3 text-center">Received from:</p>
             <p class="mb-4 text-center">{{from}}</p>
-            <div class="form-group" *ngIf="requestType == RequestType.Basic">
+            <div class="form-group" *ngIf="requestType == RequestType.Basic || requestType == 'data'">
               <label for="exampleTextarea">Data to sign:</label>
               <pre><code mwlHighlightJs [source]='dataToSign' language="json"></code></pre>
             </div>
-            <div class="form-group" *ngIf="requestType == RequestType.FCTBurning">
+            <div class="form-group" *ngIf="requestType == RequestType.FCTBurning || txType == 'burn'">
               <label for="exampleTextarea">FCT Burning Transaction:</label>
               <dl>
                 <dt>FCT Address</dt>
                 <dd>{{minifyAddress(selectedFactomAddress)}}</dd>
                 <dt>Amount</dt>
-                <dd>{{txMetadata.amount}} FCT</dd>
+                <dd>{{txMetadata.amount ? txMetadata.amount : toHumanReadable(txMetadata.inputAmount)}} FCT</dd>
               </dl>
             </div>
-            <div class="form-group" *ngIf="requestType == RequestType.PegnetTransaction">
+            <div class="form-group" *ngIf="requestType == RequestType.PegnetTransaction || requestType == 'pegnet'">
               <div *ngIf="txType == 'conversion'">
                 <label for="exampleTextarea">PegNet Conversion Transaction:</label>
                 <dl>
@@ -32,7 +32,7 @@
                   <dt>Input Asset</dt>
                   <dd>{{txMetadata.inputAsset}}</dd>
                   <dt>Input Amount</dt>
-                  <dd>{{txMetadata.inputAmount}}</dd>
+                  <dd>{{toHumanReadable(txMetadata.inputAmount)}}</dd>
                   <dt>Output Asset</dt>
                   <dd>{{txMetadata.outputAsset}}</dd>
                 </dl>
@@ -47,7 +47,7 @@
                   <dt>Asset</dt>
                   <dd>{{txMetadata.inputAsset}}</dd>
                   <dt>Amount</dt>
-                  <dd>{{txMetadata.inputAmount}}</dd>
+                  <dd>{{toHumanReadable(txMetadata.inputAmount)}}</dd>
                 </dl>
               </div>
             </div>
@@ -83,7 +83,9 @@
               </div>
             </div>
             <div class="row justify-content-center mt-4">
-              <button class="btn btn-success mr-1" (click)="signData()" *ngIf="selectedKeyId || selectedFactomAddress">Sign Data</button>
+              <button class="btn btn-success mr-1" (click)="signData()" *ngIf="selectedKeyId || selectedFactomAddress">
+                Sign {{requestType == RequestType.Basic || requestType == 'data' ? 'Data' : 'Transaction'}}
+              </button>
               <button class="btn btn-info ml-1 mr-1" (click)="skipSigning()" *ngIf="pendingRequestsCount > 1">Skip</button>
               <button class="btn btn-danger ml-1" (click)="cancelSigning()">Cancel</button>
             </div>

@@ -14,11 +14,12 @@
               class="form-control"
               id="password"
               formControlName="password"
-              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$^+=!*()@%&]).{8,}$"
               [ngClass]="{ 'is-invalid': password.touched && password.errors }">
             <div *ngIf="password.errors" class="invalid-feedback">
               <div *ngIf="password.errors.required">Password is required!</div>
-              <div *ngIf="password.errors.pattern">Password must be at least 8 characters long and must include at least one lower-case letter, one upper-case letter, one digit and one special character!</div>
+              <div *ngIf="password.errors.minlength">
+                Your password must be at least 18 characters long. Hint: Use 4-5 easy to remember words in sequence (e.g. TorReallyLovesMeatballs)
+              </div>
             </div>
         </div>
         <div class="form-group">

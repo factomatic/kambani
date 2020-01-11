@@ -9,12 +9,12 @@
         </div>
         <nav class="info-tables">
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <a (click)="changeSelectedAddressType(FactomAddressType.FCT)" class="nav-item nav-link active" id="nav-fct-addresses-tab" data-toggle="tab" href="#nav-fct-addresses" role="tab" aria-controls="nav-fct-addresses" aria-selected="true">FCT Addresses</a>
-            <a (click)="changeSelectedAddressType(FactomAddressType.EC)" class="nav-item nav-link" id="nav-ec-addresses-tab" data-toggle="tab" href="#nav-ec-addresses" role="tab" aria-controls="nav-ec-addresses" aria-selected="false">EC Addresses</a>
+            <a (click)="changeSelectedAddressType(FactomAddressType.FCT)" class="nav-item nav-link" [ngClass]="{'active': selectedAddressType == FactomAddressType.FCT}" id="nav-fct-addresses-tab" data-toggle="tab" href="#nav-fct-addresses" role="tab" aria-controls="nav-fct-addresses" aria-selected="true">FCT Addresses</a>
+            <a (click)="changeSelectedAddressType(FactomAddressType.EC)" class="nav-item nav-link" [ngClass]="{'active': selectedAddressType == FactomAddressType.EC}" id="nav-ec-addresses-tab" data-toggle="tab" href="#nav-ec-addresses" role="tab" aria-controls="nav-ec-addresses" aria-selected="false">EC Addresses</a>
           </div>
         </nav>
         <div class="tab-content" id="nav-tabContent">
-          <div class="tab-pane fade show active" id="nav-fct-addresses" role="tabpanel" aria-labelledby="nav-fct-addresses-tab">
+          <div class="tab-pane fade show" [ngClass]="{'active': selectedAddressType == FactomAddressType.FCT}" id="nav-fct-addresses" role="tabpanel" aria-labelledby="nav-fct-addresses-tab">
             <div class="table-holder" *ngIf="fctAddresses.length > 0">
               <table class="table table-striped">
                 <thead>
@@ -26,7 +26,10 @@
                 </thead>
                 <tbody valign="center">
                   <tr *ngFor="let publicAddress of displayedFCTAddresses">
-                    <td><span class="public-address">{{publicAddress}}</span></td>
+                    <td>
+                      <span class="public-address">{{publicAddress}}</span>
+                      <a (click)="copyAddress(publicAddress, copyButtonRef)" class="copy-address" #copyButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy address"><i class="far fa-copy"></i></a>
+                    </td>
                     <td width="250" height="65">
                       <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true" data-toggle="tooltip" data-placement="top" title="Click to edit">{{fctAddressesInfo[publicAddress]}}</a>
                       <div class="nickname-editable" *ngIf="editAddressNickname[publicAddress]">
@@ -64,7 +67,7 @@
               </div>
             </div>
           </div>
-          <div class="tab-pane fade" id="nav-ec-addresses" role="tabpanel" aria-labelledby="nav-ec-addresses-tab">
+          <div class="tab-pane fade show" [ngClass]="{'active': selectedAddressType == FactomAddressType.EC}" id="nav-ec-addresses" role="tabpanel" aria-labelledby="nav-ec-addresses-tab">
             <div class="table-holder" *ngIf="ecAddresses.length > 0">
               <table class="table table-striped">
                 <thead>
@@ -76,7 +79,10 @@
                 </thead>
                 <tbody valign="center">
                   <tr *ngFor="let publicAddress of displayedECAddresses">
-                    <td><span class="public-address">{{publicAddress}}</span></td>
+                    <td>
+                      <span class="public-address">{{publicAddress}}</span>
+                      <a (click)="copyAddress(publicAddress, copyButtonRef)" class="copy-address" #copyButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy address"><i class="far fa-copy"></i></a>
+                    </td>
                     <td width="250" height="65">
                       <a *ngIf="!editAddressNickname[publicAddress]" (click)="editAddressNickname[publicAddress] = true" data-toggle="tooltip" data-placement="top" title="Click to edit">{{ecAddressesInfo[publicAddress]}}</a>
                       <div class="nickname-editable" *ngIf="editAddressNickname[publicAddress]">

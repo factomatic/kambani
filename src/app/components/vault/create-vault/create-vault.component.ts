@@ -22,7 +22,7 @@ export class CreateVaultComponent implements OnInit {
 
   ngOnInit() {
     this.createVaultForm = this.fb.group({
-      password: ['', [Validators.required]],
+      password: ['', [Validators.required, Validators.minLength(18)]],
       confirmPassword: ['', [Validators.required]]
     }, { validator: CustomValidators.passwordsDoMatch.bind(this)});
   }

@@ -79,7 +79,7 @@ export class ImportAddressComponent implements OnInit {
               this.spinner.hide();
               if (result.success) {
                 this.toastr.success(result.message);
-                this.router.navigate(['factom/addresses/manage']);
+                this.router.navigate(['factom/addresses/manage'], { queryParams: { page: this.type.value } });
               } else {
                 this.toastr.error(result.message);
               }

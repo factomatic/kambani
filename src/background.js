@@ -10,10 +10,15 @@ const SKIP_SIGNING_REQUEST = 'skipSigningRequest';
 const SEND_SIGNING_REQUEST_RESPONSE = 'sendSigningRequestResponse';
 const RECEIVE_SIGNING_REQUEST = 'receiveSigningRequest';
 const INVALID_REQUEST_RESPONSE = 'Invalid request!';
-const DID_KEY_REQUEST_TYPE = 'didKey';
-const MANAGEMENT_KEY_REQUEST_TYPE = 'managementKey';
-const FCT_REQUEST_TYPE = 'fct';
-const EC_REQUEST_TYPE = 'ec';
+const DATA_REQUEST = 'data';
+const PEGNET_REQUEST = 'pegnet';
+const DID_KEY_TYPE = 'didKey';
+const MANAGEMENT_KEY_TYPE = 'managementKey';
+const FCT_KEY_TYPE = 'fct';
+const EC_KEY_TYPE = 'ec';
+const BURN_TX_TYPE = 'burn';
+const CONVERSION_TX_TYPE = 'conversion';
+const TRANSFER_TX_TYPE = 'transfer';
 const BASIC_REQUEST = 'basic';
 const FCT_BURNING_REQUEST = 'fctBurning';
 const PEGNET_TRANSACTION_REQUEST = 'pegnetTransaction';
@@ -62,6 +67,7 @@ const PEGNET_TRANSACTION_REQUEST = 'pegnetTransaction';
           });
 
           responseCallbacks.push(response);
+          currentSigningRequestIndex = -1;
 
           chrome.browserAction.getBadgeText({}, function(result) {
             const number = parseInt(result) + 1;
@@ -156,6 +162,14 @@ const PEGNET_TRANSACTION_REQUEST = 'pegnetTransaction';
 }());
 
 function isValidRequest (requestContent) {
+  if (requestContent.requestInfo) {
+    return isValidNewRequestFormat(requestContent);
+  }
+  
+  return isValidOldRequestFormat(requestContent);
+}
+
+function isValidOldRequestFormat(requestContent) {
   if (requestContent.requestId == undefined || requestContent.requestType == undefined || requestContent.keyType == undefined || requestContent.data == undefined) {
     return false;
   }
@@ -165,20 +179,20 @@ function isValidRequest (requestContent) {
     return false;
   }
   
-  const requestKeyTypes = [DID_KEY_REQUEST_TYPE, MANAGEMENT_KEY_REQUEST_TYPE, FCT_REQUEST_TYPE, EC_REQUEST_TYPE];
+  const requestKeyTypes = [DID_KEY_TYPE, MANAGEMENT_KEY_TYPE, FCT_KEY_TYPE, EC_KEY_TYPE];
   if (!requestKeyTypes.includes(requestContent.keyType)) {
     return false;
   }
 
   if (requestContent.txType
-    && (requestContent.requestType !== PEGNET_TRANSACTION_REQUEST || !["conversion", "transfer"].includes(requestContent.txType))) {
+    && (requestContent.requestType !== PEGNET_TRANSACTION_REQUEST || ![CONVERSION_TX_TYPE, TRANSFER_TX_TYPE].includes(requestContent.txType))) {
     return false;
   }
 
   if (requestContent.did) {
     if (requestContent.requestType !== BASIC_REQUEST
-      || requestContent.keyType == FCT_REQUEST_TYPE
-      || requestContent.keyType == EC_REQUEST_TYPE) {
+      || requestContent.keyType == FCT_KEY_TYPE
+      || requestContent.keyType == EC_KEY_TYPE) {
       return false;
     }
 
@@ -188,11 +202,11 @@ function isValidRequest (requestContent) {
   }
 
   if (requestContent.keyIdentifier) {
-    if (requestContent.keyType == FCT_REQUEST_TYPE) {
+    if (requestContent.keyType == FCT_KEY_TYPE) {
       if (requestContent.keyIdentifier.substring(0, 2) !== 'FA') {
         return false;
       }
-    } else if (requestContent.keyType == EC_REQUEST_TYPE) {
+    } else if (requestContent.keyType == EC_KEY_TYPE) {
       if (requestContent.keyIdentifier.substring(0, 2) !== 'EC') {
         return false;
       }
@@ -204,11 +218,101 @@ function isValidRequest (requestContent) {
   }
 
   if ([FCT_BURNING_REQUEST, PEGNET_TRANSACTION_REQUEST].includes(requestContent.requestType)) {
-    if (requestContent.txMetadata == undefined || requestContent.keyType !== FCT_REQUEST_TYPE) {
+    if (requestContent.txMetadata == undefined || requestContent.keyType !== FCT_KEY_TYPE) {
       return false;
     }
   } else {
     if (requestContent.txMetadata !== undefined) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function isValidNewRequestFormat(requestContent) {
+  const requestType = requestContent.requestType;
+  const requestInfo = requestContent.requestInfo;
+
+  if (requestContent.requestId == undefined || requestType == undefined || requestInfo == undefined) {
+    return false;
+  }
+
+  const requestTypes = [DATA_REQUEST, PEGNET_REQUEST];
+  if (!requestTypes.includes(requestType)) {
+    return false;
+  }
+
+  if (requestType == DATA_REQUEST) {
+    const keyType = requestInfo.keyType;
+    const keyIdentifier = requestInfo.keyIdentifier;
+    const did = requestInfo.did;
+
+    if (requestInfo.data == undefined) {
+      return false;
+    }
+    
+    const keyTypes = [DID_KEY_TYPE, MANAGEMENT_KEY_TYPE, FCT_KEY_TYPE, EC_KEY_TYPE];
+    if (!keyTypes.includes(keyType)) {
+      return false;
+    }
+    
+    if (keyIdentifier !== undefined) {
+      if (keyType == FCT_KEY_TYPE) {
+        if (keyIdentifier.substring(0, 2) !== 'FA') {
+          return false;
+        }
+      } else if (keyType == EC_KEY_TYPE) {
+        if (keyIdentifier.substring(0, 2) !== 'EC') {
+          return false;
+        }
+      } else {
+        if (did == undefined) {
+          return false;
+        }
+      }
+    }
+
+    if (did !== undefined) {
+      if (keyType == FCT_KEY_TYPE || keyType == EC_KEY_TYPE) {
+        return false;
+      }
+  
+      if (!/did:factom:[a-f0-9]{64}/.test(did)) {
+        return false;
+      }
+    }
+  }
+
+  if (requestType == PEGNET_REQUEST) {
+    const txType = requestInfo.txType;
+    const inputAddress = requestInfo.inputAddress;
+    const inputAmount = requestInfo.inputAmount;
+    const inputAsset = requestInfo.inputAsset;
+    const outputAddress = requestInfo.outputAddress;
+    const outputAsset = requestInfo.outputAsset;
+
+    if (txType == undefined || ![BURN_TX_TYPE, CONVERSION_TX_TYPE, TRANSFER_TX_TYPE].includes(txType)) {
+      return false;
+    }
+
+    if (inputAddress == undefined || inputAddress.substring(0, 2) !== 'FA') {
+      return false;
+    }
+
+    if (inputAmount == undefined || typeof inputAmount !== "number" || inputAmount <= 0) {
+      return false;
+    }
+
+    if (txType !== BURN_TX_TYPE && inputAsset == undefined) {
+      return false;
+    }
+
+    if (txType == CONVERSION_TX_TYPE && outputAsset == undefined) {
+      return false;
+    }
+
+    if (txType == TRANSFER_TX_TYPE && (outputAddress == undefined || outputAddress.substring(0, 2) !== 'FA')) {
       return false;
     }
   }

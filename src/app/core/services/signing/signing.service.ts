@@ -87,7 +87,7 @@ export class SigningService {
     });
   }
 
-  signPegnetWalletTransaction(data: Buffer, fctPublicAddress: string, vaultPassword: string): Observable<SignatureDataModel> {
+  signPegNetTransaction(data: Buffer, fctPublicAddress: string, vaultPassword: string): Observable<SignatureDataModel> {
     return defer(async () => {
       try {
         const vault = this.vaultService.getVault();
