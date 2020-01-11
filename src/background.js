@@ -19,9 +19,6 @@ const EC_KEY_TYPE = 'ec';
 const BURN_TX_TYPE = 'burn';
 const CONVERSION_TX_TYPE = 'conversion';
 const TRANSFER_TX_TYPE = 'transfer';
-const BASIC_REQUEST = 'basic';
-const FCT_BURNING_REQUEST = 'fctBurning';
-const PEGNET_TRANSACTION_REQUEST = 'pegnetTransaction';
 
 (function() {
   let signingRequests = [];
@@ -162,75 +159,6 @@ const PEGNET_TRANSACTION_REQUEST = 'pegnetTransaction';
 }());
 
 function isValidRequest (requestContent) {
-  if (requestContent.requestInfo) {
-    return isValidNewRequestFormat(requestContent);
-  }
-  
-  return isValidOldRequestFormat(requestContent);
-}
-
-function isValidOldRequestFormat(requestContent) {
-  if (requestContent.requestId == undefined || requestContent.requestType == undefined || requestContent.keyType == undefined || requestContent.data == undefined) {
-    return false;
-  }
-
-  const requestTypes = [BASIC_REQUEST, FCT_BURNING_REQUEST, PEGNET_TRANSACTION_REQUEST];
-  if (!requestTypes.includes(requestContent.requestType)) {
-    return false;
-  }
-  
-  const requestKeyTypes = [DID_KEY_TYPE, MANAGEMENT_KEY_TYPE, FCT_KEY_TYPE, EC_KEY_TYPE];
-  if (!requestKeyTypes.includes(requestContent.keyType)) {
-    return false;
-  }
-
-  if (requestContent.txType
-    && (requestContent.requestType !== PEGNET_TRANSACTION_REQUEST || ![CONVERSION_TX_TYPE, TRANSFER_TX_TYPE].includes(requestContent.txType))) {
-    return false;
-  }
-
-  if (requestContent.did) {
-    if (requestContent.requestType !== BASIC_REQUEST
-      || requestContent.keyType == FCT_KEY_TYPE
-      || requestContent.keyType == EC_KEY_TYPE) {
-      return false;
-    }
-
-    if (!/did:factom:[a-f0-9]{64}/.test(requestContent.did)) {
-      return false;
-    }
-  }
-
-  if (requestContent.keyIdentifier) {
-    if (requestContent.keyType == FCT_KEY_TYPE) {
-      if (requestContent.keyIdentifier.substring(0, 2) !== 'FA') {
-        return false;
-      }
-    } else if (requestContent.keyType == EC_KEY_TYPE) {
-      if (requestContent.keyIdentifier.substring(0, 2) !== 'EC') {
-        return false;
-      }
-    } else {
-      if (!requestContent.did) {
-        return false;
-      }
-    }
-  }
-
-  if ([FCT_BURNING_REQUEST, PEGNET_TRANSACTION_REQUEST].includes(requestContent.requestType)) {
-    if (requestContent.txMetadata == undefined || requestContent.keyType !== FCT_KEY_TYPE) {
-      return false;
-    }
-  } else {
-    if (requestContent.txMetadata !== undefined) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function isValidNewRequestFormat(requestContent) {
   const requestType = requestContent.requestType;
   const requestInfo = requestContent.requestInfo;
 
