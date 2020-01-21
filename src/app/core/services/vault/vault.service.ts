@@ -18,6 +18,7 @@ import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
 @Injectable()
 export class VaultService {
   private localStorageStore: LocalStorageStore;
+  private lastStableLocalStorageVersion = '1.0';
 
   constructor() {
     this.localStorageStore = new LocalStorageStore({ storageKey: environment.storageKey });
@@ -36,6 +37,8 @@ export class VaultService {
           [FactomAddressType.FCT]: {},
           [FactomAddressType.EC]: {}
         }),
+        fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
+        ecAddressesRequestWhitelistedDomains: JSON.stringify([]),
         createdDIDsCount: 0,
         createdFCTAddressesCount: 0,
         createdECAddressesCount: 0,
@@ -46,9 +49,29 @@ export class VaultService {
 
       chrome.storage.sync.set({
         fctAddresses: [],
-        ecAddresses: []
+        ecAddresses: [],
+        fctAddressesRequestWhitelistedDomains: [],
+        ecAddressesRequestWhitelistedDomains: []
       })
     });
+  }
+
+  updateStorageState() {
+    const state = this.localStorageStore.getState();
+    if (state.version === this.lastStableLocalStorageVersion) {
+      const newState = Object.assign({}, state, {
+        version: environment.localStorageVersion,
+        fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
+        ecAddressesRequestWhitelistedDomains: JSON.stringify([])
+      });
+
+      this.localStorageStore.putState(newState);
+
+      chrome.storage.sync.set({
+        fctAddressesRequestWhitelistedDomains: [],
+        ecAddressesRequestWhitelistedDomains: []
+      });
+    }
   }
 
   saveDIDToVault(
@@ -189,27 +212,42 @@ export class VaultService {
       try {
         const decryptedState = await encryptor.decrypt(vaultPassword, encryptedState);
         if (this.isValidState(decryptedState)) {
-          this.localStorageStore.putState(decryptedState);
+          let newState = decryptedState;
+          let fctAddressesRequestWhitelistedDomains = [];
+          let ecAddressesRequestWhitelistedDomains = [];
+
+          if (decryptedState.version === environment.localStorageVersion) {
+            fctAddressesRequestWhitelistedDomains = JSON.parse(decryptedState.fctAddressesRequestWhitelistedDomains);
+            ecAddressesRequestWhitelistedDomains = JSON.parse(decryptedState.ecAddressesRequestWhitelistedDomains);
+          } else {
+            newState = Object.assign({}, decryptedState, {
+              version: environment.localStorageVersion,
+              fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
+              ecAddressesRequestWhitelistedDomains: JSON.stringify([])
+            });
+          }
+
+          this.localStorageStore.putState(newState);
 
           const fctAddressesPublicInfo = this.getFCTAddressesPublicInfo();
           const ecAddressesPublicInfo = this.getECAddressesPublicInfo();
 
-          chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
-            let fctAddresses = [];
-            let ecAddresses = [];
+          let fctAddresses = [];
+          let ecAddresses = [];
 
-            for (const fctPublicAddress of Object.keys(fctAddressesPublicInfo)) {
-              fctAddresses.push({[fctPublicAddress]: fctAddressesPublicInfo[fctPublicAddress]});
-            }
+          for (const fctPublicAddress of Object.keys(fctAddressesPublicInfo)) {
+            fctAddresses.push({[fctPublicAddress]: fctAddressesPublicInfo[fctPublicAddress]});
+          }
 
-            for (const ecPublicAddress of Object.keys(ecAddressesPublicInfo)) {
-              ecAddresses.push({[ecPublicAddress]: ecAddressesPublicInfo[ecPublicAddress]});
-            }
+          for (const ecPublicAddress of Object.keys(ecAddressesPublicInfo)) {
+            ecAddresses.push({[ecPublicAddress]: ecAddressesPublicInfo[ecPublicAddress]});
+          }
 
-            addressesState.fctAddresses = fctAddresses;
-            addressesState.ecAddresses = ecAddresses;
-
-            chrome.storage.sync.set(addressesState);       
+          chrome.storage.sync.set({
+            fctAddressesRequestWhitelistedDomains,
+            ecAddressesRequestWhitelistedDomains,
+            fctAddresses,
+            ecAddresses
           });
 
           this.updateSignedRequestsData();
@@ -435,6 +473,39 @@ export class VaultService {
     });
   }
 
+  addWhitelistedDomain(requestType: string, domain: string) {
+    const state = this.localStorageStore.getState();
+    let newState;
+
+    if (requestType === 'FCT') {
+      const fctAddressesRequestWhitelistedDomains = JSON.parse(state.fctAddressesRequestWhitelistedDomains);
+      fctAddressesRequestWhitelistedDomains.push(domain);
+
+      chrome.storage.sync.get(['fctAddressesRequestWhitelistedDomains'], function(state) {
+        state.fctAddressesRequestWhitelistedDomains.push(domain);
+        chrome.storage.sync.set(state);       
+      });
+
+      newState = Object.assign({}, state, {
+        fctAddressesRequestWhitelistedDomains: JSON.stringify(fctAddressesRequestWhitelistedDomains)
+      });
+    } else if (requestType === 'EC') {
+      const ecAddressesRequestWhitelistedDomains = JSON.parse(state.ecAddressesRequestWhitelistedDomains);
+      ecAddressesRequestWhitelistedDomains.push(domain);
+
+      chrome.storage.sync.get(['ecAddressesRequestWhitelistedDomains'], function(state) {
+        state.ecAddressesRequestWhitelistedDomains.push(domain);
+        chrome.storage.sync.set(state);       
+      });
+
+      newState = Object.assign({}, state, {
+        ecAddressesRequestWhitelistedDomains: JSON.stringify(ecAddressesRequestWhitelistedDomains)
+      });
+    }
+    
+    this.localStorageStore.putState(newState);
+  }
+
   getEncryptedState(vaultPassword: string): Observable<BackupResultModel> {
     return defer(async () => {
       const decryptResult = await this.canDecryptVault(vaultPassword).toPromise();
@@ -645,7 +716,7 @@ export class VaultService {
   }
 
   private isValidState(state: any): boolean {
-    if (state.version == environment.localStorageVersion
+    if ((state.version === environment.localStorageVersion || state.version === this.lastStableLocalStorageVersion)
       && state.vault
       && state.didsPublicInfo
       && state.factomAddressesPublicInfo
