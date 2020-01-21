@@ -9,6 +9,10 @@ const CANCEL_SIGNING_REQUEST = 'cancelSigningRequest';
 const SKIP_SIGNING_REQUEST = 'skipSigningRequest';
 const SEND_SIGNING_REQUEST_RESPONSE = 'sendSigningRequestResponse';
 const RECEIVE_SIGNING_REQUEST = 'receiveSigningRequest';
+const APPROVAL_REQUESTS_COUNT = 'approvalRequestsCount';
+const GET_APPROVAL_REQUEST = 'getApprovalRequest';
+const RECEIVE_APPROVAL_REQUEST = 'receiveApprovalRequest';
+const SEND_APPROVAL_REQUEST_RESPONSE = 'sendApprovalRequestResponse';
 const INVALID_REQUEST_RESPONSE = 'Invalid request!';
 const DATA_REQUEST = 'data';
 const PEGNET_REQUEST = 'pegnet';
@@ -22,7 +26,9 @@ const TRANSFER_TX_TYPE = 'transfer';
 
 (function() {
   let signingRequests = [];
-  let responseCallbacks = [];
+  let signingRequestsCallbacks = [];
+  let approvalRequests = [];
+  let approvalRequestsCallbacks = [];
   let currentSigningRequestIndex = -1;
   let restoreVaultRequested = false;
   let manageDidsRequested = false;
@@ -48,7 +54,8 @@ const TRANSFER_TX_TYPE = 'transfer';
         response({
           restoreVaultRequested: restoreVaultRequested,
           manageDidsRequested: manageDidsRequested,
-          manageFactomAddressesRequested: manageFactomAddressesRequested
+          manageFactomAddressesRequested: manageFactomAddressesRequested,
+          approvalRequests: approvalRequests.length > 0
         });
         break;
       case NEW_TAB_OPEN:
@@ -63,7 +70,7 @@ const TRANSFER_TX_TYPE = 'transfer';
             from: sender.url
           });
 
-          responseCallbacks.push(response);
+          signingRequestsCallbacks.push(response);
           currentSigningRequestIndex = -1;
 
           chrome.browserAction.getBadgeText({}, function(result) {
@@ -108,8 +115,8 @@ const TRANSFER_TX_TYPE = 'transfer';
         }
         break;
       case CANCEL_SIGNING_REQUEST:
-        if(responseCallbacks.length > 0) {
-          const responseCallback = responseCallbacks[currentSigningRequestIndex];
+        if(signingRequestsCallbacks.length > 0) {
+          const responseCallback = signingRequestsCallbacks[currentSigningRequestIndex];
           responseCallback({
             success: false,
             ...msg.data
@@ -122,7 +129,7 @@ const TRANSFER_TX_TYPE = 'transfer';
           });
 
           signingRequests.splice(currentSigningRequestIndex, 1);
-          responseCallbacks.splice(currentSigningRequestIndex, 1);
+          signingRequestsCallbacks.splice(currentSigningRequestIndex, 1);
           if (signingRequests.length === 0) {
             currentSigningRequestIndex = -1;
           }
@@ -132,8 +139,8 @@ const TRANSFER_TX_TYPE = 'transfer';
         currentSigningRequestIndex--;
         break;
       case SEND_SIGNING_REQUEST_RESPONSE:
-        if(responseCallbacks.length > 0) {
-          const responseCallback = responseCallbacks[currentSigningRequestIndex];
+        if(signingRequestsCallbacks.length > 0) {
+          const responseCallback = signingRequestsCallbacks[currentSigningRequestIndex];
           responseCallback({
             success: true,
             ...msg.data
@@ -145,10 +152,54 @@ const TRANSFER_TX_TYPE = 'transfer';
           });
 
           signingRequests.splice(currentSigningRequestIndex, 1);
-          responseCallbacks.splice(currentSigningRequestIndex, 1);
+          signingRequestsCallbacks.splice(currentSigningRequestIndex, 1);
           if (signingRequests.length === 0) {
             currentSigningRequestIndex = -1;
           }
+        }
+        break;
+      case APPROVAL_REQUESTS_COUNT:
+        response({
+          approvalRequestsCount: approvalRequests.length,
+        });
+        break;
+      case GET_APPROVAL_REQUEST:
+        if (approvalRequests.length > 0) {
+          response({
+            success: true,
+            approvalRequest: approvalRequests[approvalRequests.length - 1]
+          });
+        } else {
+          response({
+            success: false
+          });
+        }
+        break;
+      case RECEIVE_APPROVAL_REQUEST:
+        approvalRequestsCallbacks.push(response);
+        approvalRequests.push({
+          from: msg.from,
+          type: msg.requestType
+        });
+
+        chrome.notifications.create({
+          type: "basic",
+          title: "Notification message",
+          message: "New Approval Request Received",
+          iconUrl: "assets/kambani-logo.png"
+        });
+        return true;
+      case SEND_APPROVAL_REQUEST_RESPONSE:
+        if (approvalRequestsCallbacks.length > 0) {
+          approvalRequests.pop();
+          const responseCallback = approvalRequestsCallbacks.pop();
+          responseCallback({
+            success: msg.success
+          });
+
+          response({
+            approvalRequestsCount: approvalRequests.length
+          });
         }
         break;
       default:
