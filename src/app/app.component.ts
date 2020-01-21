@@ -23,6 +23,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     if (this.vaultService.vaultExists()) {
+      this.vaultService.updateStorageState();
       this.vaultService.updateSignedRequestsData();
     }
 
@@ -39,6 +40,10 @@ export class AppComponent implements OnInit {
         } else if (checkRequestsResponse.manageFactomAddressesRequested) {
           this.zone.run(() => {
             this.router.navigate(['/factom/addresses/manage']);
+          });
+        } else if (checkRequestsResponse.approvalRequests) {
+          this.zone.run(() => {
+            this.router.navigate(['approve']);
           });
         } else {
           chrome.runtime.sendMessage({type: ChromeMessageType.PendingSigningRequestsCount}, (pendingRequestsResponse) => {
