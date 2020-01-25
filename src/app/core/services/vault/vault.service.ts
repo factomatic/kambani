@@ -11,6 +11,7 @@ import { environment } from 'src/environments/environment';
 import { FactomAddressType } from '../../enums/factom-address-type';
 import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
 import { ManagementKeyModel } from '../../models/management-key.model';
+import { RestoreResultModel } from '../../models/restore-result.model';
 import { ResultModel } from '../../models/result.model';
 import { ServiceEntryModel } from '../../interfaces/service-entry';
 import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
@@ -57,11 +58,11 @@ export class VaultService {
     });
   }
 
-  updateStorageVersion(): boolean {
+  upgradeStorageVersion(): boolean {
     const state = this.localStorageStore.getState();
     if (state.version !== environment.localStorageVersion) {
       this.tempLocalStorageState = state;
-      this.updateLocalStorageWithPreviousVersion(state.version);
+      this.upgradeLocalStorageVersion(state.version);
       this.localStorageStore.putState(this.tempLocalStorageState);
       this.setChromeStorageState();
 
@@ -204,30 +205,32 @@ export class VaultService {
     });
   }
 
-  restoreVault(encryptedState: string, vaultPassword: string): Observable<ResultModel> {
+  restoreVault(encryptedState: string, vaultPassword: string): Observable<RestoreResultModel> {
     return defer(async () => {
       try {
         const decryptedState = await encryptor.decrypt(vaultPassword, encryptedState);
         if (this.isValidState(decryptedState)) {
+          let versionUpgraded = false;
           let restoreMessage = 'Vault successfully restored';
           this.tempLocalStorageState = decryptedState;
 
           const version = decryptedState.version;
           if (version !== environment.localStorageVersion) {
-            this.updateLocalStorageWithPreviousVersion(version);
-            restoreMessage = 'version_update';
+            this.upgradeLocalStorageVersion(version);
+            versionUpgraded = true;
+            restoreMessage = undefined;
           }
 
           this.localStorageStore.putState(this.tempLocalStorageState);
           this.setChromeStorageState();
           this.updateSignedRequestsData();
 
-          return new ResultModel(true, restoreMessage);
+          return new RestoreResultModel(true, versionUpgraded, restoreMessage);
         }
 
-        return new ResultModel(false, 'Invalid vault backup');
+        return new RestoreResultModel(false, false, 'Invalid vault backup');
       } catch {
-        return new ResultModel(false, 'Invalid vault password or type of vault backup');
+        return new RestoreResultModel(false, false, 'Invalid vault password or type of vault backup');
       }
     });
   }
@@ -709,17 +712,17 @@ export class VaultService {
     return false;
   }
 
-  private updateLocalStorageWithPreviousVersion(version: string) {
+  private upgradeLocalStorageVersion(version: string) {
     switch(version) {
       case '1.0':
-        this.updateStorageVersion_1_0();
+        this.upgradeStorageVersionTo_1_1();
         break;
       default:
         break;
     }
   }
 
-  private updateStorageVersion_1_0() {
+  private upgradeStorageVersionTo_1_1() {
     this.tempLocalStorageState = Object.assign({}, this.tempLocalStorageState, {
       version: environment.localStorageVersion,
       fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
