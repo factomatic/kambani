@@ -1,5 +1,4 @@
 import { sha256 } from 'js-sha256';
-import { sha512 } from 'js-sha512';
 
 function minifyPublicKey(publicKey: string) {
   if (publicKey.length > 40) {
@@ -135,6 +134,32 @@ function downloadFile(fileContent: string, fileName: string) {
   downloader.click();
 }
 
+function preProcessEncryptedBackupFile(encryptedFile: string) {
+  const parsedFile = JSON.parse(encryptedFile);
+  const newFile = {
+    data: parsedFile.data,
+    iv: parsedFile.encryptionAlgo.iv,
+    salt: parsedFile.encryptionAlgo.salt
+  };
+
+  return JSON.stringify(newFile);
+}
+
+function postProcessEncryptedBackupFile(encryptedFile: string) {
+  const parsedFile = JSON.parse(encryptedFile);
+  const newFile: any = { };
+
+  newFile.data = parsedFile.data;
+  newFile.encryptionAlgo = {
+    name: 'AES-GCM',
+    iv: parsedFile.iv,
+    salt: parsedFile.salt,
+    tagLength: 128
+  };
+
+  return JSON.stringify(newFile, null, 2);
+}
+
 export {
   minifyPublicKey,
   minifyDid,
@@ -145,5 +170,7 @@ export {
   calculateDoubleSha256,
   capitalize,
   exportPemKeys,
-  downloadFile
+  downloadFile,
+  preProcessEncryptedBackupFile,
+  postProcessEncryptedBackupFile
 };

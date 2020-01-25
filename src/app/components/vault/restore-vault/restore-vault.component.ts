@@ -4,8 +4,14 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
+import { BackupDialogComponent } from '../../dialogs/backup/backup.dialog.component';
+import { BackupResultModel } from 'src/app/core/models/backup-result.model';
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
-import { ResultModel } from 'src/app/core/models/result.model';
+import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
+import { downloadFile, preProcessEncryptedBackupFile, postProcessEncryptedBackupFile } from 'src/app/core/utils/helpers';
+import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
+import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
+import { RestoreResultModel } from 'src/app/core/models/restore-result.model';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
@@ -19,6 +25,7 @@ export class RestoreVaultComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
+    private dialogsService: DialogsService,
     private vaultService: VaultService,
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
@@ -57,13 +64,21 @@ export class RestoreVaultComponent implements OnInit {
     }
 
     this.spinner.show();
-    const backupFile = this.preProcessEncryptedBackupFile(this.file);
+    const backupFile = preProcessEncryptedBackupFile(this.file);
     this.vaultService
       .restoreVault(backupFile, this.password.value)
-      .subscribe((result: ResultModel) => {
+      .subscribe((result: RestoreResultModel) => {
         if (result.success) {
           this.spinner.hide();
-          this.toastr.success(result.message);
+          if (result.versionUpgraded) {
+            this.dialogsService.open(BackupDialogComponent, ModalSizeTypes.ExtraExtraLarge, undefined)
+              .subscribe(() => {
+                this.backupVault();
+              });
+          } else {
+            this.toastr.success(result.message);
+          }
+          
           this.router.navigate(['home']);
         } else {
           this.spinner.hide();
@@ -88,14 +103,24 @@ export class RestoreVaultComponent implements OnInit {
     }
   }
 
-  private preProcessEncryptedBackupFile(encryptedFile: string) {
-    const parsedFile = JSON.parse(encryptedFile);
-    const newFile = {
-      data: parsedFile.data,
-      iv: parsedFile.encryptionAlgo.iv,
-      salt: parsedFile.encryptionAlgo.salt
-    };
+  private backupVault() {
+    const dialogMessage = 'Enter your vault password to encrypt the backup file';
 
-    return JSON.stringify(newFile);
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
+      .subscribe((vaultPassword: string) => {
+        if (vaultPassword) {
+          this.vaultService.getEncryptedState(vaultPassword)
+            .subscribe((backupResult: BackupResultModel) =>{
+              if (backupResult.success) {
+                const backupFile = postProcessEncryptedBackupFile(backupResult.backup);
+                const date = new Date();
+                downloadFile(backupFile, `vault-backup-UTC--${date.toISOString()}.txt`);
+                this.toastr.success(backupResult.message);
+              } else {
+                this.toastr.error(backupResult.message);
+              }
+            });
+        }
+      });
   }
 }
