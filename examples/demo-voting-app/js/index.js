@@ -21,7 +21,7 @@ new Vue({
           this.fctAddressesStringified = JSON.stringify(this.fctAddresses, null, 2);
         }
       } else {
-        console.log('FCTAddresses request not approved');
+        console.log("FCTAddresses request not approved");
       }
     });
 
@@ -37,7 +37,7 @@ new Vue({
           this.ecAddressesStringified = JSON.stringify(this.ecAddresses, null, 2);
         }
       } else {
-        console.log('ECAddresses request not approved');
+        console.log("ECAddresses request not approved");
       }
     });
 
@@ -60,7 +60,7 @@ new Vue({
       if (this.fctAddresses.length > 0) {
         this.fctAddressesStringified = JSON.stringify(this.fctAddresses, null, 2);
       } else {
-        this.fctAddressesStringified = 'You currently have no FCT Addresses';
+        this.fctAddressesStringified = "You currently have no FCT Addresses";
       }
     });
 
@@ -83,7 +83,7 @@ new Vue({
       if (this.ecAddresses.length > 0) {
         this.ecAddressesStringified = JSON.stringify(this.ecAddresses, null, 2);
       } else {
-        this.ecAddressesStringified = 'You currently have no EC Addresses';
+        this.ecAddressesStringified = "You currently have no EC Addresses";
       }
     });
 
@@ -97,12 +97,12 @@ new Vue({
     window.dispatchEvent(ecAddressesEvent);
   },
   data: {
-    selected: 'Leo Messi',
+    selected: "Leo Messi",
     voteSignature: undefined,
     fctAddresses: [],
     ecAddresses: [],
-    fctAddressesStringified: 'You currently have no FCT Addresses',
-    ecAddressesStringified: 'You currently have no EC Addresses'
+    fctAddressesStringified: "You currently have no FCT Addresses",
+    ecAddressesStringified: "You currently have no EC Addresses"
   },
   methods: {
     signWithFCTAddress: function () {
@@ -110,9 +110,9 @@ new Vue({
 
       const fctRequestWithoutSpecifiedKey = {
         requestId: 18,
-        requestType: 'data',
+        requestType: "data",
         requestInfo: {
-          keyType: 'fct',
+          keyType: "fct",
           data: {
             purpose: "Ballon D'or Voting",
             winner: this.selected
@@ -126,14 +126,14 @@ new Vue({
       */
       const fctRequestWithSpecifiedKey = {
         requestId: 19,
-        requestType: 'data',
+        requestType: "data",
         requestInfo: {
-          keyType: 'fct',
+          keyType: "fct",
           data: {
             purpose: "Ballon D'or Voting",
             winner: this.selected
           },
-          keyIdentifier: 'FA3YYXQX68BF6jUMqp63gSu5j5AmDoztstXoR8jUNpMxBJmw2rz5'
+          keyIdentifier: "FA3YYXQX68BF6jUMqp63gSu5j5AmDoztstXoR8jUNpMxBJmw2rz5"
         }
       };
 
@@ -164,9 +164,9 @@ new Vue({
 
         ecRequest = {
           requestId: 21,
-          requestType: 'data',
+          requestType: "data",
           requestInfo: {
-            keyType: 'ec',
+            keyType: "ec",
             data: {
               purpose: "Ballon D'or Voting",
               winner: this.selected
@@ -177,9 +177,9 @@ new Vue({
       } else {
         ecRequest = {
           requestId: 20,
-          requestType: 'data',
+          requestType: "data",
           requestInfo: {
-            keyType: 'ec',
+            keyType: "ec",
             data: {
               purpose: "Ballon D'or Voting",
               winner: this.selected
@@ -207,9 +207,9 @@ new Vue({
       */
       const didRequestWithoutSpecifiedDID = {
         requestId: 22,
-        requestType: 'data',
+        requestType: "data",
         requestInfo: {
-          keyType: 'didKey',
+          keyType: "didKey",
           data: {
             purpose: "Ballon D'or Voting",
             winner: this.selected
@@ -229,15 +229,15 @@ new Vue({
       */
       const didRequestWithSpecifiedDIDAndKeyIdentifier = {
         requestId: 23,
-        requestType: 'data',
+        requestType: "data",
         requestInfo: {
-          keyType: 'didKey',
+          keyType: "didKey",
           data: {
             purpose: "Ballon D'or Voting",
             winner: this.selected
           },
-          did: 'did:factom:134709a8d2ab4ca0454a10f7d16007127b9359a849b762ed65855cc6286e2bac',
-          keyIdentifier: 'my-signing-key'
+          did: "did:factom:134709a8d2ab4ca0454a10f7d16007127b9359a849b762ed65855cc6286e2bac",
+          keyIdentifier: "my-signing-key"
         }
       };
 
