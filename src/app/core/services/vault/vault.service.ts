@@ -693,14 +693,14 @@ export class VaultService {
   private upgradeLocalStorageVersion(version: string) {
     switch(version) {
       case '1.0':
-        this.upgradeStorageVersionTo_1_1();
+        this.upgradeStorageToVersion_1_1();
         break;
       default:
         break;
     }
   }
 
-  private upgradeStorageVersionTo_1_1() {
+  private upgradeStorageToVersion_1_1() {
     this.tempLocalStorageState = Object.assign({}, this.tempLocalStorageState, {
       version: environment.localStorageVersion,
       fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
