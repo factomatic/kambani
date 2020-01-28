@@ -447,35 +447,13 @@ export class VaultService {
   }
 
   addWhitelistedDomain(requestType: string, domain: string) {
+    const whitelistedDomainsKey = requestType === 'FCT'
+      ? 'fctAddressesRequestWhitelistedDomains'
+      : 'ecAddressesRequestWhitelistedDomains';
+
     const state = this.localStorageStore.getState();
-    let newState;
+    const newState = this.syncWhitelistedDomainsAndReturnNewState(state, domain, whitelistedDomainsKey);
 
-    if (requestType === 'FCT') {
-      const fctAddressesRequestWhitelistedDomains = JSON.parse(state.fctAddressesRequestWhitelistedDomains);
-      fctAddressesRequestWhitelistedDomains.push(domain);
-
-      chrome.storage.sync.get(['fctAddressesRequestWhitelistedDomains'], function(state) {
-        state.fctAddressesRequestWhitelistedDomains.push(domain);
-        chrome.storage.sync.set(state);       
-      });
-
-      newState = Object.assign({}, state, {
-        fctAddressesRequestWhitelistedDomains: JSON.stringify(fctAddressesRequestWhitelistedDomains)
-      });
-    } else if (requestType === 'EC') {
-      const ecAddressesRequestWhitelistedDomains = JSON.parse(state.ecAddressesRequestWhitelistedDomains);
-      ecAddressesRequestWhitelistedDomains.push(domain);
-
-      chrome.storage.sync.get(['ecAddressesRequestWhitelistedDomains'], function(state) {
-        state.ecAddressesRequestWhitelistedDomains.push(domain);
-        chrome.storage.sync.set(state);       
-      });
-
-      newState = Object.assign({}, state, {
-        ecAddressesRequestWhitelistedDomains: JSON.stringify(ecAddressesRequestWhitelistedDomains)
-      });
-    }
-    
     this.localStorageStore.putState(newState);
   }
 
@@ -752,6 +730,20 @@ export class VaultService {
       ecAddressesRequestWhitelistedDomains,
       fctAddresses,
       ecAddresses
+    });
+  }
+
+  private syncWhitelistedDomainsAndReturnNewState(state, domain, whitelistedDomainsKey) {
+    let whitelistedDomains = JSON.parse(state[whitelistedDomainsKey]);
+    whitelistedDomains.push(domain);
+
+    chrome.storage.sync.get([whitelistedDomainsKey], function(state) {
+      state[whitelistedDomainsKey].push(domain);
+      chrome.storage.sync.set(state);      
+    });
+
+    return Object.assign({}, state, {
+      [whitelistedDomainsKey]: JSON.stringify(whitelistedDomains)
     });
   }
 }
