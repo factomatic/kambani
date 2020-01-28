@@ -38,7 +38,7 @@ export class NavbarComponent implements OnInit {
   }
 
   removeVault() {
-    this.dialogsService.open(RemoveVaultDialogComponent, ModalSizeTypes.ExtraExtraLarge, null)
+    this.dialogsService.open(RemoveVaultDialogComponent, ModalSizeTypes.ExtraExtraLarge, undefined)
       .subscribe((response: string) => {
         if (response === 'confirm') {
           this.vaultService.removeVault();

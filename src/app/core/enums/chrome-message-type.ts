@@ -8,5 +8,8 @@ export enum ChromeMessageType {
   ManageDidsRequest = 'manageDidsRequest',
   ManageFactomAddressesRequest = 'manageFactomAddressesRequest',
   CheckRequests = 'checkRequests',
-  NewTabOpen = 'newTabOpen'
+  NewTabOpen = 'newTabOpen',
+  ApprovalRequestsCount = 'approvalRequestsCount',
+  GetApprovalRequest = 'getApprovalRequest',
+  SendApprovalRequestResponse = 'sendApprovalRequestResponse'
 }

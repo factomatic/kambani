@@ -5,10 +5,9 @@
         <div class="page-header">
           <div class="form-group header-search pull-left">
             <form class="form-inline" (submit)="$event.preventDefault()">
-              <i class="fa fa-search" aria-hidden="true"></i>
               <input
                 class="form-control form-control-sm ml-2 w-75"
-                type="search"
+                type="text"
                 placeholder="Search by nickname..."
                 (keyup)="searchChange($event)" />
             </form>

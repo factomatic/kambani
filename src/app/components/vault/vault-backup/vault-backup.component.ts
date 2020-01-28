@@ -3,7 +3,7 @@ import { ToastrService } from 'ngx-toastr';
 
 import { BackupResultModel } from 'src/app/core/models/backup-result.model';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
-import { downloadFile } from 'src/app/core/utils/helpers';
+import { downloadFile, postProcessEncryptedBackupFile, generateBackupFileName } from 'src/app/core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
@@ -34,9 +34,9 @@ export class VaultBackupComponent implements OnInit {
           this.vaultService.getEncryptedState(vaultPassword)
             .subscribe((backupResult: BackupResultModel) =>{
               if (backupResult.success) {
-                const backupFile = this.postProcessEncryptedBackupFile(backupResult.backup);
-                const date = new Date();
-                downloadFile(backupFile, `vault-backup-UTC--${date.toISOString()}.txt`);
+                const backupFile = postProcessEncryptedBackupFile(backupResult.backup);
+                const backupFileName = generateBackupFileName();
+                downloadFile(backupFile, backupFileName);
                 this.toastr.success(backupResult.message);
               } else {
                 this.toastr.error(backupResult.message);
@@ -44,20 +44,5 @@ export class VaultBackupComponent implements OnInit {
             });
         }
       });
-  }
-
-  private postProcessEncryptedBackupFile(encryptedFile: string) {
-    const parsedFile = JSON.parse(encryptedFile);
-    const newFile: any = { };
-
-    newFile.data = parsedFile.data;
-    newFile.encryptionAlgo = {
-      name: 'AES-GCM',
-      iv: parsedFile.iv,
-      salt: parsedFile.salt,
-      tagLength: 128
-    };
-
-    return JSON.stringify(newFile, null, 2);
   }
 }

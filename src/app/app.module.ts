@@ -16,6 +16,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { AppComponent } from './app.component';
 import { appReducers } from './core/store/app.reducers';
 import { AppRoutingModule } from './app-routing.module';
+import { ApprovalRequestsComponent } from './components/approval-requests/approval-requests.component';
 import { AppState } from './core/store/app.state';
 import { DialogsModule } from './components/dialogs/dialogs.module';
 import { environment } from '../environments/environment';
@@ -43,6 +44,7 @@ export const metaReducers: MetaReducer<AppState>[] = environment.production || e
 @NgModule({
   declarations: [
     AppComponent,
+    ApprovalRequestsComponent,
     HomeComponent,
     NavbarComponent,
     SignerComponent

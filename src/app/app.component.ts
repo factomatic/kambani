@@ -1,11 +1,18 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import { HostListener } from "@angular/core";
 import { Router } from '@angular/router';
-
-import { ChromeMessageType } from './core/enums/chrome-message-type';
-import { VaultService } from './core/services/vault/vault.service';
-import { AppState } from './core/store/app.state';
 import { Store, select } from '@ngrx/store';
+import { ToastrService } from 'ngx-toastr';
+
+import { AppState } from './core/store/app.state';
+import { BackupDialogComponent } from './components/dialogs/backup/backup.dialog.component';
+import { BackupResultModel } from './core/models/backup-result.model';
+import { ChromeMessageType } from './core/enums/chrome-message-type';
+import { DialogsService } from './core/services/dialogs/dialogs.service';
+import { downloadFile, postProcessEncryptedBackupFile, generateBackupFileName } from './core/utils/helpers';
+import { ModalSizeTypes } from './core/enums/modal-size-types';
+import { PasswordDialogComponent } from './components/dialogs/password/password.dialog.component';
+import { VaultService } from './core/services/vault/vault.service';
 
 @Component({
   selector: 'app-root',
@@ -16,16 +23,14 @@ export class AppComponent implements OnInit {
   private pendingChanges: boolean;
 
   constructor(
+    private dialogsService: DialogsService,
     public vaultService: VaultService,
     public router: Router,
     private store: Store<AppState>,
+    private toastr: ToastrService,
     private zone: NgZone) { }
 
   ngOnInit() {
-    if (this.vaultService.vaultExists()) {
-      this.vaultService.updateSignedRequestsData();
-    }
-
     try {
       chrome.runtime.sendMessage({type: ChromeMessageType.CheckRequests}, (checkRequestsResponse) => {
         if (checkRequestsResponse.restoreVaultRequested) {
@@ -39,6 +44,10 @@ export class AppComponent implements OnInit {
         } else if (checkRequestsResponse.manageFactomAddressesRequested) {
           this.zone.run(() => {
             this.router.navigate(['/factom/addresses/manage']);
+          });
+        } else if (checkRequestsResponse.approvalRequests) {
+          this.zone.run(() => {
+            this.router.navigate(['approve']);
           });
         } else {
           chrome.runtime.sendMessage({type: ChromeMessageType.PendingSigningRequestsCount}, (pendingRequestsResponse) => {
@@ -63,6 +72,16 @@ export class AppComponent implements OnInit {
       throw(err);
     }
 
+    if (this.vaultService.vaultExists()) {
+      this.vaultService.updateSignedRequestsData();
+      if (this.vaultService.upgradeStorageVersion()) {
+        this.dialogsService.open(BackupDialogComponent, ModalSizeTypes.ExtraExtraLarge, undefined)
+          .subscribe(() => {
+            this.backupVault();
+          });
+      }
+    }
+
     this.store
       .pipe(select(state => state.updateDID))
       .subscribe(updateDIDState => {
@@ -79,5 +98,26 @@ export class AppComponent implements OnInit {
     if (this.pendingChanges) {
       $event.returnValue = true;
     }
+  }
+
+  private backupVault() {
+    const dialogMessage = 'Enter your vault password to encrypt the backup file';
+
+    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
+      .subscribe((vaultPassword: string) => {
+        if (vaultPassword) {
+          this.vaultService.getEncryptedState(vaultPassword)
+            .subscribe((backupResult: BackupResultModel) => {
+              if (backupResult.success) {
+                const backupFile = postProcessEncryptedBackupFile(backupResult.backup);
+                const backupFileName = generateBackupFileName();
+                downloadFile(backupFile, backupFileName);
+                this.toastr.success(backupResult.message);
+              } else {
+                this.toastr.error(backupResult.message);
+              }
+            });
+        }
+      });
   }
 }

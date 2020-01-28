@@ -11,6 +11,7 @@ import { environment } from 'src/environments/environment';
 import { FactomAddressType } from '../../enums/factom-address-type';
 import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
 import { ManagementKeyModel } from '../../models/management-key.model';
+import { RestoreResultModel } from '../../models/restore-result.model';
 import { ResultModel } from '../../models/result.model';
 import { ServiceEntryModel } from '../../interfaces/service-entry';
 import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
@@ -18,6 +19,8 @@ import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
 @Injectable()
 export class VaultService {
   private localStorageStore: LocalStorageStore;
+  private tempLocalStorageState;
+  private supportedLocalStorageVersions = ['1.0', '1.1'];
 
   constructor() {
     this.localStorageStore = new LocalStorageStore({ storageKey: environment.storageKey });
@@ -36,6 +39,8 @@ export class VaultService {
           [FactomAddressType.FCT]: {},
           [FactomAddressType.EC]: {}
         }),
+        fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
+        ecAddressesRequestWhitelistedDomains: JSON.stringify([]),
         createdDIDsCount: 0,
         createdFCTAddressesCount: 0,
         createdECAddressesCount: 0,
@@ -46,9 +51,25 @@ export class VaultService {
 
       chrome.storage.sync.set({
         fctAddresses: [],
-        ecAddresses: []
+        ecAddresses: [],
+        fctAddressesRequestWhitelistedDomains: [],
+        ecAddressesRequestWhitelistedDomains: []
       })
     });
+  }
+
+  upgradeStorageVersion(): boolean {
+    const state = this.localStorageStore.getState();
+    if (state.version !== environment.localStorageVersion) {
+      this.tempLocalStorageState = state;
+      this.upgradeLocalStorageVersion(state.version);
+      this.localStorageStore.putState(this.tempLocalStorageState);
+      this.setChromeStorageState();
+
+      return true;
+    }
+
+    return false;
   }
 
   saveDIDToVault(
@@ -184,42 +205,32 @@ export class VaultService {
     });
   }
 
-  restoreVault(encryptedState: string, vaultPassword: string): Observable<ResultModel> {
+  restoreVault(encryptedState: string, vaultPassword: string): Observable<RestoreResultModel> {
     return defer(async () => {
       try {
         const decryptedState = await encryptor.decrypt(vaultPassword, encryptedState);
         if (this.isValidState(decryptedState)) {
-          this.localStorageStore.putState(decryptedState);
+          let versionUpgraded = false;
+          let restoreMessage = 'Vault successfully restored';
+          this.tempLocalStorageState = decryptedState;
 
-          const fctAddressesPublicInfo = this.getFCTAddressesPublicInfo();
-          const ecAddressesPublicInfo = this.getECAddressesPublicInfo();
+          const version = decryptedState.version;
+          if (version !== environment.localStorageVersion) {
+            this.upgradeLocalStorageVersion(version);
+            versionUpgraded = true;
+            restoreMessage = undefined;
+          }
 
-          chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
-            let fctAddresses = [];
-            let ecAddresses = [];
-
-            for (const fctPublicAddress of Object.keys(fctAddressesPublicInfo)) {
-              fctAddresses.push({[fctPublicAddress]: fctAddressesPublicInfo[fctPublicAddress]});
-            }
-
-            for (const ecPublicAddress of Object.keys(ecAddressesPublicInfo)) {
-              ecAddresses.push({[ecPublicAddress]: ecAddressesPublicInfo[ecPublicAddress]});
-            }
-
-            addressesState.fctAddresses = fctAddresses;
-            addressesState.ecAddresses = ecAddresses;
-
-            chrome.storage.sync.set(addressesState);       
-          });
-
+          this.localStorageStore.putState(this.tempLocalStorageState);
+          this.setChromeStorageState();
           this.updateSignedRequestsData();
 
-          return new ResultModel(true, 'Vault successfully restored');
+          return new RestoreResultModel(true, versionUpgraded, restoreMessage);
         }
 
-        return new ResultModel(false, 'Invalid vault backup');
+        return new RestoreResultModel(false, false, 'Invalid vault backup');
       } catch {
-        return new ResultModel(false, 'Invalid vault password or type of vault backup');
+        return new RestoreResultModel(false, false, 'Invalid vault password or type of vault backup');
       }
     });
   }
@@ -435,6 +446,17 @@ export class VaultService {
     });
   }
 
+  addWhitelistedDomain(requestType: string, domain: string) {
+    const whitelistedDomainsKey = requestType === 'FCT'
+      ? 'fctAddressesRequestWhitelistedDomains'
+      : 'ecAddressesRequestWhitelistedDomains';
+
+    const state = this.localStorageStore.getState();
+    const newState = this.syncWhitelistedDomainsAndReturnNewState(state, domain, whitelistedDomainsKey);
+
+    this.localStorageStore.putState(newState);
+  }
+
   getEncryptedState(vaultPassword: string): Observable<BackupResultModel> {
     return defer(async () => {
       const decryptResult = await this.canDecryptVault(vaultPassword).toPromise();
@@ -493,6 +515,14 @@ export class VaultService {
 
   getECAddressesPublicInfo() {
     return JSON.parse(this.localStorageStore.getState().factomAddressesPublicInfo)[FactomAddressType.EC];
+  }
+
+  getFCTAddressesRequestWhitelistedDomains() {
+    return JSON.parse(this.localStorageStore.getState().fctAddressesRequestWhitelistedDomains);
+  }
+
+  getECAddressesRequestWhitelistedDomains() {
+    return JSON.parse(this.localStorageStore.getState().ecAddressesRequestWhitelistedDomains);
   }
 
   anyDIDsOrAddresses(): boolean {
@@ -645,7 +675,7 @@ export class VaultService {
   }
 
   private isValidState(state: any): boolean {
-    if (state.version == environment.localStorageVersion
+    if ((this.supportedLocalStorageVersions.includes(state.version))
       && state.vault
       && state.didsPublicInfo
       && state.factomAddressesPublicInfo
@@ -658,5 +688,62 @@ export class VaultService {
       }
 
     return false;
+  }
+
+  private upgradeLocalStorageVersion(version: string) {
+    switch(version) {
+      case '1.0':
+        this.upgradeStorageToVersion_1_1();
+        break;
+      default:
+        break;
+    }
+  }
+
+  private upgradeStorageToVersion_1_1() {
+    this.tempLocalStorageState = Object.assign({}, this.tempLocalStorageState, {
+      version: environment.localStorageVersion,
+      fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
+      ecAddressesRequestWhitelistedDomains: JSON.stringify([])
+    });
+  }
+
+  private setChromeStorageState() {
+    const fctAddressesRequestWhitelistedDomains = this.getFCTAddressesRequestWhitelistedDomains();
+    const ecAddressesRequestWhitelistedDomains = this.getECAddressesRequestWhitelistedDomains();
+    const fctAddressesPublicInfo = this.getFCTAddressesPublicInfo();
+    const ecAddressesPublicInfo = this.getECAddressesPublicInfo();
+
+    let fctAddresses = [];
+    let ecAddresses = [];
+
+    for (const fctPublicAddress of Object.keys(fctAddressesPublicInfo)) {
+      fctAddresses.push({[fctPublicAddress]: fctAddressesPublicInfo[fctPublicAddress]});
+    }
+
+    for (const ecPublicAddress of Object.keys(ecAddressesPublicInfo)) {
+      ecAddresses.push({[ecPublicAddress]: ecAddressesPublicInfo[ecPublicAddress]});
+    }
+
+    chrome.storage.sync.set({
+      fctAddressesRequestWhitelistedDomains,
+      ecAddressesRequestWhitelistedDomains,
+      fctAddresses,
+      ecAddresses
+    });
+  }
+
+  private syncWhitelistedDomainsAndReturnNewState(state, domain, whitelistedDomainsKey) {
+    let whitelistedDomains = JSON.parse(state[whitelistedDomainsKey]);
+    whitelistedDomains.push(domain);
+
+    chrome.storage.sync.get([whitelistedDomainsKey], function(state) {
+      state[whitelistedDomainsKey].push(domain);
+      chrome.storage.sync.set(state);      
+    });
+
+    return Object.assign({}, state, {
+      [whitelistedDomainsKey]: JSON.stringify(whitelistedDomains)
+    });
   }
 }

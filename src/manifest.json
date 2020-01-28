@@ -23,15 +23,7 @@
       "matches": [
         "<all_urls>"
       ],
-      "js": ["signerContentScript.js"],
-      "run_at": "document_start"
-    },
-    {
-      "matches": [
-        "http://localhost/*",
-        "https://factomatic.io/*"
-      ],
-      "js": ["factomAddressesContentScript.js"],
+      "js": ["contentScript.js"],
       "run_at": "document_start"
     }
   ],
