@@ -2,7 +2,7 @@ new Vue({
   el: "#app",
   mounted: function () {
     /*
-      Listens for a signing response after dispatching SigningRequest event
+      Listens for a SigningResponse after dispatching a SigningRequest event
     */
     window.addEventListener("SigningResponse", event => {
       console.log(event.detail);
@@ -10,7 +10,7 @@ new Vue({
     });
 
     /*
-      Listens for a response after dispatching GetFCTAddresses event
+      Listens for a response after dispatching a GetFCTAddresses event
     */
     window.addEventListener("FCTAddresses", event => {
       console.log(event.detail);
@@ -26,7 +26,7 @@ new Vue({
     });
 
     /*
-      Listens for a response after dispatching GetECAddresses event
+      Listens for a response after dispatching a GetECAddresses event
     */
     window.addEventListener("ECAddresses", event => {
       console.log(event.detail);
@@ -42,7 +42,7 @@ new Vue({
     });
 
     /*
-      Listens for changes in the FCT addresses and updates them
+      Listens for changes to the FCT addresses and updates them
     */
     window.addEventListener("FCTAddressesChanged", event => {
       console.log(event.detail);
@@ -65,7 +65,7 @@ new Vue({
     });
 
     /*
-      Listens for changes in the EC addresses and updates them
+      Listens for changes to the EC addresses and updates them
     */
     window.addEventListener("ECAddressesChanged", event => {
       console.log(event.detail);
@@ -145,8 +145,13 @@ new Vue({
     },
     signWithECAddress: function () {
       /*
-        If there are no EC addresses in the extension, EC request without specified key will be dispatched.
-        Otherwise, the firts EC address will be used for keyIdentifier.
+        If there are no EC addresses in Kambani, an EC request without a
+        specified key will be dispatched. Kambani will display the signing
+        request to the user and will notify them of the lack of EC addresses,
+        suggesting to create a new or import an existing EC address.
+
+        Otherwise, the first (oldest by creation time)  EC address will be used
+        as keyIdentifier.
       */
 
       let ecRequest;
@@ -192,6 +197,14 @@ new Vue({
     signWithDID: function () {
       this.voteSignature = undefined;
 
+      /*
+        If there are no DIDs in Kambani, Kambani will display the signing
+        request to the user and will notify them of the lack of DIDs,
+        suggesting to create a new DID.
+
+        Otherwise, the user will be able to choose the DID and DIDKey with
+        which to sign the request.
+      */
       const didRequestWithoutSpecifiedDID = {
         requestId: 22,
         requestType: 'data',
@@ -205,8 +218,14 @@ new Vue({
       };
 
       /*
-        Before dispatching this request please put a valid did and keyIdentifier
-        which you have created in the Kambani extension
+        Before dispatching this request, please put a valid DID and keyIdentifier
+        which you have created inside Kambani. If this is not done, Kambani
+        will automatically return an unsuccessful SigningResponse.
+
+        Since the DID and DIDKey are explicitly specified in the request, the
+        user will not be able to choose a different DID or DIDKey with which to
+        sign the request. They would either have to sign it with the given
+        DID/key combination or cancel the request.
       */
       const didRequestWithSpecifiedDIDAndKeyIdentifier = {
         requestId: 23,
