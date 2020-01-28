@@ -3,7 +3,7 @@ import { ToastrService } from 'ngx-toastr';
 
 import { BackupResultModel } from 'src/app/core/models/backup-result.model';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
-import { downloadFile, postProcessEncryptedBackupFile } from 'src/app/core/utils/helpers';
+import { downloadFile, postProcessEncryptedBackupFile, generateBackupFileName } from 'src/app/core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
@@ -35,8 +35,8 @@ export class VaultBackupComponent implements OnInit {
             .subscribe((backupResult: BackupResultModel) =>{
               if (backupResult.success) {
                 const backupFile = postProcessEncryptedBackupFile(backupResult.backup);
-                const date = new Date();
-                downloadFile(backupFile, `vault-backup-UTC--${date.toISOString()}.txt`);
+                const backupFileName = generateBackupFileName();
+                downloadFile(backupFile, backupFileName);
                 this.toastr.success(backupResult.message);
               } else {
                 this.toastr.error(backupResult.message);

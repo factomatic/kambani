@@ -8,7 +8,7 @@ import { BackupDialogComponent } from '../../dialogs/backup/backup.dialog.compon
 import { BackupResultModel } from 'src/app/core/models/backup-result.model';
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
-import { downloadFile, preProcessEncryptedBackupFile, postProcessEncryptedBackupFile } from 'src/app/core/utils/helpers';
+import { downloadFile, preProcessEncryptedBackupFile, postProcessEncryptedBackupFile, generateBackupFileName } from 'src/app/core/utils/helpers';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
 import { RestoreResultModel } from 'src/app/core/models/restore-result.model';
@@ -113,8 +113,8 @@ export class RestoreVaultComponent implements OnInit {
             .subscribe((backupResult: BackupResultModel) =>{
               if (backupResult.success) {
                 const backupFile = postProcessEncryptedBackupFile(backupResult.backup);
-                const date = new Date();
-                downloadFile(backupFile, `vault-backup-UTC--${date.toISOString()}.txt`);
+                const backupFileName = generateBackupFileName();
+                downloadFile(backupFile, backupFileName);
                 this.toastr.success(backupResult.message);
               } else {
                 this.toastr.error(backupResult.message);

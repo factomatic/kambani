@@ -9,7 +9,7 @@ import { BackupDialogComponent } from './components/dialogs/backup/backup.dialog
 import { BackupResultModel } from './core/models/backup-result.model';
 import { ChromeMessageType } from './core/enums/chrome-message-type';
 import { DialogsService } from './core/services/dialogs/dialogs.service';
-import { downloadFile, postProcessEncryptedBackupFile } from './core/utils/helpers';
+import { downloadFile, postProcessEncryptedBackupFile, generateBackupFileName } from './core/utils/helpers';
 import { ModalSizeTypes } from './core/enums/modal-size-types';
 import { PasswordDialogComponent } from './components/dialogs/password/password.dialog.component';
 import { VaultService } from './core/services/vault/vault.service';
@@ -107,11 +107,11 @@ export class AppComponent implements OnInit {
       .subscribe((vaultPassword: string) => {
         if (vaultPassword) {
           this.vaultService.getEncryptedState(vaultPassword)
-            .subscribe((backupResult: BackupResultModel) =>{
+            .subscribe((backupResult: BackupResultModel) => {
               if (backupResult.success) {
                 const backupFile = postProcessEncryptedBackupFile(backupResult.backup);
-                const date = new Date();
-                downloadFile(backupFile, `vault-backup-UTC--${date.toISOString()}.txt`);
+                const backupFileName = generateBackupFileName();
+                downloadFile(backupFile, backupFileName);
                 this.toastr.success(backupResult.message);
               } else {
                 this.toastr.error(backupResult.message);

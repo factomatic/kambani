@@ -160,6 +160,11 @@ function postProcessEncryptedBackupFile(encryptedFile: string) {
   return JSON.stringify(newFile, null, 2);
 }
 
+function generateBackupFileName() {
+  const date = new Date();
+  return `kambani-vault-backup-UTC--${date.toISOString()}.txt`;
+}
+
 export {
   minifyPublicKey,
   minifyDid,
@@ -172,5 +177,6 @@ export {
   exportPemKeys,
   downloadFile,
   preProcessEncryptedBackupFile,
-  postProcessEncryptedBackupFile
+  postProcessEncryptedBackupFile,
+  generateBackupFileName
 };
