@@ -60,7 +60,7 @@ new Vue({
       if (this.fctAddresses.length > 0) {
         this.fctAddressesStringified = JSON.stringify(this.fctAddresses, null, 2);
       } else {
-        this.fctAddressesStringified = "You currently have no FCT Addresses";
+        this.fctAddressesStringified = "You currently have no FCT addresses or you haven't granted Kambani access to them";
       }
     });
 
@@ -83,7 +83,7 @@ new Vue({
       if (this.ecAddresses.length > 0) {
         this.ecAddressesStringified = JSON.stringify(this.ecAddresses, null, 2);
       } else {
-        this.ecAddressesStringified = "You currently have no EC Addresses";
+        this.ecAddressesStringified = "You currently have no EC addresses or you haven't granted Kambani access to them"
       }
     });
 
@@ -101,8 +101,8 @@ new Vue({
     voteSignature: undefined,
     fctAddresses: [],
     ecAddresses: [],
-    fctAddressesStringified: "You currently have no FCT Addresses",
-    ecAddressesStringified: "You currently have no EC Addresses"
+    fctAddressesStringified: "You currently have no FCT addresses or you haven't granted Kambani access to them",
+    ecAddressesStringified: "You currently have no EC addresses or you haven't granted Kambani access to them"
   },
   methods: {
     signWithFCTAddress: function () {
