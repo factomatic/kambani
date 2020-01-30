@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Voting App</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+  <main>
+    <div class="text-center" id="app">
+      <div class="jumbotron mt-3">
+        <h1>Demo Voting DApp</h1>
+      </div>
+      <fieldset>
+        <h3>Who is the best football player at the moment ?</h3>
+        <div class="form-group mt-4">
+          <div class="custom-control custom-radio mt-3">
+            <input type="radio" id="customRadio1" class="custom-control-input" value="Leo Messi" v-model="selected" />
+            <label class="custom-control-label" for="customRadio1">Leo Messi</label>
+          </div>
+          <div class="custom-control custom-radio mt-3">
+            <input type="radio" id="customRadio2" class="custom-control-input" value="Cristiano Ronaldo"
+              v-model="selected" />
+            <label class="custom-control-label" for="customRadio2">Cristiano Ronaldo</label>
+          </div>
+          <div class="custom-control custom-radio mt-3">
+            <input type="radio" id="customRadio3" class="custom-control-input" value="Eden Hazard" v-model="selected" />
+            <label class="custom-control-label" for="customRadio3">Eden Hazard</label>
+          </div>
+          <button type="submit" class="btn btn-primary mt-5 shadow-none" v-on:click="signWithFCTAddress">
+            Submit FCT Signed Vote
+          </button>
+          <button type="submit" class="btn btn-primary mt-5 shadow-none" v-on:click="signWithECAddress">
+            Submit EC Signed Vote
+          </button>
+          <button type="submit" class="btn btn-primary mt-5 shadow-none" v-on:click="signWithDID">
+            Submit DID Signed Vote
+          </button>
+        </div>
+      </fieldset>
+      <div class="mt-4 d-flex justify-content-center" v-if="voteSignature">
+        <div class="form-group col-md-6">
+          <label for="voteSignature">Vote Signature</label>
+          <textarea class="form-control" id="voteSignature" v-model="voteSignature" rows="7" disabled></textarea>
+        </div>
+      </div>
+      <div class="mt-4 d-flex justify-content-center">
+        <div class="form-group col-md-6" v-if="fctAddresses">
+          <label for="fctAddresses">FCT Addresses</label>
+          <textarea class="form-control" id="fctAddresses" v-model="fctAddressesStringified" rows="7" disabled></textarea>
+        </div>
+
+        <div class="form-group col-md-6" v-if="ecAddresses">
+          <label for="ecAddresses">EC Addresses</label>
+          <textarea class="form-control" id="ecAddresses" v-model="ecAddressesStringified" rows="7" disabled></textarea>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="js/index.js"></script>
+</body>
+
+</html>
