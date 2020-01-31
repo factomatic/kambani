@@ -26,6 +26,7 @@ import { HomeComponent } from './components/home/home.component';
 import { ModalsModule } from './components/modals/modals.module';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ServicesModule } from './core/services/services.module';
+import { SettingsComponent } from './components/settings/settings.component';
 import { SignerComponent } from './components/signer/signer.component';
 import { VaultModule } from './components/vault/vault.module';
 
@@ -47,6 +48,7 @@ export const metaReducers: MetaReducer<AppState>[] = environment.production || e
     ApprovalRequestsComponent,
     HomeComponent,
     NavbarComponent,
+    SettingsComponent,
     SignerComponent
   ],
   imports: [

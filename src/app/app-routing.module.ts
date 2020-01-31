@@ -10,6 +10,7 @@ import { ManageDidsComponent } from './components/did/manage-dids/manage-dids.co
 import { ManagementKeyFormComponent } from './components/did/update-did/management-key-form/management-key-form.component';
 import { PreviewDidComponent } from './components/did/preview-did/preview-did.component';
 import { ServiceFormComponent } from './components/did/update-did/service-form/service-form.component';
+import { SettingsComponent } from './components/settings/settings.component';
 import { SignerComponent } from './components/signer/signer.component';
 import { VaultGuard } from './core/guards/vault.guard';
 
@@ -31,6 +32,7 @@ const routes: Routes = [
   ] },
   { path: 'factom', loadChildren: './components/factom-addresses/factom-addresses.module#FactomAddressesModule' },
   { path: 'approve', component: ApprovalRequestsComponent, canActivate: [VaultGuard] },
+  { path: 'settings', component: SettingsComponent, canActivate: [VaultGuard] },
   { path: '**', component: HomeComponent, canActivate: [VaultGuard] }
 ];
 
