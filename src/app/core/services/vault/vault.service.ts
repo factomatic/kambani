@@ -252,6 +252,26 @@ export class VaultService {
     });
   }
 
+  changeVaultPassword(oldPassword: string, newPassword: string) {
+    return defer(async () => {
+      try {
+        const state = this.localStorageStore.getState();
+        const decryptedVault = await encryptor.decrypt(oldPassword, state.vault);
+        const encryptedVault = await encryptor.encrypt(newPassword, decryptedVault);
+
+        const newState = Object.assign({}, state, {
+          vault: encryptedVault
+        });
+
+        this.localStorageStore.putState(newState);
+
+        return new ResultModel(true, 'Password was changed successfully');
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
   backupSingleDIDFromVault(didId: string, vaultPassword: string): Observable<BackupResultModel> {
     return defer(async () => {
       try {
