@@ -21,7 +21,7 @@ new Vue({
           this.fctAddressesStringified = JSON.stringify(this.fctAddresses, null, 2);
         }
       } else {
-        console.log("FCTAddresses request not approved");
+        console.log("GetFCTAddresses request not approved");
       }
     });
 
@@ -37,7 +37,7 @@ new Vue({
           this.ecAddressesStringified = JSON.stringify(this.ecAddresses, null, 2);
         }
       } else {
-        console.log("ECAddresses request not approved");
+        console.log("GetECAddresses request not approved");
       }
     });
 
