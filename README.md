@@ -166,7 +166,7 @@ the following schema:
     "requestInfo": {
         "data": JSON object to sign (required),
         "keyType": one of "fct", "ec", "didKey" or "managementKey" (required),
-        "keyIdentifier": string (required only if a "did" is specified),
+        "keyIdentifier": string (optional),
         "did": string (optional)
     },
 }
@@ -183,7 +183,10 @@ be able to sign with the exact requested key. If a `keyType` of `fct` or `ec` is
 the public FCT or EC key. If a `didKey` or `managementKey` is specified, the `keyIdentifier` value should be the key
 identifier of the DID or management key (see the [DID spec](https://github.com/bi-foundation/FIS/blob/feature/DID/FIS/DID.md)).
 If there is no value specified for `keyIdentifier`, then the user will be able to choose with which key to sign from all
-available keys of the given `keyType`.
+available keys of the given `keyType`
+* `requestInfo.did`: must be a valid DID, as given in the [DID spec](https://github.com/bi-foundation/FIS/blob/feature/DID/FIS/DID.md).
+This field can be set to request a signature from a specific DID and it must be used only if the `keyType` is `didKey` or
+`managementKey`. The field is required if one of those `keyType`s is used AND a `keyIdentifier` is used as well
 
 ### PegNet requests
 Kambani supports several types of PegNet specific requests to ease development of websites integrating with PegNet, such as
