@@ -21,6 +21,8 @@ export class SettingsComponent implements OnInit {
   public changePasswordForm;
   public fctAddressesRequestWhitelistedDomains: [];
   public ecAddressesRequestWhitelistedDomains: [];
+  public fctRequestExpanded: boolean = true;
+  public ecRequestExpanded: boolean = true;
 
   constructor(
     private fb: FormBuilder,

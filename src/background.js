@@ -69,6 +69,7 @@ const TRANSFER_TX_TYPE = 'transfer';
         restoreVaultRequested = false;
         manageDidsRequested = false;
         manageFactomAddressesRequested = false;
+        settingsRequested = false;
         break;
       case RECEIVE_SIGNING_REQUEST:
         if (isValidRequest(msg.content)) {
