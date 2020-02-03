@@ -161,7 +161,7 @@ the following schema:
 
 ```
 {
-    "requestId": integer (required),
+    "requestId": unique identifier (int/string, required),
     "requestType": "data" (required),
     "requestInfo": {
         "data": JSON object to sign (required),
@@ -200,7 +200,7 @@ schema of the `detail` object:
 
 ```
 {
-    "requestId": integer (required),
+    "requestId": unique identifier (int/string, required),
     "requestType": "pegnet",
     "requestInfo": {
         "txType": "burn",
@@ -219,7 +219,7 @@ data in the `detail` object:
 
 ```
 {
-    "requestId": integer (required),
+    "requestId": unique identifier (int/string, required),
     "requestType": "pegnet",
     "requestInfo": {
         "txType": "transfer",
@@ -249,7 +249,7 @@ schema of the `detail` object:
 
 ```
 {
-    "requestId": integer (required),
+    "requestId": unique identifier (int/string, required),
     "requestType": "pegnet",
     "requestInfo": {
         "txType": "conversion",
