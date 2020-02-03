@@ -49,6 +49,10 @@ export class AppComponent implements OnInit {
           this.zone.run(() => {
             this.router.navigate(['approve']);
           });
+        } else if (checkRequestsResponse.settingsRequested) {
+          this.zone.run(() => {
+            this.router.navigate(['settings']);
+          });
         } else {
           chrome.runtime.sendMessage({type: ChromeMessageType.PendingSigningRequestsCount}, (pendingRequestsResponse) => {
             this.zone.run(() => {

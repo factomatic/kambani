@@ -2,6 +2,7 @@ const NEW_TAB_OPEN = 'newTabOpen';
 const RESTORE_VAULT_REQUEST = 'restoreVaultRequest';
 const MANAGE_DIDS_REQUEST = 'manageDidsRequest';
 const MANAGE_FACTOM_ADDRESSES_REQUEST = 'manageFactomAddressesRequest';
+const SETTINGS_REQUEST = 'settingsRequest';
 const CHECK_REQUESTS = 'checkRequests';
 const PENDING_SIGNING_REQUESTS_COUNT = 'pendingSigningRequestsCount';
 const GET_SIGNING_REQUEST = 'getSigningRequest';
@@ -33,6 +34,7 @@ const TRANSFER_TX_TYPE = 'transfer';
   let restoreVaultRequested = false;
   let manageDidsRequested = false;
   let manageFactomAddressesRequested = false;
+  let settingsRequested = false;
 
   chrome.browserAction.setBadgeText({text: "0"});
 
@@ -50,11 +52,16 @@ const TRANSFER_TX_TYPE = 'transfer';
         manageFactomAddressesRequested = true;
         response({success: true});
         break;
+      case SETTINGS_REQUEST:
+        settingsRequested = true;
+        response({success: true});
+        break;
       case CHECK_REQUESTS:
         response({
           restoreVaultRequested: restoreVaultRequested,
           manageDidsRequested: manageDidsRequested,
           manageFactomAddressesRequested: manageFactomAddressesRequested,
+          settingsRequested: settingsRequested,
           approvalRequests: approvalRequests.length > 0
         });
         break;
@@ -62,6 +69,7 @@ const TRANSFER_TX_TYPE = 'transfer';
         restoreVaultRequested = false;
         manageDidsRequested = false;
         manageFactomAddressesRequested = false;
+        settingsRequested = false;
         break;
       case RECEIVE_SIGNING_REQUEST:
         if (isValidRequest(msg.content)) {

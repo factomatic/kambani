@@ -7,6 +7,7 @@ export enum ChromeMessageType {
   RestoreVaultRequest = 'restoreVaultRequest',
   ManageDidsRequest = 'manageDidsRequest',
   ManageFactomAddressesRequest = 'manageFactomAddressesRequest',
+  SettingsRequest = 'settingsRequest',
   CheckRequests = 'checkRequests',
   NewTabOpen = 'newTabOpen',
   ApprovalRequestsCount = 'approvalRequestsCount',

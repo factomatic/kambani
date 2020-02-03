@@ -252,6 +252,26 @@ export class VaultService {
     });
   }
 
+  changeVaultPassword(oldPassword: string, newPassword: string) {
+    return defer(async () => {
+      try {
+        const state = this.localStorageStore.getState();
+        const decryptedVault = await encryptor.decrypt(oldPassword, state.vault);
+        const encryptedVault = await encryptor.encrypt(newPassword, decryptedVault);
+
+        const newState = Object.assign({}, state, {
+          vault: encryptedVault
+        });
+
+        this.localStorageStore.putState(newState);
+
+        return new ResultModel(true, 'Password was changed successfully');
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
   backupSingleDIDFromVault(didId: string, vaultPassword: string): Observable<BackupResultModel> {
     return defer(async () => {
       try {
@@ -447,14 +467,11 @@ export class VaultService {
   }
 
   addWhitelistedDomain(requestType: string, domain: string) {
-    const whitelistedDomainsKey = requestType === 'FCT'
-      ? 'fctAddressesRequestWhitelistedDomains'
-      : 'ecAddressesRequestWhitelistedDomains';
+    this.syncWhitelistedDomains(requestType, domain);
+  }
 
-    const state = this.localStorageStore.getState();
-    const newState = this.syncWhitelistedDomainsAndReturnNewState(state, domain, whitelistedDomainsKey);
-
-    this.localStorageStore.putState(newState);
+  removeWhitelistedDomain(requestType: string, domain: string) {
+    this.syncWhitelistedDomains(requestType, domain, true);
   }
 
   getEncryptedState(vaultPassword: string): Observable<BackupResultModel> {
@@ -733,17 +750,28 @@ export class VaultService {
     });
   }
 
-  private syncWhitelistedDomainsAndReturnNewState(state, domain, whitelistedDomainsKey) {
+  private syncWhitelistedDomains(requestType: string, domain: string, isRemoveAction: boolean = false) {
+    const state = this.localStorageStore.getState();
+    const whitelistedDomainsKey = requestType === 'FCT'
+      ? 'fctAddressesRequestWhitelistedDomains'
+      : 'ecAddressesRequestWhitelistedDomains';
+
     let whitelistedDomains = JSON.parse(state[whitelistedDomainsKey]);
-    whitelistedDomains.push(domain);
+    if (isRemoveAction) {
+      whitelistedDomains = whitelistedDomains.filter(d => d !== domain);
+    } else {
+      whitelistedDomains.push(domain);
+    }
 
     chrome.storage.sync.get([whitelistedDomainsKey], function(state) {
-      state[whitelistedDomainsKey].push(domain);
+      state[whitelistedDomainsKey] = whitelistedDomains;
       chrome.storage.sync.set(state);      
     });
 
-    return Object.assign({}, state, {
+    const newState = Object.assign({}, state, {
       [whitelistedDomainsKey]: JSON.stringify(whitelistedDomains)
     });
+
+    this.localStorageStore.putState(newState);
   }
 }
