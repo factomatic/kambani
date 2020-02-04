@@ -1,3 +1,8 @@
+window.addEventListener('IsKambaniInstalled', () => {
+  const responseEvent = new CustomEvent('KambaniInstalled');
+  window.dispatchEvent(responseEvent);
+});
+
 window.addEventListener('SigningRequest', (event) => {
   chrome.runtime.sendMessage({type: 'receiveSigningRequest', content: event.detail},
     function(response) {
