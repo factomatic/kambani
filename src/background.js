@@ -184,6 +184,16 @@ const TRANSFER_TX_TYPE = 'transfer';
         }
         break;
       case RECEIVE_APPROVAL_REQUEST:
+        /*
+          Checks if there is an existing approval request with the same type and origin
+          -> if true deletes the old request and saves the new one
+        */
+        const existingRequestIndex = approvalRequests.findIndex(r => r.type === msg.requestType && r.from === msg.from);
+        if (existingRequestIndex >= 0) {
+          approvalRequests.splice(existingRequestIndex, 1);
+          approvalRequestsCallbacks.splice(existingRequestIndex, 1);
+        }
+
         approvalRequestsCallbacks.push(response);
         approvalRequests.push({
           from: msg.from,
