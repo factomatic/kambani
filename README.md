@@ -67,6 +67,18 @@ documentation, you can find a demo in the `examples/demo-voting-app` folder.
 The application provides a working demonstration of obtaining the user's FCT & EC addresses, as well as multiple examples of
 signing requests with FCT, EC and DID keys. Check the associated README for more information.
 
+### Detecting Kambani
+A website can detected if Kambani is installed in the user's browser by dispatching a `IsKambaniInstalled` `CustomEvent` and
+listening for a `KambaniInstalled` event fired by Kambani in response.
+
+Example code:
+```javascript
+  window.addEventListener("KambaniInstalled", event => {
+    console.log("Kambani is installed")
+  })
+  window.dispatchEvent(new CustomEvent("IsKambaniInstalled))
+```
+
 ### FCT addresses request
 A website can request access to the users public FCT addresses. This can be accomplished by dispatching a `GetFCTAddresses`
 `CustomEvent` and listening for an `FCTAddresses` event fired by Kambani in response, following the user's approval.
