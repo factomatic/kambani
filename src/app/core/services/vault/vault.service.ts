@@ -49,7 +49,7 @@ export class VaultService {
         dateOfLastShift: new Date().toDateString()
       });
 
-      chrome.storage.sync.set({
+      chrome.storage.local.set({
         fctAddresses: [],
         ecAddresses: [],
         fctAddressesRequestWhitelistedDomains: [],
@@ -237,7 +237,7 @@ export class VaultService {
 
   removeVault(): void {
     localStorage.removeItem(environment.storageKey);
-    chrome.storage.sync.clear();
+    chrome.storage.local.clear();
   }
 
   canDecryptVault(vaultPassword: string): Observable<ResultModel> {
@@ -373,7 +373,7 @@ export class VaultService {
 
         this.localStorageStore.putState(newState);
 
-        chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
+        chrome.storage.local.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
           if (type === FactomAddressType.FCT) {
             if (addressesState.fctAddresses) {
               addressesState.fctAddresses.push({[publicAddress]: nickname});
@@ -388,7 +388,7 @@ export class VaultService {
             }
           }
 
-          chrome.storage.sync.set(addressesState);       
+          chrome.storage.local.set(addressesState);       
         });
 
         return new ResultModel(true, `${type} address was successfully imported`);
@@ -406,7 +406,7 @@ export class VaultService {
       factomAddressesPublicInfo[type][publicAddress] = nickname;
     }
 
-    chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
+    chrome.storage.local.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
       if (type === FactomAddressType.FCT) {
         addressesState.fctAddresses = addressesState.fctAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
         addressesState.fctAddresses.push({[publicAddress]: nickname});
@@ -415,7 +415,7 @@ export class VaultService {
         addressesState.ecAddresses.push({[publicAddress]: nickname});
       }
 
-      chrome.storage.sync.set(addressesState);       
+      chrome.storage.local.set(addressesState);       
     });
 
     const newState = Object.assign({}, state, {
@@ -449,14 +449,14 @@ export class VaultService {
 
         this.localStorageStore.putState(newState);
 
-        chrome.storage.sync.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
+        chrome.storage.local.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
           if (type === FactomAddressType.FCT) {
             addressesState.fctAddresses = addressesState.fctAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
           } else if (type === FactomAddressType.EC) {
             addressesState.ecAddresses = addressesState.ecAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
           }
 
-          chrome.storage.sync.set(addressesState);       
+          chrome.storage.local.set(addressesState);       
         });
 
         return new ResultModel(true, `${type} address was successfully removed`);
@@ -742,7 +742,7 @@ export class VaultService {
       ecAddresses.push({[ecPublicAddress]: ecAddressesPublicInfo[ecPublicAddress]});
     }
 
-    chrome.storage.sync.set({
+    chrome.storage.local.set({
       fctAddressesRequestWhitelistedDomains,
       ecAddressesRequestWhitelistedDomains,
       fctAddresses,
@@ -763,9 +763,9 @@ export class VaultService {
       whitelistedDomains.push(domain);
     }
 
-    chrome.storage.sync.get([whitelistedDomainsKey], function(state) {
+    chrome.storage.local.get([whitelistedDomainsKey], function(state) {
       state[whitelistedDomainsKey] = whitelistedDomains;
-      chrome.storage.sync.set(state);      
+      chrome.storage.local.set(state);      
     });
 
     const newState = Object.assign({}, state, {
