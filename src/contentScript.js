@@ -14,54 +14,62 @@ window.addEventListener('SigningRequest', (event) => {
 
 window.addEventListener('GetFCTAddresses', (event) => {
   chrome.storage.sync.get(['fctAddressesRequestWhitelistedDomains', 'fctAddresses'], function(result) {
-    let fctAddressesEvent = new CustomEvent('FCTAddresses', {
-      detail: { success: true, fctAddresses: result.fctAddresses }
-    });
-
-    const requestOrigin = event.target.origin;
-    const whitelistedDomains = result.fctAddressesRequestWhitelistedDomains;
-    if (whitelistedDomains !== undefined && whitelistedDomains.includes(requestOrigin)) {
-      window.dispatchEvent(fctAddressesEvent);
-      addFCTAddressesChangesListener();
+    if (result.fctAddresses === undefined) {
+      window.dispatchEvent(new CustomEvent('FCTAddresses', { detail: { success: false } }));
     } else {
-      chrome.runtime.sendMessage({type: 'receiveApprovalRequest', requestType: 'FCT', from: requestOrigin},
-        function(response) {
-          if (response.success) {
-            window.dispatchEvent(fctAddressesEvent);
-            addFCTAddressesChangesListener();
-          } else {
-            fctAddressesEvent = new CustomEvent('FCTAddresses', {detail: response});
-            window.dispatchEvent(fctAddressesEvent);
+      let fctAddressesEvent = new CustomEvent('FCTAddresses', {
+        detail: { success: true, fctAddresses: result.fctAddresses }
+      });
+  
+      const requestOrigin = event.target.origin;
+      const whitelistedDomains = result.fctAddressesRequestWhitelistedDomains;
+      if (whitelistedDomains !== undefined && whitelistedDomains.includes(requestOrigin)) {
+        window.dispatchEvent(fctAddressesEvent);
+        addFCTAddressesChangesListener();
+      } else {
+        chrome.runtime.sendMessage({type: 'receiveApprovalRequest', requestType: 'FCT', from: requestOrigin},
+          function(response) {
+            if (response.success) {
+              window.dispatchEvent(fctAddressesEvent);
+              addFCTAddressesChangesListener();
+            } else {
+              fctAddressesEvent = new CustomEvent('FCTAddresses', {detail: response});
+              window.dispatchEvent(fctAddressesEvent);
+            }
           }
-        }
-      );
+        );
+      }
     }
   });
 });
 
 window.addEventListener('GetECAddresses', (event) => {
   chrome.storage.sync.get(['ecAddressesRequestWhitelistedDomains', 'ecAddresses'], function(result) {
-    let ecAddressesEvent = new CustomEvent('ECAddresses', {
-      detail: { success: true, ecAddresses: result.ecAddresses }
-    });
-
-    const requestOrigin = event.target.origin;
-    const whitelistedDomains = result.ecAddressesRequestWhitelistedDomains;
-    if (whitelistedDomains !== undefined && whitelistedDomains.includes(requestOrigin)) {
-      window.dispatchEvent(ecAddressesEvent);
-      addECAddressesChangesListener();
+    if (result.ecAddresses === undefined) {
+      window.dispatchEvent(new CustomEvent('ECAddresses', { detail: { success: false } }));
     } else {
-      chrome.runtime.sendMessage({type: 'receiveApprovalRequest', requestType: 'EC', from: requestOrigin},
-        function(response) {
-          if (response.success) {
-            window.dispatchEvent(ecAddressesEvent);
-            addECAddressesChangesListener();
-          } else {
-            ecAddressesEvent = new CustomEvent('ECAddresses', {detail: response});
-            window.dispatchEvent(ecAddressesEvent);
+      let ecAddressesEvent = new CustomEvent('ECAddresses', {
+        detail: { success: true, ecAddresses: result.ecAddresses }
+      });
+  
+      const requestOrigin = event.target.origin;
+      const whitelistedDomains = result.ecAddressesRequestWhitelistedDomains;
+      if (whitelistedDomains !== undefined && whitelistedDomains.includes(requestOrigin)) {
+        window.dispatchEvent(ecAddressesEvent);
+        addECAddressesChangesListener();
+      } else {
+        chrome.runtime.sendMessage({type: 'receiveApprovalRequest', requestType: 'EC', from: requestOrigin},
+          function(response) {
+            if (response.success) {
+              window.dispatchEvent(ecAddressesEvent);
+              addECAddressesChangesListener();
+            } else {
+              ecAddressesEvent = new CustomEvent('ECAddresses', {detail: response});
+              window.dispatchEvent(ecAddressesEvent);
+            }
           }
-        }
-      );
+        );
+      }
     }
   });
 });
