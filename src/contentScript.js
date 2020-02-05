@@ -13,7 +13,7 @@ window.addEventListener('SigningRequest', (event) => {
 });
 
 window.addEventListener('GetFCTAddresses', (event) => {
-  chrome.storage.sync.get(['fctAddressesRequestWhitelistedDomains', 'fctAddresses'], function(result) {
+  chrome.storage.local.get(['fctAddressesRequestWhitelistedDomains', 'fctAddresses'], function(result) {
     if (result.fctAddresses === undefined) {
       /*
         Return { success: false } if fctAddresses property in chrome storage is undefined.
@@ -48,7 +48,7 @@ window.addEventListener('GetFCTAddresses', (event) => {
 });
 
 window.addEventListener('GetECAddresses', (event) => {
-  chrome.storage.sync.get(['ecAddressesRequestWhitelistedDomains', 'ecAddresses'], function(result) {
+  chrome.storage.local.get(['ecAddressesRequestWhitelistedDomains', 'ecAddresses'], function(result) {
     if (result.ecAddresses === undefined) {
       /*
         Return { success: false } if ecAddresses property in chrome storage is undefined.
