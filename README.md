@@ -68,7 +68,7 @@ The application provides a working demonstration of obtaining the user's FCT & E
 signing requests with FCT, EC and DID keys. Check the associated README for more information.
 
 ### Detecting Kambani
-A website can detected if Kambani is installed in the user's browser by dispatching a `IsKambaniInstalled` `CustomEvent` and
+A website can detected if Kambani is installed in the user's browser by dispatching an `IsKambaniInstalled` `CustomEvent` and
 listening for a `KambaniInstalled` event fired by Kambani in response.
 
 Example code:
