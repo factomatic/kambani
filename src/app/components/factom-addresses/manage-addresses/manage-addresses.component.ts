@@ -4,6 +4,9 @@ import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
+import * as base58 from 'bs58';
+import * as elliptic from 'elliptic';
+import * as keccak256 from 'keccak256';
 import { generateRandomFctAddress, generateRandomEcAddress } from 'factom';
 
 import { BaseComponent } from '../../base.component';
@@ -14,6 +17,7 @@ import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 import { PrivateAddressModalComponent } from '../../modals/private-address-modal/private-address-modal.component';
+import { calculateDoubleSha256 } from 'src/app/core/utils/helpers';
 
 @Component({
   selector: 'app-manage-addresses',
@@ -23,10 +27,13 @@ import { PrivateAddressModalComponent } from '../../modals/private-address-modal
 export class ManageAddressesComponent extends BaseComponent implements OnInit {
   public fctAddressesInfo = {};
   public ecAddressesInfo = {};
+  public etherLinkAddressesInfo = {};
   public fctAddresses: string[] = [];
   public ecAddresses: string[] = [];
+  public etherLinkAddresses: string[] = [];
   public displayedFCTAddresses: string[] = [];
   public displayedECAddresses: string[] = [];
+  public displayedEtherLinkAddresses: Object[] = [];
   public selectedAddressType: FactomAddressType = FactomAddressType.FCT;
   public FactomAddressType = FactomAddressType;
   public editAddressNickname: boolean[] = [];
@@ -80,6 +87,9 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     this.currentStartIndex = 0;
     this.displayedFCTAddresses = this.fctAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
     this.displayedECAddresses = this.ecAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+    this.displayedEtherLinkAddresses = this.etherLinkAddresses
+      .slice(this.currentStartIndex, this.currentStartIndex + this.pageSize)
+      .map(this.convertEtherLinkPublicKeyToAddresses, this);
   }
 
   editNickname(publicAddress: string, type: FactomAddressType, nickname: string) {
@@ -88,8 +98,10 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
 
       if (type == FactomAddressType.FCT) {
         this.fctAddressesInfo[publicAddress] = nickname;
-      } else {
+      } else if (type == FactomAddressType.EC) {
         this.ecAddressesInfo[publicAddress] = nickname;
+      } else {
+        this.etherLinkAddressesInfo[publicAddress] = nickname;
       }
     }
 
@@ -97,9 +109,17 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
   }
 
   generateAddressPair() {
-    const addressPair = this.selectedAddressType == FactomAddressType.FCT 
-      ? generateRandomFctAddress()
-      : generateRandomEcAddress();
+    const self = this;
+    const addressPair = (function(addressType) {
+      switch(addressType) {
+        case FactomAddressType.FCT:
+          return generateRandomFctAddress();
+        case FactomAddressType.EC:
+          return generateRandomEcAddress();
+        case FactomAddressType.EtherLink:
+          return self.generateRandomEtherLinkKeyPair();
+      }
+    })(this.selectedAddressType);
 
     const dialogMessage = `Enter your vault password to import the generated ${this.selectedAddressType} address`;
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
@@ -188,25 +208,71 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     setTimeout(() => {element.classList.remove('clicked')},2000);
   }
 
-  changePage (page) {
+  changePage(page) {
     this.currentPage = page;
     this.currentStartIndex = (this.currentPage - 1) * this.pageSize;
 
     if (this.selectedAddressType == FactomAddressType.FCT) {
       this.displayedFCTAddresses = this.fctAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
-    } else {
+    } else if (this.selectedAddressType == FactomAddressType.EC) {
       this.displayedECAddresses = this.ecAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+    } else {
+      this.displayedEtherLinkAddresses = this.etherLinkAddresses
+        .slice(this.currentStartIndex, this.currentStartIndex + this.pageSize)
+        .map(this.convertEtherLinkPublicKeyToAddresses, this);
     }
+  }
+
+  shortenAddress(address: string) {
+    return [address.slice(0, 13), '...' + address.slice(-13)].join('')
   }
 
   private getAddressesInfo() {
     this.fctAddressesInfo = this.vaultService.getFCTAddressesPublicInfo();
     this.ecAddressesInfo = this.vaultService.getECAddressesPublicInfo();
+    this.etherLinkAddressesInfo = this.vaultService.getEtherLinkAddressesPublicInfo();
 
     this.fctAddresses = Object.keys(this.fctAddressesInfo);
     this.ecAddresses = Object.keys(this.ecAddressesInfo);
+    this.etherLinkAddresses = Object.keys(this.etherLinkAddressesInfo);
 
     this.displayedFCTAddresses = this.fctAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
     this.displayedECAddresses = this.ecAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+    this.displayedEtherLinkAddresses = this.etherLinkAddresses
+      .slice(this.currentStartIndex, this.currentStartIndex + this.pageSize)
+      .map(this.convertEtherLinkPublicKeyToAddresses, this);
   }
+
+  private generateRandomEtherLinkKeyPair() {
+    const curve = elliptic.ec('secp256k1');
+    const keyPair = curve.genKeyPair();
+    return {
+      // Remove the first 2 bytes signifying an uncompressed ECDSA public key 
+      public: keyPair.getPublic('hex').slice(2),
+      private: keyPair.getPrivate('hex')
+    }
+  }
+
+  private convertEtherLinkPublicKeyToFactomAddress(publicKey) {
+    const rcdBytes = Buffer.concat([Buffer.from('0e', 'hex'), Buffer.from(publicKey, 'hex')]);
+    const prefix = Buffer.from('62f4', 'hex');
+    const rcdHash = calculateDoubleSha256(rcdBytes);
+    const checkSum = calculateDoubleSha256(Buffer.concat([prefix, Buffer.from(rcdHash)])).slice(0, 4);
+    return base58.encode(Buffer.concat([prefix, Buffer.from(rcdHash), Buffer.from(checkSum)]));
+  }
+
+  private convertEtherLinkPublicKeyToEthereumAddress(publicKey) {
+    const publicKeyBytes = Buffer.from(publicKey, 'hex');
+    return '0x' + keccak256(publicKeyBytes).slice(12).toString('hex');
+  }
+
+  private convertEtherLinkPublicKeyToAddresses(publicKey) {
+    const self = this;
+    return {
+      publicKey,
+      'ethereum': self.convertEtherLinkPublicKeyToEthereumAddress(publicKey),
+      'factom': self.convertEtherLinkPublicKeyToFactomAddress(publicKey)
+    }
+  }
+
 }

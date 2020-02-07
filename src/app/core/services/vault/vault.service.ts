@@ -37,12 +37,15 @@ export class VaultService {
         didsPublicInfo: JSON.stringify({}),
         factomAddressesPublicInfo: JSON.stringify({
           [FactomAddressType.FCT]: {},
+          [FactomAddressType.EtherLink]: {},
           [FactomAddressType.EC]: {}
         }),
         fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
+        etherLinkAddressesRequestWhitelistedDomains: JSON.stringify([]),
         ecAddressesRequestWhitelistedDomains: JSON.stringify([]),
         createdDIDsCount: 0,
         createdFCTAddressesCount: 0,
+        createdEtherLinkAddressesCount: 0,
         createdECAddressesCount: 0,
         signedRequestsCount: 0,
         signedRequestsData: JSON.stringify(new Array(7).fill(0)),
@@ -51,8 +54,10 @@ export class VaultService {
 
       chrome.storage.local.set({
         fctAddresses: [],
+        etherLinkAddresses: [],
         ecAddresses: [],
         fctAddressesRequestWhitelistedDomains: [],
+        etherLinkAddressesRequestWhitelistedDomains: [],
         ecAddressesRequestWhitelistedDomains: []
       })
     });
@@ -61,6 +66,7 @@ export class VaultService {
   upgradeStorageVersion(): boolean {
     const state = this.localStorageStore.getState();
     if (state.version !== environment.localStorageVersion) {
+      // TODO: remove tempLocalStorage and pass the state instead
       this.tempLocalStorageState = state;
       this.upgradeLocalStorageVersion(state.version);
       this.localStorageStore.putState(this.tempLocalStorageState);
@@ -352,11 +358,19 @@ export class VaultService {
         const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
 
         let fctAddressesCount = state.createdFCTAddressesCount;
+        let etherLinkAddressesCount = state.createdEtherLinkAddressesCount;
         let ecAddressesCount = state.createdECAddressesCount;
         if (!nickname) {
-          nickname = type == FactomAddressType.FCT
-            ? `fct-address-${++fctAddressesCount}`
-            : `ec-address-${++ecAddressesCount}`;
+          nickname = (function(addressType) {
+            switch(addressType) {
+              case FactomAddressType.FCT:
+                return `fct-address-${++fctAddressesCount}`;
+              case FactomAddressType.EtherLink:
+                return `etherlink-address-${++etherLinkAddressesCount}`;
+              case FactomAddressType.EC:
+                return `ec-address-${++ecAddressesCount}`;
+            }
+          })(type)
         }
 
         const factomAddressesPublicInfo = JSON.parse(state.factomAddressesPublicInfo);
@@ -368,17 +382,26 @@ export class VaultService {
           vault: encryptedVault,
           factomAddressesPublicInfo: JSON.stringify(factomAddressesPublicInfo),
           createdFCTAddressesCount: fctAddressesCount,
+          createdEtherLinkAddressesCount: etherLinkAddressesCount,
           createdECAddressesCount: ecAddressesCount
         });
 
         this.localStorageStore.putState(newState);
 
-        chrome.storage.local.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
+        chrome.storage.local.get(['fctAddresses', 'etherLinkAddresses', 'ecAddresses'], function(addressesState) {
           if (type === FactomAddressType.FCT) {
             if (addressesState.fctAddresses) {
               addressesState.fctAddresses.push({[publicAddress]: nickname});
             } else {
+              // TODO: Can this happen, since when we're initializing the vault
+              // we create an empty array?
               addressesState.fctAddresses = [{[publicAddress]: nickname}];
+            }
+          } else if (type === FactomAddressType.EtherLink) {
+            if (addressesState.etherLinkAddresses) {
+              addressesState.etherLinkAddresses.push({[publicAddress]: nickname});
+            } else {
+              addressesState.etherLinkAddresses = [{[publicAddress]: nickname}];
             }
           } else if (type === FactomAddressType.EC) {
             if (addressesState.ecAddresses) {
@@ -406,15 +429,17 @@ export class VaultService {
       factomAddressesPublicInfo[type][publicAddress] = nickname;
     }
 
-    chrome.storage.local.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
+    chrome.storage.local.get(['fctAddresses', 'etherLinkAddresses', 'ecAddresses'], function(addressesState) {
       if (type === FactomAddressType.FCT) {
         addressesState.fctAddresses = addressesState.fctAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
         addressesState.fctAddresses.push({[publicAddress]: nickname});
+      } else if (type === FactomAddressType.EtherLink) {
+        addressesState.etherLinkAddresses = addressesState.etherLinkAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
+        addressesState.etherLinkAddresses.push({[publicAddress]: nickname});
       } else if (type === FactomAddressType.EC) {
         addressesState.ecAddresses = addressesState.ecAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
         addressesState.ecAddresses.push({[publicAddress]: nickname});
       }
-
       chrome.storage.local.set(addressesState);       
     });
 
@@ -449,9 +474,11 @@ export class VaultService {
 
         this.localStorageStore.putState(newState);
 
-        chrome.storage.local.get(['fctAddresses', 'ecAddresses'], function(addressesState) {
+        chrome.storage.local.get(['fctAddresses', 'etherLinkAddresses', 'ecAddresses'], function(addressesState) {
           if (type === FactomAddressType.FCT) {
             addressesState.fctAddresses = addressesState.fctAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
+          } else if (type === FactomAddressType.EtherLink) {
+            addressesState.etherLinkAddresses = addressesState.etherLinkAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
           } else if (type === FactomAddressType.EC) {
             addressesState.ecAddresses = addressesState.ecAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
           }
@@ -530,12 +557,22 @@ export class VaultService {
     return JSON.parse(this.localStorageStore.getState().factomAddressesPublicInfo)[FactomAddressType.FCT];
   }
 
+  getEtherLinkAddressesPublicInfo() {
+    const publicInfo = JSON.parse(this.localStorageStore.getState().factomAddressesPublicInfo);
+    if (publicInfo[FactomAddressType.EtherLink]) return publicInfo[FactomAddressType.EtherLink];
+    else return {};
+  }
+
   getECAddressesPublicInfo() {
     return JSON.parse(this.localStorageStore.getState().factomAddressesPublicInfo)[FactomAddressType.EC];
   }
 
   getFCTAddressesRequestWhitelistedDomains() {
     return JSON.parse(this.localStorageStore.getState().fctAddressesRequestWhitelistedDomains);
+  }
+
+  getEtherLinkAddressesRequestWhitelistedDomains() {
+    return JSON.parse(this.localStorageStore.getState().etherLinkAddressesRequestWhitelistedDomains);
   }
 
   getECAddressesRequestWhitelistedDomains() {
@@ -545,6 +582,7 @@ export class VaultService {
   anyDIDsOrAddresses(): boolean {
     return this.getDIDsCount() > 0
       || Object.keys(this.getFCTAddressesPublicInfo()).length > 0
+      || Object.keys(this.getEtherLinkAddressesPublicInfo()).length > 0
       || Object.keys(this.getECAddressesPublicInfo()).length > 0;
   }
 
@@ -718,24 +756,40 @@ export class VaultService {
   }
 
   private upgradeStorageToVersion_1_1() {
-    this.tempLocalStorageState = Object.assign({}, this.tempLocalStorageState, {
-      version: environment.localStorageVersion,
-      fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
-      ecAddressesRequestWhitelistedDomains: JSON.stringify([])
-    });
+    const addressesPublicInfo = Object.assign({},
+      JSON.parse(this.tempLocalStorageState['factomAddressesPublicInfo']),
+      {[FactomAddressType.EtherLink]: {}})
+
+    this.tempLocalStorageState = Object.assign({},
+      this.tempLocalStorageState,
+      {
+        version: environment.localStorageVersion,
+        createdEtherLinkAddressesCount: 0,
+        fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
+        etherLinkAddressesRequestWhitelistedDomains: JSON.stringify([]),
+        ecAddressesRequestWhitelistedDomains: JSON.stringify([])
+      },
+      { factomAddressesPublicInfo: JSON.stringify(addressesPublicInfo) });
   }
 
   private setChromeStorageState() {
     const fctAddressesRequestWhitelistedDomains = this.getFCTAddressesRequestWhitelistedDomains();
+    const etherLinkAddressesRequestWhitelistedDomains = this.getEtherLinkAddressesRequestWhitelistedDomains();
     const ecAddressesRequestWhitelistedDomains = this.getECAddressesRequestWhitelistedDomains();
     const fctAddressesPublicInfo = this.getFCTAddressesPublicInfo();
+    const etherLinkAddressesPublicInfo = this.getEtherLinkAddressesPublicInfo();
     const ecAddressesPublicInfo = this.getECAddressesPublicInfo();
 
     let fctAddresses = [];
+    let etherLinkAddresses = [];
     let ecAddresses = [];
 
     for (const fctPublicAddress of Object.keys(fctAddressesPublicInfo)) {
       fctAddresses.push({[fctPublicAddress]: fctAddressesPublicInfo[fctPublicAddress]});
+    }
+
+    for (const etherLinkPublicAddress of Object.keys(etherLinkAddressesPublicInfo)) {
+      etherLinkAddresses.push({[etherLinkPublicAddress]: etherLinkAddressesPublicInfo[etherLinkPublicAddress]})
     }
 
     for (const ecPublicAddress of Object.keys(ecAddressesPublicInfo)) {
@@ -744,17 +798,26 @@ export class VaultService {
 
     chrome.storage.local.set({
       fctAddressesRequestWhitelistedDomains,
+      etherLinkAddressesRequestWhitelistedDomains,
       ecAddressesRequestWhitelistedDomains,
       fctAddresses,
+      etherLinkAddresses,
       ecAddresses
     });
   }
 
   private syncWhitelistedDomains(requestType: string, domain: string, isRemoveAction: boolean = false) {
     const state = this.localStorageStore.getState();
-    const whitelistedDomainsKey = requestType === 'FCT'
-      ? 'fctAddressesRequestWhitelistedDomains'
-      : 'ecAddressesRequestWhitelistedDomains';
+    const whitelistedDomainsKey = (function(requestType) {
+      switch(requestType) {
+        case 'FCT':
+          return 'fctAddressesRequestWhitelistedDomains';
+        case 'EtherLink':
+          return 'etherLinkAddressesRequestWhitelistedDomains';
+        case 'EC':
+          return 'ecAddressesRequestWhitelistedDomains';
+      }
+    })(requestType)
 
     let whitelistedDomains = JSON.parse(state[whitelistedDomainsKey]);
     if (isRemoveAction) {

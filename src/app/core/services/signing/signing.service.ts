@@ -66,6 +66,7 @@ export class SigningService {
           }
 
         } else {
+          // TODO: Add signing with ECDSA address
           const privateKey = addressToKey(decryptedVault[signingKeyOrAddress]);
           const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
           publicKey = Buffer.from(keyPair.publicKey);

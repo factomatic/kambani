@@ -32,7 +32,8 @@ export class ImportAddressComponent implements OnInit {
 
   ngOnInit() {
     this.selectedType = this.route.snapshot.paramMap.get('type');
-    if (this.selectedType != FactomAddressType.FCT && this.selectedType != FactomAddressType.EC) {
+    if (this.selectedType != FactomAddressType.FCT && this.selectedType != FactomAddressType.EC &&
+        this.selectedType != FactomAddressType.EtherLink) {
       this.selectedType = FactomAddressType.FCT;
     }
 
@@ -51,11 +52,14 @@ export class ImportAddressComponent implements OnInit {
     if (this.privateAddressForm.invalid) {
       this.toastr.error('Invalid form! All fields are required');
       return;
-    } else if (this.type.value != FactomAddressType.FCT && this.type.value != FactomAddressType.EC) {
+    } else if (![FactomAddressType.FCT, FactomAddressType.EC, FactomAddressType.EtherLink].includes(this.type.value)) {
       this.toastr.error('Invalid address type');
       return;
     } else if (this.type.value == FactomAddressType.FCT && !isValidPrivateFctAddress(this.privateAddress.value)) {
       this.toastr.error('Invalid FCT private address');
+      return;
+    } else if (this.type.value == FactomAddressType.EtherLink && !this.isValidPrivateEtherLinkAddress(this.privateAddress.value)) {
+      this.toastr.error('Invalid EtherLink private address');
       return;
     } else if (this.type.value == FactomAddressType.EC && !isValidPrivateEcAddress(this.privateAddress.value)) {
       this.toastr.error('Invalid EC private address');
@@ -100,5 +104,10 @@ export class ImportAddressComponent implements OnInit {
 
   get privateAddress () {
     return this.privateAddressForm.get('privateAddress');
+  }
+
+  private isValidPrivateEtherLinkAddress(address) {
+    // TODO: Implement the logic
+    return true;
   }
 }
