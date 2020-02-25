@@ -3,7 +3,6 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   convertECDSAPublicKeyToEthereumAddress,
   convertECDSAPublicKeyToEtherLinkAddress,
-  minifyAddress
 } from 'src/app/core/utils/helpers';
 
 
@@ -16,7 +15,6 @@ export class PrivateAddressModalComponent {
   @Input() public publicAddress: string;
   @Input() public privateAddress: string;
   @Input() public isEtherLinkAddress: boolean;
-  public minifyAddress = minifyAddress;
   public convertToEthereumAddress = convertECDSAPublicKeyToEthereumAddress;
   public convertToEtherLinkAddress = convertECDSAPublicKeyToEtherLinkAddress;
 

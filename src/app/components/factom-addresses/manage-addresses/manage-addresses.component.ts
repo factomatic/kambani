@@ -228,10 +228,6 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     }
   }
 
-  shortenAddress(address: string) {
-    return [address.slice(0, 13), '...' + address.slice(-13)].join('')
-  }
-
   private getAddressesInfo() {
     this.fctAddressesInfo = this.vaultService.getFCTAddressesPublicInfo();
     this.ecAddressesInfo = this.vaultService.getECAddressesPublicInfo();
