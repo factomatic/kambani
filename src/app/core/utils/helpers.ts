@@ -1,3 +1,5 @@
+import * as base58 from 'bs58';
+import * as keccak256 from 'keccak256';
 import { sha256 } from 'js-sha256';
 
 function minifyPublicKey(publicKey: string) {
@@ -79,7 +81,7 @@ function calculateChainId(extIds) {
   return fullHash.hex();
 }
 
-function calculateDoubleSha256(content: string) {
+function calculateDoubleSha256(content) {
   const hash = sha256.update(content);
   const hash2 = sha256.update(hash.digest());
   return hash2.digest();
@@ -165,6 +167,19 @@ function generateBackupFileName() {
   return `kambani-vault-backup-UTC--${date.toISOString()}.txt`;
 }
 
+function convertECDSAPublicKeyToEtherLinkAddress(publicKey: string) {
+  const rcdBytes = Buffer.concat([Buffer.from('0e', 'hex'), Buffer.from(publicKey, 'hex')]);
+  const prefix = Buffer.from('62f4', 'hex');
+  const rcdHash = calculateDoubleSha256(rcdBytes);
+  const checkSum = calculateDoubleSha256(Buffer.concat([prefix, Buffer.from(rcdHash)])).slice(0, 4);
+  return base58.encode(Buffer.concat([prefix, Buffer.from(rcdHash), Buffer.from(checkSum)]));
+}
+
+function convertECDSAPublicKeyToEthereumAddress(publicKey: string) {
+  const publicKeyBytes = Buffer.from(publicKey, 'hex');
+  return '0x' + keccak256(publicKeyBytes).slice(12).toString('hex');
+}
+
 export {
   minifyPublicKey,
   minifyDid,
@@ -178,5 +193,7 @@ export {
   downloadFile,
   preProcessEncryptedBackupFile,
   postProcessEncryptedBackupFile,
-  generateBackupFileName
+  generateBackupFileName,
+  convertECDSAPublicKeyToEtherLinkAddress,
+  convertECDSAPublicKeyToEthereumAddress
 };

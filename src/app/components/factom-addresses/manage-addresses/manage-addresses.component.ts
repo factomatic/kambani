@@ -4,9 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import * as base58 from 'bs58';
 import * as elliptic from 'elliptic';
-import * as keccak256 from 'keccak256';
 import { generateRandomFctAddress, generateRandomEcAddress } from 'factom';
 
 import { BaseComponent } from '../../base.component';
@@ -17,7 +15,12 @@ import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 import { PrivateAddressModalComponent } from '../../modals/private-address-modal/private-address-modal.component';
-import { calculateDoubleSha256 } from 'src/app/core/utils/helpers';
+import {
+  calculateDoubleSha256,
+  convertECDSAPublicKeyToEthereumAddress,
+  convertECDSAPublicKeyToEtherLinkAddress,
+  minifyAddress
+} from 'src/app/core/utils/helpers';
 
 @Component({
   selector: 'app-manage-addresses',
@@ -40,6 +43,7 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
   public pageSize: number = 6;
   public currentPage: number = 1;
   public currentStartIndex = 0;
+  public minifyAddress = minifyAddress;
 
   constructor(
     private dialogsService: DialogsService,
@@ -89,7 +93,7 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     this.displayedECAddresses = this.ecAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
     this.displayedEtherLinkAddresses = this.etherLinkAddresses
       .slice(this.currentStartIndex, this.currentStartIndex + this.pageSize)
-      .map(this.convertEtherLinkPublicKeyToAddresses, this);
+      .map(this.convertECDSAPublicKeyToAddresses, this);
   }
 
   editNickname(publicAddress: string, type: FactomAddressType, nickname: string) {
@@ -159,6 +163,7 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
                 const confirmRef = this.modalService.open(PrivateAddressModalComponent);
                 confirmRef.componentInstance.publicAddress = publicAddress;
                 confirmRef.componentInstance.privateAddress = result.message;
+                confirmRef.componentInstance.isEtherLinkAddress = publicAddress.length == 128;
                 confirmRef.result
                   .then((result) => {})
                   .catch((error) => {});
@@ -219,7 +224,7 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     } else {
       this.displayedEtherLinkAddresses = this.etherLinkAddresses
         .slice(this.currentStartIndex, this.currentStartIndex + this.pageSize)
-        .map(this.convertEtherLinkPublicKeyToAddresses, this);
+        .map(this.convertECDSAPublicKeyToAddresses, this);
     }
   }
 
@@ -240,7 +245,7 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     this.displayedECAddresses = this.ecAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
     this.displayedEtherLinkAddresses = this.etherLinkAddresses
       .slice(this.currentStartIndex, this.currentStartIndex + this.pageSize)
-      .map(this.convertEtherLinkPublicKeyToAddresses, this);
+      .map(this.convertECDSAPublicKeyToAddresses, this);
   }
 
   private generateRandomEtherLinkKeyPair() {
@@ -253,25 +258,11 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     }
   }
 
-  private convertEtherLinkPublicKeyToFactomAddress(publicKey) {
-    const rcdBytes = Buffer.concat([Buffer.from('0e', 'hex'), Buffer.from(publicKey, 'hex')]);
-    const prefix = Buffer.from('62f4', 'hex');
-    const rcdHash = calculateDoubleSha256(rcdBytes);
-    const checkSum = calculateDoubleSha256(Buffer.concat([prefix, Buffer.from(rcdHash)])).slice(0, 4);
-    return base58.encode(Buffer.concat([prefix, Buffer.from(rcdHash), Buffer.from(checkSum)]));
-  }
-
-  private convertEtherLinkPublicKeyToEthereumAddress(publicKey) {
-    const publicKeyBytes = Buffer.from(publicKey, 'hex');
-    return '0x' + keccak256(publicKeyBytes).slice(12).toString('hex');
-  }
-
-  private convertEtherLinkPublicKeyToAddresses(publicKey) {
-    const self = this;
+  private convertECDSAPublicKeyToAddresses(publicKey) {
     return {
       publicKey,
-      'ethereum': self.convertEtherLinkPublicKeyToEthereumAddress(publicKey),
-      'factom': self.convertEtherLinkPublicKeyToFactomAddress(publicKey)
+      'ethereum': convertECDSAPublicKeyToEthereumAddress(publicKey),
+      'factom': convertECDSAPublicKeyToEtherLinkAddress(publicKey)
     }
   }
 

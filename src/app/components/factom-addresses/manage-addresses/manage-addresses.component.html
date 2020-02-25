@@ -82,10 +82,10 @@
                 <tbody valign="center">
                   <tr *ngFor="let address of displayedEtherLinkAddresses">
                     <td>
-                      <span class="public-etherlink-address">{{shortenAddress(address.factom)}}</span>
+                      <span class="public-address">{{minifyAddress(address.factom)}}</span>
                       <a (click)="copyAddress(address.factom, copyEtherLinkButtonRef)" class="copy-address" #copyEtherLinkButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy address"><i class="far fa-copy"></i></a>
                     </td>
-                    <td> <span class="public-ethereum-address">{{shortenAddress(address.ethereum)}}</span>
+                    <td> <span class="public-address">{{minifyAddress(address.ethereum)}}</span>
                       <a (click)="copyAddress(address.ethereum, copyEthereumButtonRef)" class="copy-address" #copyEthereumButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy address"><i class="far fa-copy"></i></a>
                     </td>
                     <td width="250" height="65">
