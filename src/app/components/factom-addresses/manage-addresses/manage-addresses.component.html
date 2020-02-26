@@ -10,7 +10,7 @@
         <nav class="info-tables">
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
             <a (click)="changeSelectedAddressType(FactomAddressType.FCT)" class="nav-item nav-link" [ngClass]="{'active': selectedAddressType == FactomAddressType.FCT}" id="nav-fct-addresses-tab" data-toggle="tab" href="#nav-fct-addresses" role="tab" aria-controls="nav-fct-addresses" aria-selected="true">FCT Addresses</a>
-            <a (click)="changeSelectedAddressType(FactomAddressType.EtherLink)" class="nav-item nav-link" [ngClass]="{'active': selectedAddressType == FactomAddressType.EtherLink}" id="nav-ec-addresses-tab" data-toggle="tab" href="#nav-ec-addresses" role="tab" aria-controls="nav-ec-addresses" aria-selected="false">EtherLink Addresses</a>
+            <a (click)="changeSelectedAddressType(FactomAddressType.EtherLink)" class="nav-item nav-link" [ngClass]="{'active': selectedAddressType == FactomAddressType.EtherLink}" id="nav-etherlink-addresses-tab" data-toggle="tab" href="#nav-etherlink-addresses" role="tab" aria-controls="nav-etherlink-addresses" aria-selected="false">EtherLink Addresses</a>
             <a (click)="changeSelectedAddressType(FactomAddressType.EC)" class="nav-item nav-link" [ngClass]="{'active': selectedAddressType == FactomAddressType.EC}" id="nav-ec-addresses-tab" data-toggle="tab" href="#nav-ec-addresses" role="tab" aria-controls="nav-ec-addresses" aria-selected="false">EC Addresses</a>
           </div>
         </nav>
@@ -112,7 +112,7 @@
               <div class="col-6">
                 <div class="paginator" *ngIf="etherLinkAddresses.length > pageSize">
                   <a (click)="changePage(currentPage - 1)" [ngClass]="currentPage == 1 ? 'disabled' : ''">Prev</a>
-                  <a (click)="changePage(currentPage + 1)" [ngClass]="currentStartIndex + pageSize < ecAddresses.length ? '' : 'disabled'">Next</a>
+                  <a (click)="changePage(currentPage + 1)" [ngClass]="currentStartIndex + pageSize < etherLinkAddresses.length ? '' : 'disabled'">Next</a>
                 </div>
               </div>
               <div class="col-6 text-right" *ngIf="etherLinkAddresses.length > 0">
