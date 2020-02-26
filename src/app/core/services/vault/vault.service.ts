@@ -765,9 +765,10 @@ export class VaultService {
         createdEtherLinkAddressesCount: 0,
         fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
         etherLinkAddressesRequestWhitelistedDomains: JSON.stringify([]),
-        ecAddressesRequestWhitelistedDomains: JSON.stringify([])
-      },
-      { factomAddressesPublicInfo: JSON.stringify(addressesPublicInfo) });
+        ecAddressesRequestWhitelistedDomains: JSON.stringify([]),
+        factomAddressesPublicInfo: JSON.stringify(addressesPublicInfo)
+      }
+    );
   }
 
   private setChromeStorageState() {
