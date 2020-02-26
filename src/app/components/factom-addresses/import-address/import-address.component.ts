@@ -109,6 +109,10 @@ export class ImportAddressComponent implements OnInit {
       });
   }
 
+  goBack() {
+    this.router.navigate(['factom/addresses/manage'], { queryParams: { page: this.selectedType } });
+  }
+
   get type() {
     return this.privateAddressForm.get('type');
   }
