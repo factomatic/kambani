@@ -558,9 +558,7 @@ export class VaultService {
   }
 
   getEtherLinkAddressesPublicInfo() {
-    const publicInfo = JSON.parse(this.localStorageStore.getState().factomAddressesPublicInfo);
-    if (publicInfo[FactomAddressType.EtherLink]) return publicInfo[FactomAddressType.EtherLink];
-    else return {};
+    return JSON.parse(this.localStorageStore.getState().factomAddressesPublicInfo)[FactomAddressType.EtherLink];
   }
 
   getECAddressesPublicInfo() {
