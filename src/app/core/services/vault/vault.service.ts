@@ -393,8 +393,6 @@ export class VaultService {
             if (addressesState.fctAddresses) {
               addressesState.fctAddresses.push({[publicAddress]: nickname});
             } else {
-              // TODO: Can this happen, since when we're initializing the vault
-              // we create an empty array?
               addressesState.fctAddresses = [{[publicAddress]: nickname}];
             }
           } else if (type === FactomAddressType.EtherLink) {
