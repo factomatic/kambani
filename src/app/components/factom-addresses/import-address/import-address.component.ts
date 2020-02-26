@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import * as elliptic from 'elliptic';
 import { isValidPrivateFctAddress, isValidPrivateEcAddress, getPublicAddress } from 'factom';
 
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
@@ -66,7 +67,21 @@ export class ImportAddressComponent implements OnInit {
       return;
     }
 
-    const publicAddress = getPublicAddress(this.privateAddress.value);
+    let publicAddress;
+
+    if (this.type.value == FactomAddressType.EtherLink) {
+      const curve = elliptic.ec('secp256k1');
+      if (this.privateAddress.value.startsWith('0x')) {
+        // Remove the leading 0x from the private key and remove the 04 prefix
+        // (signifying an uncompressed encoding) from the corresponding public key.
+        publicAddress = curve.keyFromPrivate(this.privateAddress.value.slice(2)).getPublic('hex').slice(2);
+      } else {
+        publicAddress = curve.keyFromPrivate(this.privateAddress.value).getPublic('hex').slice(2);
+      }
+    } else {
+      publicAddress = getPublicAddress(this.privateAddress.value);
+    }
+
     const dialogMessage = 'Enter your vault password to import the address';
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
       .subscribe((vaultPassword: string) => {
@@ -106,8 +121,9 @@ export class ImportAddressComponent implements OnInit {
     return this.privateAddressForm.get('privateAddress');
   }
 
-  private isValidPrivateEtherLinkAddress(address) {
-    // TODO: Implement the logic
-    return true;
+  private isValidPrivateEtherLinkAddress(address: string) {
+    // The private EtherLink address must be a valid ECDSA private key (32 bytes hex string),
+    // optionally with a leading 0x
+    return /^(0x)?[0-9a-fA-F]{64}$/.test(address);
   }
 }
