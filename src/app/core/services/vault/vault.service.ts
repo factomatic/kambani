@@ -19,7 +19,6 @@ import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
 @Injectable()
 export class VaultService {
   private localStorageStore: LocalStorageStore;
-  private tempLocalStorageState;
   private supportedLocalStorageVersions = ['1.0', '1.1'];
 
   constructor() {
@@ -66,10 +65,8 @@ export class VaultService {
   upgradeStorageVersion(): boolean {
     const state = this.localStorageStore.getState();
     if (state.version !== environment.localStorageVersion) {
-      // TODO: remove tempLocalStorage and pass the state instead
-      this.tempLocalStorageState = state;
-      this.upgradeLocalStorageVersion(state.version);
-      this.localStorageStore.putState(this.tempLocalStorageState);
+      const upgradedState = this.upgradeLocalStorageVersion(state.version, state);
+      this.localStorageStore.putState(upgradedState);
       this.setChromeStorageState();
 
       return true;
@@ -218,16 +215,16 @@ export class VaultService {
         if (this.isValidState(decryptedState)) {
           let versionUpgraded = false;
           let restoreMessage = 'Vault successfully restored';
-          this.tempLocalStorageState = decryptedState;
+          let upgradedState;
 
           const version = decryptedState.version;
           if (version !== environment.localStorageVersion) {
-            this.upgradeLocalStorageVersion(version);
+            upgradedState = this.upgradeLocalStorageVersion(version, decryptedState);
             versionUpgraded = true;
             restoreMessage = undefined;
           }
 
-          this.localStorageStore.putState(this.tempLocalStorageState);
+          this.localStorageStore.putState(upgradedState);
           this.setChromeStorageState();
           this.updateSignedRequestsData();
 
@@ -741,23 +738,23 @@ export class VaultService {
     return false;
   }
 
-  private upgradeLocalStorageVersion(version: string) {
+  private upgradeLocalStorageVersion(version: string, state: any) {
     switch(version) {
       case '1.0':
-        this.upgradeStorageToVersion_1_1();
+        this.upgradeStorageToVersion_1_1(state);
         break;
       default:
         break;
     }
   }
 
-  private upgradeStorageToVersion_1_1() {
+  private upgradeStorageToVersion_1_1(state: any) {
     const addressesPublicInfo = Object.assign({},
-      JSON.parse(this.tempLocalStorageState['factomAddressesPublicInfo']),
+      JSON.parse(state['factomAddressesPublicInfo']),
       {[FactomAddressType.EtherLink]: {}})
 
-    this.tempLocalStorageState = Object.assign({},
-      this.tempLocalStorageState,
+    return Object.assign({},
+      state,
       {
         version: environment.localStorageVersion,
         createdEtherLinkAddressesCount: 0,
