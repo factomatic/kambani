@@ -65,7 +65,7 @@ export class VaultService {
   upgradeStorageVersion(): boolean {
     const state = this.localStorageStore.getState();
     if (state.version !== environment.localStorageVersion) {
-      const upgradedState = this.upgradeLocalStorageVersion(state.version, state);
+      const upgradedState = this.upgradeLocalStorageVersion(state);
       this.localStorageStore.putState(upgradedState);
       this.setChromeStorageState();
 
@@ -211,20 +211,18 @@ export class VaultService {
   restoreVault(encryptedState: string, vaultPassword: string): Observable<RestoreResultModel> {
     return defer(async () => {
       try {
-        const decryptedState = await encryptor.decrypt(vaultPassword, encryptedState);
+        let decryptedState = await encryptor.decrypt(vaultPassword, encryptedState);
         if (this.isValidState(decryptedState)) {
           let versionUpgraded = false;
           let restoreMessage = 'Vault successfully restored';
-          let upgradedState;
 
-          const version = decryptedState.version;
-          if (version !== environment.localStorageVersion) {
-            upgradedState = this.upgradeLocalStorageVersion(version, decryptedState);
+          if (decryptedState.version !== environment.localStorageVersion) {
+            decryptedState = this.upgradeLocalStorageVersion(decryptedState);
             versionUpgraded = true;
             restoreMessage = undefined;
           }
 
-          this.localStorageStore.putState(upgradedState);
+          this.localStorageStore.putState(decryptedState);
           this.setChromeStorageState();
           this.updateSignedRequestsData();
 
@@ -738,11 +736,10 @@ export class VaultService {
     return false;
   }
 
-  private upgradeLocalStorageVersion(version: string, state: any) {
-    switch(version) {
+  private upgradeLocalStorageVersion(state: any) {
+    switch(state.version) {
       case '1.0':
-        this.upgradeStorageToVersion_1_1(state);
-        break;
+        return this.upgradeStorageToVersion_1_1(state);
       default:
         break;
     }
@@ -816,13 +813,13 @@ export class VaultService {
     let whitelistedDomains = JSON.parse(state[whitelistedDomainsKey]);
     if (isRemoveAction) {
       whitelistedDomains = whitelistedDomains.filter(d => d !== domain);
-    } else {
+    } else if (!whitelistedDomains.includes(domain)) {
       whitelistedDomains.push(domain);
     }
 
     chrome.storage.local.get([whitelistedDomainsKey], function(state) {
       state[whitelistedDomainsKey] = whitelistedDomains;
-      chrome.storage.local.set(state);      
+      chrome.storage.local.set(state);
     });
 
     const newState = Object.assign({}, state, {
