@@ -21,7 +21,7 @@
     <p>
       Secret Key
       <a (click)="copyAddress(privateAddress, copyPrivAddrButtonRef)" class="copy-address" #copyPrivAddrButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy secret address"><i class="far fa-copy"></i></a>
-      <span class="address">{{privateAddress.slice(0, 32) + '...' + privateAddress.slice(-16)}}</span>
+      <span class="address">{{isEtherLinkAddress ? '0x' + privateAddress.slice(0, 30) + '...' + privateAddress.slice(-16) : privateAddress}}</span>
     </p>
   </div>
   <div class="modal-footer justify-content-center mt-2">
