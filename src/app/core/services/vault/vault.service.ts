@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
 import LocalStorageStore from 'obs-store/lib/localStorage';
 
 import { BackupResultModel } from '../../models/backup-result.model';
+import { convertECDSAPublicKeyToEtherLinkAddress, convertECDSAPublicKeyToEthereumAddress } from '../../utils/helpers';
 import { DIDDocument } from '../../interfaces/did-document';
 import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { DidKeyModel } from '../../models/did-key.model';
@@ -391,10 +392,13 @@ export class VaultService {
               addressesState.fctAddresses = [{[publicAddress]: nickname}];
             }
           } else if (type === FactomAddressType.EtherLink) {
+            const etherLinkAddress = convertECDSAPublicKeyToEtherLinkAddress(publicAddress);
+            const ethereumAddress = convertECDSAPublicKeyToEthereumAddress(publicAddress);
+
             if (addressesState.etherLinkAddresses) {
-              addressesState.etherLinkAddresses.push({[publicAddress]: nickname});
+              addressesState.etherLinkAddresses.push({etherLinkAddress, ethereumAddress, nickname});
             } else {
-              addressesState.etherLinkAddresses = [{[publicAddress]: nickname}];
+              addressesState.etherLinkAddresses = [{etherLinkAddress, ethereumAddress, nickname}];
             }
           } else if (type === FactomAddressType.EC) {
             if (addressesState.ecAddresses) {
@@ -424,16 +428,18 @@ export class VaultService {
 
     chrome.storage.local.get(['fctAddresses', 'etherLinkAddresses', 'ecAddresses'], function(addressesState) {
       if (type === FactomAddressType.FCT) {
-        addressesState.fctAddresses = addressesState.fctAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
-        addressesState.fctAddresses.push({[publicAddress]: nickname});
+        let fctAddressesObj = addressesState.fctAddresses.find(addressObj => Object.keys(addressObj)[0] === publicAddress);
+        fctAddressesObj[publicAddress] = nickname;
       } else if (type === FactomAddressType.EtherLink) {
-        addressesState.etherLinkAddresses = addressesState.etherLinkAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
-        addressesState.etherLinkAddresses.push({[publicAddress]: nickname});
+        const etherLinkAddress = convertECDSAPublicKeyToEtherLinkAddress(publicAddress);
+        let etherLinkAddressObj = addressesState.etherLinkAddresses.find(addressObj => addressObj.etherLinkAddress === etherLinkAddress);
+        etherLinkAddressObj.nickname = nickname;
       } else if (type === FactomAddressType.EC) {
-        addressesState.ecAddresses = addressesState.ecAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
-        addressesState.ecAddresses.push({[publicAddress]: nickname});
+        let ecAddressesObj = addressesState.ecAddresses.find(addressObj => Object.keys(addressObj)[0] === publicAddress);
+        ecAddressesObj[publicAddress] = nickname;
       }
-      chrome.storage.local.set(addressesState);       
+
+      chrome.storage.local.set(addressesState);
     });
 
     const newState = Object.assign({}, state, {
@@ -471,7 +477,8 @@ export class VaultService {
           if (type === FactomAddressType.FCT) {
             addressesState.fctAddresses = addressesState.fctAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
           } else if (type === FactomAddressType.EtherLink) {
-            addressesState.etherLinkAddresses = addressesState.etherLinkAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
+            const etherLinkAddress = convertECDSAPublicKeyToEtherLinkAddress(publicAddress);
+            addressesState.etherLinkAddresses = addressesState.etherLinkAddresses.filter(addressObj => addressObj.etherLinkAddress !== etherLinkAddress);
           } else if (type === FactomAddressType.EC) {
             addressesState.ecAddresses = addressesState.ecAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
           }
@@ -780,7 +787,11 @@ export class VaultService {
     }
 
     for (const etherLinkPublicAddress of Object.keys(etherLinkAddressesPublicInfo)) {
-      etherLinkAddresses.push({[etherLinkPublicAddress]: etherLinkAddressesPublicInfo[etherLinkPublicAddress]})
+      const etherLinkAddress = convertECDSAPublicKeyToEtherLinkAddress(etherLinkPublicAddress);
+      const ethereumAddress = convertECDSAPublicKeyToEthereumAddress(etherLinkPublicAddress);
+      const nickname = etherLinkAddressesPublicInfo[etherLinkPublicAddress];
+
+      etherLinkAddresses.push({etherLinkAddress, ethereumAddress, nickname});
     }
 
     for (const ecPublicAddress of Object.keys(ecAddressesPublicInfo)) {
