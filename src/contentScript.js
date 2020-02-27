@@ -29,13 +29,13 @@ window.addEventListener('GetFCTAddresses', (event) => {
       const whitelistedDomains = result.fctAddressesRequestWhitelistedDomains;
       if (whitelistedDomains !== undefined && whitelistedDomains.includes(requestOrigin)) {
         window.dispatchEvent(fctAddressesEvent);
-        addFCTAddressesChangesListener();
+        addAddressesChangesListener('fctAddresses', 'FCTAddressesChanged');
       } else {
         chrome.runtime.sendMessage({type: 'receiveApprovalRequest', requestType: 'FCT', from: requestOrigin},
           function(response) {
             if (response.success) {
               window.dispatchEvent(fctAddressesEvent);
-              addFCTAddressesChangesListener();
+              addAddressesChangesListener('fctAddresses', 'FCTAddressesChanged');
             } else {
               fctAddressesEvent = new CustomEvent('FCTAddresses', {detail: response});
               window.dispatchEvent(fctAddressesEvent);
@@ -64,13 +64,13 @@ window.addEventListener('GetECAddresses', (event) => {
       const whitelistedDomains = result.ecAddressesRequestWhitelistedDomains;
       if (whitelistedDomains !== undefined && whitelistedDomains.includes(requestOrigin)) {
         window.dispatchEvent(ecAddressesEvent);
-        addECAddressesChangesListener();
+        addAddressesChangesListener('ecAddresses', 'ECAddressesChanged');
       } else {
         chrome.runtime.sendMessage({type: 'receiveApprovalRequest', requestType: 'EC', from: requestOrigin},
           function(response) {
             if (response.success) {
               window.dispatchEvent(ecAddressesEvent);
-              addECAddressesChangesListener();
+              addAddressesChangesListener('ecAddresses', 'ECAddressesChanged');
             } else {
               ecAddressesEvent = new CustomEvent('ECAddresses', {detail: response});
               window.dispatchEvent(ecAddressesEvent);
@@ -82,109 +82,99 @@ window.addEventListener('GetECAddresses', (event) => {
   });
 });
 
-function addFCTAddressesChangesListener() {
-  chrome.storage.onChanged.addListener(function(changes) {
-    if (changes.fctAddresses) {
-      let fctAddressesOldValue = changes.fctAddresses.oldValue;
-      let fctAddressesNewValue = changes.fctAddresses.newValue;
-      
-      if (fctAddressesOldValue == undefined) {
-        fctAddressesOldValue = []
-      }
+window.addEventListener('GetPegnetAddresses', (event) => {
+  chrome.storage.local.get([
+    'fctAddressesRequestWhitelistedDomains',
+    'etherLinkAddressesRequestWhitelistedDomains',
+    'fctAddresses',
+    'etherLinkAddresses'
+  ], function(result) {
+    if (result.fctAddresses === undefined && result.etherLinkAddresses === undefined) {
+      /*
+        Return { success: false } if fctAddresses and etherLinkAddresses properties in chrome storage are undefined.
+        This should happen only if there is no vault created by the user.
+      */
+      window.dispatchEvent(new CustomEvent('PegnetAddresses', { detail: { success: false } }));
+    } else {
+      let pegnetAddressesEvent = new CustomEvent('PegnetAddresses', {
+        detail: { success: true, fctAddresses: result.fctAddresses, etherLinkAddresses: result.etherLinkAddresses }
+      });
   
-      if (fctAddressesNewValue == undefined) {
-        fctAddressesNewValue = []
-      }
-  
-      if (fctAddressesOldValue.length < fctAddressesNewValue.length) {
-        const oldFctAddresses = fctAddressesOldValue.map(addr => JSON.stringify(addr));
-        const addedFctAddress = fctAddressesNewValue.filter(addr => !oldFctAddresses.includes(JSON.stringify(addr)));
-  
-        const event = new CustomEvent('FCTAddressesChanged', {
-          detail: {
-            "added": addedFctAddress
-          }
-        });
-  
-        window.dispatchEvent(event);
-      } else if (fctAddressesOldValue.length > fctAddressesNewValue.length) {
-        const currentFctAddresses = fctAddressesNewValue.map(addr => JSON.stringify(addr));
-        const removedFctAddress = fctAddressesOldValue.filter(addr => !currentFctAddresses.includes(JSON.stringify(addr)));
-  
-        const event = new CustomEvent('FCTAddressesChanged', {
-          detail: {
-            "removed": removedFctAddress
-          }
-        });
-  
-        window.dispatchEvent(event);
+      const requestOrigin = event.target.origin;
+      const etherLinkWhitelistedDomains = result.etherLinkAddressesRequestWhitelistedDomains;
+      const fctWhitelistedDomains = result.fctAddressesRequestWhitelistedDomains;
+      if (etherLinkWhitelistedDomains !== undefined
+        && fctWhitelistedDomains !== undefined
+        && etherLinkWhitelistedDomains.includes(requestOrigin)
+        && fctWhitelistedDomains.includes(requestOrigin)) {
+        window.dispatchEvent(pegnetAddressesEvent);
+        addAddressesChangesListener('etherLinkAddresses', 'EtherLinkAddressesChanged');
+        addAddressesChangesListener('fctAddresses', 'FCTAddressesChanged');
       } else {
-        const oldFctAddresses = fctAddressesOldValue.map(addr => JSON.stringify(addr));
-        const addedFctAddress = fctAddressesNewValue.filter(addr => !oldFctAddresses.includes(JSON.stringify(addr)));
-  
-        const currentFctAddresses = fctAddressesNewValue.map(addr => JSON.stringify(addr));
-        const removedFctAddress = fctAddressesOldValue.filter(addr => !currentFctAddresses.includes(JSON.stringify(addr)));
-  
-        const event = new CustomEvent('FCTAddressesChanged', {
-          detail: {
-            "added": addedFctAddress,
-            "removed": removedFctAddress
+        chrome.runtime.sendMessage({type: 'receiveApprovalRequest', requestType: 'Pegnet', from: requestOrigin},
+          function(response) {
+            if (response.success) {
+              window.dispatchEvent(pegnetAddressesEvent);
+              addAddressesChangesListener('etherLinkAddresses', 'EtherLinkAddressesChanged');
+              addAddressesChangesListener('fctAddresses', 'FCTAddressesChanged');
+            } else {
+              pegnetAddressesEvent = new CustomEvent('PegnetAddresses', {detail: response});
+              window.dispatchEvent(pegnetAddressesEvent);
+            }
           }
-        });
-  
-        window.dispatchEvent(event);
+        );
       }
     }
   });
-}
+});
 
-function addECAddressesChangesListener() {
+function addAddressesChangesListener(addressType, eventName) {
   chrome.storage.onChanged.addListener(function(changes) {
-    if (changes.ecAddresses) {
-      let ecAddressesOldValue = changes.ecAddresses.oldValue;
-      let ecAddressesNewValue = changes.ecAddresses.newValue;
-  
-      if (ecAddressesOldValue == undefined) {
-        ecAddressesOldValue = []
+    if (changes[addressType]) {
+      let addressesOldValue = changes[addressType].oldValue;
+      let addressesNewValue = changes[addressType].newValue;
+      
+      if (addressesOldValue == undefined) {
+        addressesOldValue = []
       }
   
-      if (ecAddressesNewValue == undefined) {
-        ecAddressesNewValue = []
+      if (addressesNewValue == undefined) {
+        addressesNewValue = []
       }
   
-      if (ecAddressesOldValue.length < ecAddressesNewValue.length) {
-        const oldEcAddresses = ecAddressesOldValue.map(addr => JSON.stringify(addr));
-        const addedEcAddress = ecAddressesNewValue.filter(addr => !oldEcAddresses.includes(JSON.stringify(addr)));
+      if (addressesOldValue.length < addressesNewValue.length) {
+        const oldAddresses = addressesOldValue.map(addr => JSON.stringify(addr));
+        const addedAddresses = addressesNewValue.filter(addr => !oldAddresses.includes(JSON.stringify(addr)));
   
-        const event = new CustomEvent('ECAddressesChanged', {
+        const event = new CustomEvent(eventName, {
           detail: {
-            "added": addedEcAddress
+            "added": addedAddresses
           }
         });
   
         window.dispatchEvent(event);
-      } else if (ecAddressesOldValue.length > ecAddressesNewValue.length) {
-        const currentEcAddresses = ecAddressesNewValue.map(addr => JSON.stringify(addr));
-        const removedEcAddress = ecAddressesOldValue.filter(addr => !currentEcAddresses.includes(JSON.stringify(addr)));
+      } else if (addressesOldValue.length > addressesNewValue.length) {
+        const currentAddresses = addressesNewValue.map(addr => JSON.stringify(addr));
+        const removedAddresses = addressesOldValue.filter(addr => !currentAddresses.includes(JSON.stringify(addr)));
   
-        const event = new CustomEvent('ECAddressesChanged', {
+        const event = new CustomEvent(eventName, {
           detail: {
-            "removed": removedEcAddress
+            "removed": removedAddresses
           }
         });
   
         window.dispatchEvent(event);
       } else {
-        const oldEcAddresses = ecAddressesOldValue.map(addr => JSON.stringify(addr));
-        const addedEcAddress = ecAddressesNewValue.filter(addr => !oldEcAddresses.includes(JSON.stringify(addr)));
+        const oldAddresses = addressesOldValue.map(addr => JSON.stringify(addr));
+        const addedAddresses = addressesNewValue.filter(addr => !oldAddresses.includes(JSON.stringify(addr)));
   
-        const currentEcAddresses = ecAddressesNewValue.map(addr => JSON.stringify(addr));
-        const removedEcAddress = ecAddressesOldValue.filter(addr => !currentEcAddresses.includes(JSON.stringify(addr)));
+        const currentAddresses = addressesNewValue.map(addr => JSON.stringify(addr));
+        const removedAddresses = addressesOldValue.filter(addr => !currentAddresses.includes(JSON.stringify(addr)));
   
-        const event = new CustomEvent('ECAddressesChanged', {
+        const event = new CustomEvent(eventName, {
           detail: {
-            "added": addedEcAddress,
-            "removed": removedEcAddress
+            "added": addedAddresses,
+            "removed": removedAddresses
           }
         });
   
