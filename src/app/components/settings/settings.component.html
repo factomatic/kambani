@@ -24,12 +24,12 @@
             <div class="row" id="accordion" *ngIf="checkIsActive('domains')">
               <div class="col-sm-6 mb-3">
                 <div class="card">
-                  <div class="card-header collapsed" (click)="fctRequestExpanded = !fctRequestExpanded" id="headingOne" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  <div class="card-header collapsed" (click)="fctRequestExpanded = !fctRequestExpanded" id="fctHeading" data-toggle="collapse" data-target="#fctCollapse" aria-expanded="true" aria-controls="fctCollapse">
                     FCT Addresses Request
                     <i class="fas float-right mt-1" [ngClass]="{'fa-angle-double-down': !fctRequestExpanded, 'fa-angle-double-up': fctRequestExpanded}"></i>
                   </div>
             
-                  <div id="collapseOne" class="collapse show" aria-labelledby="headingOne">
+                  <div id="fctCollapse" class="collapse show" aria-labelledby="fctHeading">
                     <div class="card-body">
                       <div *ngFor="let el of fctAddressesRequestWhitelistedDomains; let i=index">
                         <div class="list-group list-group-horizontal" *ngIf="i % 2 == 0">
@@ -48,12 +48,12 @@
               </div>
               <div class="col-sm-6 mb-3">
                 <div class="card">
-                  <div class="card-header collapsed" (click)="ecRequestExpanded = !ecRequestExpanded" id="headingTwo" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                  <div class="card-header collapsed" (click)="ecRequestExpanded = !ecRequestExpanded" id="ecHeading" data-toggle="collapse" data-target="#ecCollapse" aria-expanded="true" aria-controls="ecCollapse">
                     EC Addresses Request
                     <i class="fas float-right mt-1" [ngClass]="{'fa-angle-double-down': !ecRequestExpanded, 'fa-angle-double-up': ecRequestExpanded}"></i>
                   </div>
             
-                  <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo">
+                  <div id="ecCollapse" class="collapse show" aria-labelledby="ecHeading">
                     <div class="card-body">
                       <div *ngFor="let el of ecAddressesRequestWhitelistedDomains; let i=index">
                         <div class="list-group list-group-horizontal" *ngIf="i % 2 == 0">
@@ -64,6 +64,30 @@
                         </div>
                       </div>
                       <div *ngIf="ecAddressesRequestWhitelistedDomains.length == 0">
+                        <p class="text-center">You have not whitelisted any domains yet</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <div class="card">
+                  <div class="card-header collapsed" (click)="etherLinkRequestExpanded = !etherLinkRequestExpanded" id="etherLinkHeading" data-toggle="collapse" data-target="#etherLinkCollapse" aria-expanded="true" aria-controls="etherLinkCollapse">
+                    EtherLink Addresses Request
+                    <i class="fas float-right mt-1" [ngClass]="{'fa-angle-double-down': !etherLinkRequestExpanded, 'fa-angle-double-up': etherLinkRequestExpanded}"></i>
+                  </div>
+            
+                  <div id="etherLinkCollapse" class="collapse show" aria-labelledby="etherLinkHeading">
+                    <div class="card-body">
+                      <div *ngFor="let el of etherLinkAddressesRequestWhitelistedDomains; let i=index">
+                        <div class="list-group list-group-horizontal" *ngIf="i % 2 == 0">
+                          <a class="list-group-item list-group-item-action waves-light" mdbWavesEffect *ngFor="let domain of etherLinkAddressesRequestWhitelistedDomains.slice(i, i+2)">
+                            {{domain}}
+                            <i class="fas fa-times float-right mt-1" (click)="removeDomain('EtherLink', domain)"></i>
+                          </a>
+                        </div>
+                      </div>
+                      <div *ngIf="etherLinkAddressesRequestWhitelistedDomains.length == 0">
                         <p class="text-center">You have not whitelisted any domains yet</p>
                       </div>
                     </div>
