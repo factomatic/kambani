@@ -21,6 +21,7 @@ import { UpdateEntryDocument } from '../../interfaces/update-entry-document';
 export class VaultService {
   private localStorageStore: LocalStorageStore;
   private supportedLocalStorageVersions = ['1.0', '1.1'];
+  private defaultWhitelistedDomains = ['https://factomatic.io', 'https://pegnet.exchange'];
 
   constructor() {
     this.localStorageStore = new LocalStorageStore({ storageKey: environment.storageKey });
@@ -40,8 +41,8 @@ export class VaultService {
           [FactomAddressType.EtherLink]: {},
           [FactomAddressType.EC]: {}
         }),
-        fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
-        etherLinkAddressesRequestWhitelistedDomains: JSON.stringify([]),
+        fctAddressesRequestWhitelistedDomains: JSON.stringify(this.defaultWhitelistedDomains),
+        etherLinkAddressesRequestWhitelistedDomains: JSON.stringify(this.defaultWhitelistedDomains),
         ecAddressesRequestWhitelistedDomains: JSON.stringify([]),
         createdDIDsCount: 0,
         createdFCTAddressesCount: 0,
@@ -56,8 +57,8 @@ export class VaultService {
         fctAddresses: [],
         etherLinkAddresses: [],
         ecAddresses: [],
-        fctAddressesRequestWhitelistedDomains: [],
-        etherLinkAddressesRequestWhitelistedDomains: [],
+        fctAddressesRequestWhitelistedDomains: this.defaultWhitelistedDomains,
+        etherLinkAddressesRequestWhitelistedDomains: this.defaultWhitelistedDomains,
         ecAddressesRequestWhitelistedDomains: []
       })
     });
@@ -762,8 +763,8 @@ export class VaultService {
       {
         version: environment.localStorageVersion,
         createdEtherLinkAddressesCount: 0,
-        fctAddressesRequestWhitelistedDomains: JSON.stringify([]),
-        etherLinkAddressesRequestWhitelistedDomains: JSON.stringify([]),
+        fctAddressesRequestWhitelistedDomains: JSON.stringify(this.defaultWhitelistedDomains),
+        etherLinkAddressesRequestWhitelistedDomains: JSON.stringify(this.defaultWhitelistedDomains),
         ecAddressesRequestWhitelistedDomains: JSON.stringify([]),
         factomAddressesPublicInfo: JSON.stringify(addressesPublicInfo)
       }
