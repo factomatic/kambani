@@ -77,7 +77,7 @@ export class SigningService {
           } else {
             const curve = elliptic.ec('secp256k1');
             const keyPair = curve.keyFromPrivate(decryptedVault[signingKeyOrAddress]);
-            publicKey = Buffer.from(keyPair.getPublic('buffer'));
+            publicKey = Buffer.concat([Buffer.from('04', 'hex'), Buffer.from(keyPair.getPublic('buffer'))])
             signatureType = SignatureType.ECDSA;
             signature = keyPair.sign(dataToSign).toDER();
           }
@@ -116,7 +116,7 @@ export class SigningService {
         } else {
           const curve = elliptic.ec('secp256k1');
           const keyPair = curve.keyFromPrivate(decryptedVault[publicAddress]);
-          publicKey = Buffer.from(keyPair.getPublic('buffer'));
+          publicKey = Buffer.concat([Buffer.from('04', 'hex'), Buffer.from(keyPair.getPublic('buffer'))]);
           signatureType = SignatureType.ECDSA;
           signature = keyPair.sign(data).toDER();
         }
