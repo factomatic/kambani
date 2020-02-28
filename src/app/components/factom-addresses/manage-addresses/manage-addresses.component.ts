@@ -4,7 +4,6 @@ import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import * as elliptic from 'elliptic';
 import { generateRandomFctAddress, generateRandomEcAddress } from 'factom';
 
 import { BaseComponent } from '../../base.component';
@@ -16,9 +15,9 @@ import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 import { PrivateAddressModalComponent } from '../../modals/private-address-modal/private-address-modal.component';
 import {
-  calculateDoubleSha256,
   convertECDSAPublicKeyToEthereumAddress,
   convertECDSAPublicKeyToEtherLinkAddress,
+  generateRandomEtherLinkKeyPair,
   minifyAddress
 } from 'src/app/core/utils/helpers';
 
@@ -113,7 +112,6 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
   }
 
   generateAddressPair() {
-    const self = this;
     const addressPair = (function(addressType) {
       switch(addressType) {
         case FactomAddressType.FCT:
@@ -121,7 +119,7 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
         case FactomAddressType.EC:
           return generateRandomEcAddress();
         case FactomAddressType.EtherLink:
-          return self.generateRandomEtherLinkKeyPair();
+          return generateRandomEtherLinkKeyPair();
       }
     })(this.selectedAddressType);
 
@@ -242,16 +240,6 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     this.displayedEtherLinkAddresses = this.etherLinkAddresses
       .slice(this.currentStartIndex, this.currentStartIndex + this.pageSize)
       .map(this.convertECDSAPublicKeyToAddresses, this);
-  }
-
-  private generateRandomEtherLinkKeyPair() {
-    const curve = elliptic.ec('secp256k1');
-    const keyPair = curve.genKeyPair();
-    return {
-      // Remove the first 2 bytes signifying an uncompressed ECDSA public key 
-      public: keyPair.getPublic('hex').slice(2),
-      private: keyPair.getPrivate('hex')
-    }
   }
 
   private convertECDSAPublicKeyToAddresses(publicKey) {

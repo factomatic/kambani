@@ -1,5 +1,6 @@
 import * as base58 from 'bs58';
 import * as keccak256 from 'keccak256';
+import * as elliptic from 'elliptic';
 import { sha256 } from 'js-sha256';
 
 function minifyPublicKey(publicKey: string) {
@@ -180,6 +181,17 @@ function convertECDSAPublicKeyToEthereumAddress(publicKey: string) {
   return '0x' + keccak256(publicKeyBytes).slice(12).toString('hex');
 }
 
+function generateRandomEtherLinkKeyPair() {
+  const curve = elliptic.ec('secp256k1');
+  const keyPair = curve.genKeyPair();
+
+  return {
+    // Remove the first 2 bytes signifying an uncompressed ECDSA public key 
+    public: keyPair.getPublic('hex').slice(2),
+    private: keyPair.getPrivate('hex')
+  }
+}
+
 export {
   minifyPublicKey,
   minifyDid,
@@ -195,5 +207,6 @@ export {
   postProcessEncryptedBackupFile,
   generateBackupFileName,
   convertECDSAPublicKeyToEtherLinkAddress,
-  convertECDSAPublicKeyToEthereumAddress
+  convertECDSAPublicKeyToEthereumAddress,
+  generateRandomEtherLinkKeyPair
 };
