@@ -11,10 +11,14 @@ $mainColor: #2F5BE7;
         font-size: 12px;
         border-top: 0px;
         border-bottom-width: 1px;
+        vertical-align: middle;
       }
     }
     tbody {
       tr {
+        td {
+          vertical-align: middle;
+        }
         td:first-child {
           span {
             white-space: nowrap;
@@ -45,7 +49,7 @@ $mainColor: #2F5BE7;
       }
       .public-address {
         font-family: monospace, monospace;
-        font-size: 16px;
+        font-size: 14px;
       }
     }
   }
@@ -92,8 +96,6 @@ a {
   }
 }
 .copy-address {
-  position: relative;
-  bottom: 3px;
   margin-left: 15px;
   cursor: pointer;
   &::before {

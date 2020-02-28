@@ -1,4 +1,5 @@
 export enum FactomAddressType {
   FCT = 'FCT',
-  EC = 'EC'
+  EC = 'EC',
+  EtherLink = 'EtherLink'
 }

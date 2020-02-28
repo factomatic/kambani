@@ -21,8 +21,10 @@ export class SettingsComponent implements OnInit {
   public changePasswordForm;
   public fctAddressesRequestWhitelistedDomains: [];
   public ecAddressesRequestWhitelistedDomains: [];
+  public etherLinkAddressesRequestWhitelistedDomains: [];
   public fctRequestExpanded: boolean = true;
   public ecRequestExpanded: boolean = true;
+  public etherLinkRequestExpanded: boolean = true;
 
   constructor(
     private fb: FormBuilder,
@@ -102,6 +104,7 @@ export class SettingsComponent implements OnInit {
   private getWhitelistedDomains() {
     this.fctAddressesRequestWhitelistedDomains = this.vaultService.getFCTAddressesRequestWhitelistedDomains();
     this.ecAddressesRequestWhitelistedDomains = this.vaultService.getECAddressesRequestWhitelistedDomains();
+    this.etherLinkAddressesRequestWhitelistedDomains = this.vaultService.getEtherLinkAddressesRequestWhitelistedDomains();
   }
 
   get oldPassword () {

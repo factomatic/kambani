@@ -10,6 +10,7 @@
         <nav class="info-tables">
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
             <a (click)="changeSelectedAddressType(FactomAddressType.FCT)" class="nav-item nav-link" [ngClass]="{'active': selectedAddressType == FactomAddressType.FCT}" id="nav-fct-addresses-tab" data-toggle="tab" href="#nav-fct-addresses" role="tab" aria-controls="nav-fct-addresses" aria-selected="true">FCT Addresses</a>
+            <a (click)="changeSelectedAddressType(FactomAddressType.EtherLink)" class="nav-item nav-link" [ngClass]="{'active': selectedAddressType == FactomAddressType.EtherLink}" id="nav-etherlink-addresses-tab" data-toggle="tab" href="#nav-etherlink-addresses" role="tab" aria-controls="nav-etherlink-addresses" aria-selected="false">EtherLink Addresses</a>
             <a (click)="changeSelectedAddressType(FactomAddressType.EC)" class="nav-item nav-link" [ngClass]="{'active': selectedAddressType == FactomAddressType.EC}" id="nav-ec-addresses-tab" data-toggle="tab" href="#nav-ec-addresses" role="tab" aria-controls="nav-ec-addresses" aria-selected="false">EC Addresses</a>
           </div>
         </nav>
@@ -64,6 +65,63 @@
             <div class="row">
               <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="fctAddresses.length == 0">
                 <p class="text-warning text-center">You have not imported any FCT addresses yet</p>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade show" [ngClass]="{'active': selectedAddressType == FactomAddressType.EtherLink}" id="nav-etherlink-addresses" role="tabpanel" aria-labelledby="nav-etherlink-addresses-tab">
+            <div class="table-holder" *ngIf="etherLinkAddresses.length > 0">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>EtherLink Address</th>
+                    <th>ETH Address</th>
+                    <th>Nickname</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody valign="center">
+                  <tr *ngFor="let address of displayedEtherLinkAddresses">
+                    <td>
+                      <span class="public-address">{{minifyAddress(address.factom)}}</span>
+                      <a (click)="copyAddress(address.factom, copyEtherLinkButtonRef)" class="copy-address" #copyEtherLinkButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy address"><i class="far fa-copy"></i></a>
+                    </td>
+                    <td> <span class="public-address">{{minifyAddress(address.ethereum)}}</span>
+                      <a (click)="copyAddress(address.ethereum, copyEthereumButtonRef)" class="copy-address" #copyEthereumButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy address"><i class="far fa-copy"></i></a>
+                    </td>
+                    <td width="250" height="65">
+                      <a *ngIf="!editAddressNickname[address.publicKey]" (click)="editAddressNickname[address.publicKey] = true" data-toggle="tooltip" data-placement="top" title="Click to edit">{{etherLinkAddressesInfo[address.publicKey]}}</a>
+                      <div class="nickname-editable" *ngIf="editAddressNickname[address.publicKey]">
+                        <form 
+                          (ngSubmit)="editNickname(address.publicKey, FactomAddressType.EtherLink, nickname.value)"
+                          (clickOutside)="editNickname(address.publicKey, FactomAddressType.EtherLink, nickname.value)"
+                          [attachOutsideOnClick]="false"
+                          [delayClickOutsideInit]="true">
+                          <input type="text" name="nickname" #nickname value="{{etherLinkAddressesInfo[address.publicKey]}}" autofocus class="form-control" />
+                        </form>
+                      </div>
+                    </td>
+                    <td class="text-right">
+                      <button class="btn btn-xs btn-primary" (click)="viewPrivateAddress(address.publicKey)" data-toggle="tooltip" data-placement="top" title="Click to view private address"><i class="fa fa-search"></i></button>
+                      <button class="btn btn-xs btn-danger" (click)="removeAddress(address.publicKey, FactomAddressType.EtherLink)"><i class="fa fa-trash"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-6">
+                <div class="paginator" *ngIf="etherLinkAddresses.length > pageSize">
+                  <a (click)="changePage(currentPage - 1)" [ngClass]="currentPage == 1 ? 'disabled' : ''">Prev</a>
+                  <a (click)="changePage(currentPage + 1)" [ngClass]="currentStartIndex + pageSize < etherLinkAddresses.length ? '' : 'disabled'">Next</a>
+                </div>
+              </div>
+              <div class="col-6 text-right" *ngIf="etherLinkAddresses.length > 0">
+                {{currentStartIndex + 1}} - {{currentStartIndex + pageSize < etherLinkAddresses.length ? currentStartIndex + pageSize : etherLinkAddresses.length}} from {{etherLinkAddresses.length}}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="etherLinkAddresses.length == 0">
+                <p class="text-warning text-center">You have not imported any EtherLink addresses yet</p>
               </div>
             </div>
           </div>

@@ -66,11 +66,21 @@ export class SigningService {
           }
 
         } else {
-          const privateKey = addressToKey(decryptedVault[signingKeyOrAddress]);
-          const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
-          publicKey = Buffer.from(keyPair.publicKey);
-          signatureType = SignatureType.EdDSA;
-          signature = Buffer.from(nacl.sign.detached(dataToSign, keyPair.secretKey));
+          // This is a signature with an FCT, EC or EtherLink key. Signatures
+          // with FCT & EC are EdDSA. Signatures with EtherLink are ECDSA.
+          if (signingKeyOrAddress.startsWith('Fs') || signingKeyOrAddress.startsWith('Es')) {
+            const privateKey = addressToKey(decryptedVault[signingKeyOrAddress]);
+            const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
+            publicKey = Buffer.from(keyPair.publicKey);
+            signatureType = SignatureType.EdDSA;
+            signature = Buffer.from(nacl.sign.detached(dataToSign, keyPair.secretKey));
+          } else {
+            const curve = elliptic.ec('secp256k1');
+            const keyPair = curve.keyFromPrivate(decryptedVault[signingKeyOrAddress]);
+            publicKey = Buffer.concat([Buffer.from('04', 'hex'), Buffer.from(keyPair.getPublic('buffer'))])
+            signatureType = SignatureType.ECDSA;
+            signature = keyPair.sign(dataToSign).toDER();
+          }
         }
 
         this.vaultService.incrementSignedRequests();
@@ -87,17 +97,29 @@ export class SigningService {
     });
   }
 
-  signPegNetTransaction(data: Buffer, fctPublicAddress: string, vaultPassword: string): Observable<SignatureDataModel> {
+  signPegNetTransaction(data: Buffer, publicAddress: string, vaultPassword: string): Observable<SignatureDataModel> {
     return defer(async () => {
       try {
         const vault = this.vaultService.getVault();
         const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
+        let privateKey;
+        let signatureType;
+        let publicKey;
+        let signature;
 
-        const privateKey = addressToKey(decryptedVault[fctPublicAddress]);
-        const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
-        const publicKey = Buffer.from(keyPair.publicKey);
-        const signatureType = SignatureType.EdDSA;
-        const signature = Buffer.from(nacl.sign.detached(data, keyPair.secretKey));
+        if (publicAddress.startsWith('FA')) {
+          privateKey = addressToKey(decryptedVault[publicAddress]);
+          const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
+          publicKey = Buffer.from(keyPair.publicKey);
+          signatureType = SignatureType.EdDSA;
+          signature = Buffer.from(nacl.sign.detached(data, keyPair.secretKey));
+        } else {
+          const curve = elliptic.ec('secp256k1');
+          const keyPair = curve.keyFromPrivate(decryptedVault[publicAddress]);
+          publicKey = Buffer.concat([Buffer.from('04', 'hex'), Buffer.from(keyPair.getPublic('buffer'))]);
+          signatureType = SignatureType.ECDSA;
+          signature = keyPair.sign(data).toDER();
+        }
 
         this.vaultService.incrementSignedRequests();
 

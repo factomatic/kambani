@@ -14,6 +14,12 @@ import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 import { PrivateAddressModalComponent } from '../../modals/private-address-modal/private-address-modal.component';
+import {
+  convertECDSAPublicKeyToEthereumAddress,
+  convertECDSAPublicKeyToEtherLinkAddress,
+  generateRandomEtherLinkKeyPair,
+  minifyAddress
+} from 'src/app/core/utils/helpers';
 
 @Component({
   selector: 'app-manage-addresses',
@@ -23,16 +29,20 @@ import { PrivateAddressModalComponent } from '../../modals/private-address-modal
 export class ManageAddressesComponent extends BaseComponent implements OnInit {
   public fctAddressesInfo = {};
   public ecAddressesInfo = {};
+  public etherLinkAddressesInfo = {};
   public fctAddresses: string[] = [];
   public ecAddresses: string[] = [];
+  public etherLinkAddresses: string[] = [];
   public displayedFCTAddresses: string[] = [];
   public displayedECAddresses: string[] = [];
+  public displayedEtherLinkAddresses: Object[] = [];
   public selectedAddressType: FactomAddressType = FactomAddressType.FCT;
   public FactomAddressType = FactomAddressType;
   public editAddressNickname: boolean[] = [];
   public pageSize: number = 6;
   public currentPage: number = 1;
   public currentStartIndex = 0;
+  public minifyAddress = minifyAddress;
 
   constructor(
     private dialogsService: DialogsService,
@@ -80,6 +90,9 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     this.currentStartIndex = 0;
     this.displayedFCTAddresses = this.fctAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
     this.displayedECAddresses = this.ecAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+    this.displayedEtherLinkAddresses = this.etherLinkAddresses
+      .slice(this.currentStartIndex, this.currentStartIndex + this.pageSize)
+      .map(this.convertECDSAPublicKeyToAddresses, this);
   }
 
   editNickname(publicAddress: string, type: FactomAddressType, nickname: string) {
@@ -88,8 +101,10 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
 
       if (type == FactomAddressType.FCT) {
         this.fctAddressesInfo[publicAddress] = nickname;
-      } else {
+      } else if (type == FactomAddressType.EC) {
         this.ecAddressesInfo[publicAddress] = nickname;
+      } else {
+        this.etherLinkAddressesInfo[publicAddress] = nickname;
       }
     }
 
@@ -97,9 +112,16 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
   }
 
   generateAddressPair() {
-    const addressPair = this.selectedAddressType == FactomAddressType.FCT 
-      ? generateRandomFctAddress()
-      : generateRandomEcAddress();
+    const addressPair = (function(addressType) {
+      switch(addressType) {
+        case FactomAddressType.FCT:
+          return generateRandomFctAddress();
+        case FactomAddressType.EC:
+          return generateRandomEcAddress();
+        case FactomAddressType.EtherLink:
+          return generateRandomEtherLinkKeyPair();
+      }
+    })(this.selectedAddressType);
 
     const dialogMessage = `Enter your vault password to import the generated ${this.selectedAddressType} address`;
     this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
@@ -139,6 +161,7 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
                 const confirmRef = this.modalService.open(PrivateAddressModalComponent);
                 confirmRef.componentInstance.publicAddress = publicAddress;
                 confirmRef.componentInstance.privateAddress = result.message;
+                confirmRef.componentInstance.isEtherLinkAddress = publicAddress.length == 128;
                 confirmRef.result
                   .then((result) => {})
                   .catch((error) => {});
@@ -188,25 +211,43 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     setTimeout(() => {element.classList.remove('clicked')},2000);
   }
 
-  changePage (page) {
+  changePage(page) {
     this.currentPage = page;
     this.currentStartIndex = (this.currentPage - 1) * this.pageSize;
 
     if (this.selectedAddressType == FactomAddressType.FCT) {
       this.displayedFCTAddresses = this.fctAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
-    } else {
+    } else if (this.selectedAddressType == FactomAddressType.EC) {
       this.displayedECAddresses = this.ecAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+    } else {
+      this.displayedEtherLinkAddresses = this.etherLinkAddresses
+        .slice(this.currentStartIndex, this.currentStartIndex + this.pageSize)
+        .map(this.convertECDSAPublicKeyToAddresses, this);
     }
   }
 
   private getAddressesInfo() {
     this.fctAddressesInfo = this.vaultService.getFCTAddressesPublicInfo();
     this.ecAddressesInfo = this.vaultService.getECAddressesPublicInfo();
+    this.etherLinkAddressesInfo = this.vaultService.getEtherLinkAddressesPublicInfo();
 
     this.fctAddresses = Object.keys(this.fctAddressesInfo);
     this.ecAddresses = Object.keys(this.ecAddressesInfo);
+    this.etherLinkAddresses = Object.keys(this.etherLinkAddressesInfo);
 
     this.displayedFCTAddresses = this.fctAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
     this.displayedECAddresses = this.ecAddresses.slice(this.currentStartIndex, this.currentStartIndex + this.pageSize);
+    this.displayedEtherLinkAddresses = this.etherLinkAddresses
+      .slice(this.currentStartIndex, this.currentStartIndex + this.pageSize)
+      .map(this.convertECDSAPublicKeyToAddresses, this);
   }
+
+  private convertECDSAPublicKeyToAddresses(publicKey) {
+    return {
+      publicKey,
+      'ethereum': convertECDSAPublicKeyToEthereumAddress(publicKey),
+      'factom': convertECDSAPublicKeyToEtherLinkAddress(publicKey)
+    }
+  }
+
 }
