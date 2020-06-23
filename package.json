@@ -23,7 +23,7 @@
     "@ng-bootstrap/ng-bootstrap": "4.0.4",
     "@ngrx/store": "^8.5.1",
     "@types/chrome": "0.0.81",
-    "angular": "^1.7.9",
+    "angular": "^1.8.0",
     "angular-autofocus-fix": "^0.1.2",
     "angular-bootstrap-md": "^7.5.4",
     "angular-highlight-js": "2.0.1",
