@@ -76,7 +76,7 @@ Example code:
   window.addEventListener("KambaniInstalled", event => {
     console.log("Kambani is installed")
   })
-  window.dispatchEvent(new CustomEvent("IsKambaniInstalled))
+  window.dispatchEvent(new CustomEvent("IsKambaniInstalled"))
 ```
 
 ### FCT addresses request
