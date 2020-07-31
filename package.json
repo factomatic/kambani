@@ -33,7 +33,7 @@
     "buffer": "5.2.1",
     "chart.js": "^2.9.3",
     "core-js": "^2.6.10",
-    "elliptic": "6.4.1",
+    "elliptic": "6.5.3",
     "factom": "1.2.7",
     "highlight.js": "9.15.6",
     "jquery": "^3.5.0",
