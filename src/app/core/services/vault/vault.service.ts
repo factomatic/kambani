@@ -41,9 +41,11 @@ export class VaultService {
           [FactomAddressType.EtherLink]: {},
           [FactomAddressType.EC]: {}
         }),
+        blockSigningKeysPublicInfo: JSON.stringify({}),
         fctAddressesRequestWhitelistedDomains: JSON.stringify(this.defaultWhitelistedDomains),
         etherLinkAddressesRequestWhitelistedDomains: JSON.stringify(this.defaultWhitelistedDomains),
         ecAddressesRequestWhitelistedDomains: JSON.stringify([]),
+        blockSigningKeysRequestWhitelistedDomains: JSON.stringify([]),
         createdDIDsCount: 0,
         createdFCTAddressesCount: 0,
         createdEtherLinkAddressesCount: 0,
@@ -57,9 +59,11 @@ export class VaultService {
         fctAddresses: [],
         etherLinkAddresses: [],
         ecAddresses: [],
+        blockSigningKeys: [],
         fctAddressesRequestWhitelistedDomains: this.defaultWhitelistedDomains,
         etherLinkAddressesRequestWhitelistedDomains: this.defaultWhitelistedDomains,
-        ecAddressesRequestWhitelistedDomains: []
+        ecAddressesRequestWhitelistedDomains: [],
+        blockSigningKeysRequestWhitelistedDomains: []
       })
     });
   }
@@ -494,6 +498,101 @@ export class VaultService {
     });
   }
 
+  importBlockSigningKey(publicKey: string, privateKey: string, vaultPassword: string, nickname: string) {
+    return defer(async () => {
+      try {
+        const state = this.localStorageStore.getState();
+        const decryptedVault = await encryptor.decrypt(vaultPassword, state.vault);
+
+        decryptedVault[publicKey] = privateKey;
+        const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
+
+        const blockSigningKeysPublicInfo = JSON.parse(state.blockSigningKeysPublicInfo);
+        blockSigningKeysPublicInfo[publicKey] = nickname;
+
+        const newState = Object.assign({}, state, {
+          vault: encryptedVault,
+          blockSigningKeysPublicInfo: JSON.stringify(blockSigningKeysPublicInfo)
+        });
+
+        this.localStorageStore.putState(newState);
+
+        chrome.storage.local.get(['blockSigningKeys'], function(state) {
+          if (state.blockSigningKeys) {
+            state.blockSigningKeys.push({[publicKey]: nickname});
+          } else {
+            state.blockSigningKeys = [{[publicKey]: nickname}];
+          }
+
+          chrome.storage.local.set(state);    
+        });
+
+        return new ResultModel(true, 'Block signing key was successfully imported');
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
+  updateBlockSigningKeyNickname(publicKey: string, nickname: string) {
+    const state = this.localStorageStore.getState();
+    const blockSigningKeysPublicInfo = JSON.parse(state.blockSigningKeysPublicInfo);
+
+    if (blockSigningKeysPublicInfo[publicKey]) {
+      blockSigningKeysPublicInfo[publicKey] = nickname;
+    }
+
+    const newState = Object.assign({}, state, {
+      blockSigningKeysPublicInfo: JSON.stringify(blockSigningKeysPublicInfo)
+    });
+
+    this.localStorageStore.putState(newState);
+
+    chrome.storage.local.get(['blockSigningKeys'], function(state) {
+      let blockSigningKeyObj = state.blockSigningKeys.find(keyObj => Object.keys(keyObj)[0] === publicKey);
+      blockSigningKeyObj[publicKey] = nickname;
+
+      chrome.storage.local.set(state);
+    });
+  }
+
+  removeBlockSigningKey(publicKey: string, vaultPassword: string) {
+    return defer(async () => {
+      try {
+        const state = this.localStorageStore.getState();
+        const decryptedVault = await encryptor.decrypt(vaultPassword, state.vault);
+
+        if (decryptedVault[publicKey]) {
+          delete decryptedVault[publicKey];
+        }
+        
+        const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
+
+        const blockSigningKeysPublicInfo = JSON.parse(state.blockSigningKeysPublicInfo);
+        if (blockSigningKeysPublicInfo[publicKey]) {
+          delete blockSigningKeysPublicInfo[publicKey];
+        }
+
+        const newState = Object.assign({}, state, {
+          vault: encryptedVault,
+          blockSigningKeysPublicInfo: JSON.stringify(blockSigningKeysPublicInfo)
+        });
+
+        this.localStorageStore.putState(newState);
+
+        chrome.storage.local.get(['blockSigningKeys'], function(state) {
+          state.blockSigningKeys = state.blockSigningKeys.filter(keyObj => Object.keys(keyObj)[0] !== publicKey);
+    
+          chrome.storage.local.set(state);
+        });
+
+        return new ResultModel(true, 'Block signing key was successfully removed');
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
+  }
+
   addWhitelistedDomain(requestType: string, domain: string) {
     this.syncWhitelistedDomains(requestType, domain);
   }
@@ -566,6 +665,10 @@ export class VaultService {
     return JSON.parse(this.localStorageStore.getState().factomAddressesPublicInfo)[FactomAddressType.EC];
   }
 
+  getBlockSigningKeysPublicInfo() {
+    return JSON.parse(this.localStorageStore.getState().blockSigningKeysPublicInfo);
+  }
+
   getFCTAddressesRequestWhitelistedDomains() {
     return JSON.parse(this.localStorageStore.getState().fctAddressesRequestWhitelistedDomains);
   }
@@ -578,8 +681,13 @@ export class VaultService {
     return JSON.parse(this.localStorageStore.getState().ecAddressesRequestWhitelistedDomains);
   }
 
+  getBlockSigningKeysRequestWhitelistedDomains() {
+    return JSON.parse(this.localStorageStore.getState().blockSigningKeysRequestWhitelistedDomains);
+  }
+
   anyDIDsOrAddresses(): boolean {
     return this.getDIDsCount() > 0
+      || Object.keys(this.getBlockSigningKeysPublicInfo()).length > 0
       || Object.keys(this.getFCTAddressesPublicInfo()).length > 0
       || Object.keys(this.getEtherLinkAddressesPublicInfo()).length > 0
       || Object.keys(this.getECAddressesPublicInfo()).length > 0;
@@ -766,6 +874,8 @@ export class VaultService {
         fctAddressesRequestWhitelistedDomains: JSON.stringify(this.defaultWhitelistedDomains),
         etherLinkAddressesRequestWhitelistedDomains: JSON.stringify(this.defaultWhitelistedDomains),
         ecAddressesRequestWhitelistedDomains: JSON.stringify([]),
+        blockSigningKeysRequestWhitelistedDomains: JSON.stringify([]),
+        blockSigningKeysPublicInfo: JSON.stringify({}),
         factomAddressesPublicInfo: JSON.stringify(addressesPublicInfo)
       }
     );
@@ -775,13 +885,16 @@ export class VaultService {
     const fctAddressesRequestWhitelistedDomains = this.getFCTAddressesRequestWhitelistedDomains();
     const etherLinkAddressesRequestWhitelistedDomains = this.getEtherLinkAddressesRequestWhitelistedDomains();
     const ecAddressesRequestWhitelistedDomains = this.getECAddressesRequestWhitelistedDomains();
+    const blockSigningKeysRequestWhitelistedDomains = this.getBlockSigningKeysRequestWhitelistedDomains();
     const fctAddressesPublicInfo = this.getFCTAddressesPublicInfo();
     const etherLinkAddressesPublicInfo = this.getEtherLinkAddressesPublicInfo();
     const ecAddressesPublicInfo = this.getECAddressesPublicInfo();
+    const blockSigningKeysPublicInfo = this.getBlockSigningKeysPublicInfo();
 
     let fctAddresses = [];
     let etherLinkAddresses = [];
     let ecAddresses = [];
+    let blockSigningKeys = [];
 
     for (const fctPublicAddress of Object.keys(fctAddressesPublicInfo)) {
       fctAddresses.push({[fctPublicAddress]: fctAddressesPublicInfo[fctPublicAddress]});
@@ -799,13 +912,19 @@ export class VaultService {
       ecAddresses.push({[ecPublicAddress]: ecAddressesPublicInfo[ecPublicAddress]});
     }
 
+    for (const publicKey of Object.keys(blockSigningKeysPublicInfo)) {
+      blockSigningKeys.push({[publicKey]: blockSigningKeysPublicInfo[publicKey]});
+    }
+
     chrome.storage.local.set({
       fctAddressesRequestWhitelistedDomains,
       etherLinkAddressesRequestWhitelistedDomains,
       ecAddressesRequestWhitelistedDomains,
+      blockSigningKeysRequestWhitelistedDomains,
       fctAddresses,
       etherLinkAddresses,
-      ecAddresses
+      ecAddresses,
+      blockSigningKeys
     });
   }
 
@@ -819,6 +938,8 @@ export class VaultService {
           return 'etherLinkAddressesRequestWhitelistedDomains';
         case 'EC':
           return 'ecAddressesRequestWhitelistedDomains';
+        case 'BlockSigningKey':
+          return 'blockSigningKeysRequestWhitelistedDomains';
       }
     })(requestType)
 
