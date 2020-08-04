@@ -13,6 +13,7 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
 export class ApprovalRequestsComponent implements OnInit {
   public type: string;
   public from: string;
+  public displayName: string;
   public requestsCount: number;
 
   constructor(
@@ -28,7 +29,13 @@ export class ApprovalRequestsComponent implements OnInit {
 
   sendRequestResponse(approved: boolean) {
     if (approved) {
-      this.vaultService.addWhitelistedDomain(this.type, this.from);
+      if (this.type === 'Pegnet') {
+        this.vaultService.addWhitelistedDomain('FCT', this.from);
+        this.vaultService.addWhitelistedDomain('EtherLink', this.from);
+      } else {
+        this.vaultService.addWhitelistedDomain(this.type, this.from);
+      }
+      
       this.toastr.success('Request approved!', null, {timeOut: 1000});
     } else {
       this.toastr.info('Request cancelled!', null, {timeOut: 1000});
@@ -49,6 +56,9 @@ export class ApprovalRequestsComponent implements OnInit {
           const request = response.approvalRequest;
           this.type = request.type;
           this.from = request.from;
+          this.displayName = this.type === 'Pegnet'
+            ? 'FCT and EtherLink'
+            : this.type;
         } else {
           this.router.navigate(['home']);
         }
