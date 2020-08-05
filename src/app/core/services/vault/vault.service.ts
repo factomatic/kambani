@@ -10,6 +10,7 @@ import { DidKeyEntryModel } from '../../interfaces/did-key-entry';
 import { DidKeyModel } from '../../models/did-key.model';
 import { environment } from 'src/environments/environment';
 import { FactomAddressType } from '../../enums/factom-address-type';
+import { KeyType } from '../../enums/key-type';
 import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
 import { ManagementKeyModel } from '../../models/management-key.model';
 import { RestoreResultModel } from '../../models/restore-result.model';
@@ -41,7 +42,9 @@ export class VaultService {
           [FactomAddressType.EtherLink]: {},
           [FactomAddressType.EC]: {}
         }),
-        blockSigningKeysPublicInfo: JSON.stringify({}),
+        keysPublicInfo: JSON.stringify({
+          [KeyType.BlockSigningKey]: {},
+        }),
         fctAddressesRequestWhitelistedDomains: JSON.stringify(this.defaultWhitelistedDomains),
         etherLinkAddressesRequestWhitelistedDomains: JSON.stringify(this.defaultWhitelistedDomains),
         ecAddressesRequestWhitelistedDomains: JSON.stringify([]),
@@ -498,7 +501,7 @@ export class VaultService {
     });
   }
 
-  importBlockSigningKey(publicKey: string, privateKey: string, vaultPassword: string, nickname: string) {
+  importKey(type: KeyType, publicKey: string, privateKey: string, vaultPassword: string, nickname: string) {
     return defer(async () => {
       try {
         const state = this.localStorageStore.getState();
@@ -507,12 +510,14 @@ export class VaultService {
         decryptedVault[publicKey] = privateKey;
         const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
 
-        const blockSigningKeysPublicInfo = JSON.parse(state.blockSigningKeysPublicInfo);
-        blockSigningKeysPublicInfo[publicKey] = nickname;
+        const keysPublicInfo = JSON.parse(state.keysPublicInfo);
+        keysPublicInfo[type] = Object.assign({}, keysPublicInfo[type], {
+          [publicKey]: nickname
+        });
 
         const newState = Object.assign({}, state, {
           vault: encryptedVault,
-          blockSigningKeysPublicInfo: JSON.stringify(blockSigningKeysPublicInfo)
+          keysPublicInfo: JSON.stringify(keysPublicInfo)
         });
 
         this.localStorageStore.putState(newState);
@@ -524,26 +529,26 @@ export class VaultService {
             state.blockSigningKeys = [{[publicKey]: nickname}];
           }
 
-          chrome.storage.local.set(state);    
+          chrome.storage.local.set(state);
         });
 
-        return new ResultModel(true, 'Block signing key was successfully imported');
+        return new ResultModel(true, 'Key was successfully imported');
       } catch {
         return new ResultModel(false, 'Incorrect vault password');
       }
     });
   }
 
-  updateBlockSigningKeyNickname(publicKey: string, nickname: string) {
+  updateKeyNickname(type: KeyType, publicKey: string, nickname: string) {
     const state = this.localStorageStore.getState();
-    const blockSigningKeysPublicInfo = JSON.parse(state.blockSigningKeysPublicInfo);
+    const keysPublicInfo = JSON.parse(state.keysPublicInfo);
 
-    if (blockSigningKeysPublicInfo[publicKey]) {
-      blockSigningKeysPublicInfo[publicKey] = nickname;
+    if (keysPublicInfo[type][publicKey]) {
+      keysPublicInfo[type][publicKey] = nickname;
     }
 
     const newState = Object.assign({}, state, {
-      blockSigningKeysPublicInfo: JSON.stringify(blockSigningKeysPublicInfo)
+      keysPublicInfo: JSON.stringify(keysPublicInfo)
     });
 
     this.localStorageStore.putState(newState);
@@ -556,7 +561,7 @@ export class VaultService {
     });
   }
 
-  removeBlockSigningKey(publicKey: string, vaultPassword: string) {
+  removeKey(type: KeyType, publicKey: string, vaultPassword: string) {
     return defer(async () => {
       try {
         const state = this.localStorageStore.getState();
@@ -568,14 +573,14 @@ export class VaultService {
         
         const encryptedVault = await encryptor.encrypt(vaultPassword, decryptedVault);
 
-        const blockSigningKeysPublicInfo = JSON.parse(state.blockSigningKeysPublicInfo);
-        if (blockSigningKeysPublicInfo[publicKey]) {
-          delete blockSigningKeysPublicInfo[publicKey];
+        const keysPublicInfo = JSON.parse(state.keysPublicInfo);
+        if (keysPublicInfo[type][publicKey]) {
+          delete keysPublicInfo[type][publicKey];
         }
 
         const newState = Object.assign({}, state, {
           vault: encryptedVault,
-          blockSigningKeysPublicInfo: JSON.stringify(blockSigningKeysPublicInfo)
+          keysPublicInfo: JSON.stringify(keysPublicInfo)
         });
 
         this.localStorageStore.putState(newState);
@@ -586,7 +591,7 @@ export class VaultService {
           chrome.storage.local.set(state);
         });
 
-        return new ResultModel(true, 'Block signing key was successfully removed');
+        return new ResultModel(true, 'Key was successfully removed');
       } catch {
         return new ResultModel(false, 'Incorrect vault password');
       }
@@ -666,7 +671,7 @@ export class VaultService {
   }
 
   getBlockSigningKeysPublicInfo() {
-    return JSON.parse(this.localStorageStore.getState().blockSigningKeysPublicInfo);
+    return JSON.parse(this.localStorageStore.getState().keysPublicInfo)[KeyType.BlockSigningKey];
   }
 
   getFCTAddressesRequestWhitelistedDomains() {
@@ -875,7 +880,7 @@ export class VaultService {
         etherLinkAddressesRequestWhitelistedDomains: JSON.stringify(this.defaultWhitelistedDomains),
         ecAddressesRequestWhitelistedDomains: JSON.stringify([]),
         blockSigningKeysRequestWhitelistedDomains: JSON.stringify([]),
-        blockSigningKeysPublicInfo: JSON.stringify({}),
+        keysPublicInfo: JSON.stringify({[KeyType.BlockSigningKey]: {}}),
         factomAddressesPublicInfo: JSON.stringify(addressesPublicInfo)
       }
     );
@@ -932,13 +937,13 @@ export class VaultService {
     const state = this.localStorageStore.getState();
     const whitelistedDomainsKey = (function(requestType) {
       switch(requestType) {
-        case 'FCT':
+        case FactomAddressType.FCT:
           return 'fctAddressesRequestWhitelistedDomains';
-        case 'EtherLink':
+        case FactomAddressType.EtherLink:
           return 'etherLinkAddressesRequestWhitelistedDomains';
-        case 'EC':
+        case FactomAddressType.EC:
           return 'ecAddressesRequestWhitelistedDomains';
-        case 'BlockSigningKey':
+        case KeyType.BlockSigningKey:
           return 'blockSigningKeysRequestWhitelistedDomains';
       }
     })(requestType)
