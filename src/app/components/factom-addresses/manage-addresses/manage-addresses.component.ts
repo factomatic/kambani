@@ -12,8 +12,8 @@ import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { FactomAddressType } from 'src/app/core/enums/factom-address-type';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
+import { PrivateSecretModalComponent } from '../../modals/private-secret-modal/private-secret-modal.component';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
-import { PrivateAddressModalComponent } from '../../modals/private-address-modal/private-address-modal.component';
 import {
   convertECDSAPublicKeyToEthereumAddress,
   convertECDSAPublicKeyToEtherLinkAddress,
@@ -158,9 +158,9 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
             .subscribe(result => {
               this.spinner.hide();
               if (result.success && result.message) {
-                const confirmRef = this.modalService.open(PrivateAddressModalComponent);
-                confirmRef.componentInstance.publicAddress = publicAddress;
-                confirmRef.componentInstance.privateAddress = result.message;
+                const confirmRef = this.modalService.open(PrivateSecretModalComponent);
+                confirmRef.componentInstance.publicKeyOrAddress = publicAddress;
+                confirmRef.componentInstance.privateKeyOrAddress = result.message;
                 confirmRef.componentInstance.isEtherLinkAddress = publicAddress.length == 128;
                 confirmRef.result
                   .then((result) => {})
