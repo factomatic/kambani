@@ -620,13 +620,13 @@ export class VaultService {
     });
   }
 
-  getPrivateAddress(publicAddress: string, vaultPassword: string) {
+  getPrivateKeyOrAddress(publicKeyOrAddress: string, vaultPassword: string) {
     return defer(async () => {
       try {
         const state = this.localStorageStore.getState();
         const decryptedVault = await encryptor.decrypt(vaultPassword, state.vault);
 
-        return new ResultModel(true, decryptedVault[publicAddress]);
+        return new ResultModel(true, decryptedVault[publicKeyOrAddress]);
       } catch {
         return new ResultModel(false, 'Incorrect vault password');
       }

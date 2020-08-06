@@ -154,7 +154,7 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
         if (vaultPassword) {
           this.spinner.show();
           this.vaultService
-            .getPrivateAddress(publicAddress, vaultPassword)
+            .getPrivateKeyOrAddress(publicAddress, vaultPassword)
             .subscribe(result => {
               this.spinner.hide();
               if (result.success && result.message) {
