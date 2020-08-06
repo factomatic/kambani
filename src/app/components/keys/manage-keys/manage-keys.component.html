@@ -1,0 +1,72 @@
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12">
+      <div class="page-content">
+        <div class="page-header">
+          <a class="btn btn-success pull-right" routerLink="/keys/import"><i class="fa fa-plus"></i> Import Key</a>
+          <div class="clearfix"></div>
+        </div>
+        <nav class="info-tables">
+          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a (click)="changeSelectedKeyType(KeyType.BlockSigningKey)" class="nav-item nav-link" [ngClass]="{'active': selectedKeyType == KeyType.BlockSigningKey}" id="nav-block-signing-keys-tab" data-toggle="tab" href="#nav-block-signing-keys" role="tab" aria-controls="nav-block-signing-keys" aria-selected="true">Block Signing Keys</a>
+          </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+          <div class="tab-pane fade show" [ngClass]="{'active': selectedKeyType == KeyType.BlockSigningKey}" id="nav-block-signing-keys" role="tabpanel" aria-labelledby="nav-block-signing-keys-tab">
+            <div class="table-holder" *ngIf="blockSigningKeys.length > 0">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Public Key</th>
+                    <th>Nickname</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody valign="center">
+                  <tr *ngFor="let publicKey of displayedBlockSigningKeys">
+                    <td>
+                      <span class="public-key">{{publicKey}}</span>
+                      <a (click)="copyKey(publicKey, copyButtonRef)" class="copy-key" #copyButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy key"><i class="far fa-copy"></i></a>
+                    </td>
+                    <td width="250" height="65">
+                      <a *ngIf="!editKeyNickname[publicKey]" (click)="editKeyNickname[publicKey] = true" data-toggle="tooltip" data-placement="top" title="Click to edit">{{blockSigningKeysInfo[publicKey]}}</a>
+                      <div class="nickname-editable" *ngIf="editKeyNickname[publicKey]">
+                        <form 
+                          (ngSubmit)="editNickname(KeyType.BlockSigningKey, publicKey, nickname.value)"
+                          (clickOutside)="editNickname(KeyType.BlockSigningKey, publicKey, nickname.value)"
+                          [attachOutsideOnClick]="false"
+                          [delayClickOutsideInit]="true">
+                          <input type="text" name="nickname" #nickname value="{{blockSigningKeysInfo[publicKey]}}" autofocus class="form-control" />
+                        </form>
+                      </div>
+                    </td>
+                    <td class="text-right">
+                      <button class="btn btn-xs btn-primary" (click)="viewPrivateKey(publicKey)" data-toggle="tooltip" data-placement="top" title="Click to view private key"><i class="fa fa-search"></i></button>
+                      <button class="btn btn-xs btn-danger" (click)="removeKey(KeyType.BlockSigningKey, publicKey)"><i class="fa fa-trash"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-6">
+                <div class="paginator" *ngIf="blockSigningKeys.length > pageSize">
+                  <a (click)="changePage(currentPage - 1)" [ngClass]="currentPage == 1 ? 'disabled' : ''">Prev</a>
+                  <a (click)="changePage(currentPage + 1)" [ngClass]="currentStartIndex + pageSize < blockSigningKeys.length ? '' : 'disabled'">Next</a>
+                </div>
+              </div>
+              <div class="col-6 text-right" *ngIf="blockSigningKeys.length > 0">
+                {{currentStartIndex + 1}} - {{currentStartIndex + pageSize < blockSigningKeys.length ? currentStartIndex + pageSize : blockSigningKeys.length}} from {{blockSigningKeys.length}}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-12 col-sm-12 text-center mt-5" *ngIf="blockSigningKeys.length == 0">
+                <p class="text-warning text-center">You have not imported any Block Signing keys yet</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
