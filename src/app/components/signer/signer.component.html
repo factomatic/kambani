@@ -60,8 +60,8 @@
               </div>
               <div *ngIf="selectedDIDId">
                 <label for="selectKey">Choose key to sign with:</label>
-                <select class="form-control" id="selectKey" [disabled]="keySpecified" (ngModelChange)="onSelectKeyChange($event)" [ngModel]="selectedKeyId">
-                  <option [value]="key.id" *ngFor="let key of availableKeys">{{key.id.split('#')[1]}}</option>
+                <select class="form-control" id="selectKey" [disabled]="didKeySpecified" (ngModelChange)="onSelectDIDKeyChange($event)" [ngModel]="selectedDIDKeyId">
+                  <option [value]="key.id" *ngFor="let key of availableDIDKeys">{{key.id.split('#')[1]}}</option>
                 </select>
               </div>
               <div *ngIf="allDIDIds.length === 0" class="center mt-5">
@@ -83,7 +83,7 @@
               </div>
             </div>
             <div class="row justify-content-center mt-4">
-              <button class="btn btn-success mr-1" (click)="signData()" *ngIf="selectedKeyId || selectedFactomAddress">
+              <button class="btn btn-success mr-1" (click)="signData()" *ngIf="selectedDIDKeyId || selectedFactomAddress">
                 Sign {{requestType == RequestType.Data ? 'Data' : 'Transaction'}}
               </button>
               <button class="btn btn-info ml-1 mr-1" (click)="skipSigning()" *ngIf="pendingRequestsCount > 1">Skip</button>

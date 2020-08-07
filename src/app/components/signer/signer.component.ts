@@ -2,7 +2,7 @@ import { Component, OnInit, NgZone } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { Transaction } from 'factom';
-import {sha512} from 'factom/src/util.js'
+import { sha512 } from 'factom/src/util.js';
 
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
@@ -50,11 +50,11 @@ export class SignerComponent implements OnInit {
   public ecAddresses: string[] = [];
   public availableFactomAddresses: string[] = [];
   public availableFactomAddressesPublicInfo = {};
-  public availableKeys: any[];
+  public availableDIDKeys: any[];
   public selectedDIDId: string;
   public didIdSpecified: boolean;
-  public selectedKeyId: string;
-  public keySpecified: boolean;
+  public selectedDIDKeyId: string;
+  public didKeySpecified: boolean;
   public selectedFactomAddress: string;
   public factomAddressSpecified: boolean;
   public minifyAddress = minifyAddress;
@@ -75,12 +75,12 @@ export class SignerComponent implements OnInit {
 
   onSelectDIDChange(selectedDIDId: string) {
     this.selectedDIDId = selectedDIDId;
-    this.availableKeys = this.getKeys(this.selectedDIDId);
-    this.selectedKeyId = this.availableKeys[0].id;
+    this.availableDIDKeys = this.getDIDKeys(this.selectedDIDId);
+    this.selectedDIDKeyId = this.availableDIDKeys[0].id;
   }
 
-  onSelectKeyChange(selectedKeyId: string) {
-    this.selectedKeyId = selectedKeyId;
+  onSelectDIDKeyChange(selectedDIDKeyId: string) {
+    this.selectedDIDKeyId = selectedDIDKeyId;
   }
 
   onSelectAddressChange(selectedFactomAddress: string) {
@@ -105,8 +105,8 @@ export class SignerComponent implements OnInit {
               ? data
               : JSON.stringify(data);
 
-            const signingKeyOrAddress = this.selectedKeyId
-              ? this.availableKeys.find(dk => dk.id == this.selectedKeyId)
+            const signingKeyOrAddress = this.selectedDIDKeyId
+              ? this.availableDIDKeys.find(dk => dk.id == this.selectedDIDKeyId)
               : this.selectedFactomAddress;
 
             this.signDataRequest(dataToSign, signingKeyOrAddress, vaultPassword);
@@ -160,7 +160,7 @@ export class SignerComponent implements OnInit {
   private signPegNetRequest(fctPublicAddress: string, vaultPassword: string) {
     if (this.txType == TransactionType.Burn) {
       this.vaultService
-        .getPrivateAddress(fctPublicAddress, vaultPassword)
+        .getPrivateKeyOrAddress(fctPublicAddress, vaultPassword)
         .subscribe((result: ResultModel) => {
           if (result.success) {
             const fctPrivateAddress = result.message;
@@ -280,7 +280,7 @@ export class SignerComponent implements OnInit {
     }
   }
 
-  private getKeys(didId: string): DidKeyEntryModel[] | ManagementKeyEntryModel[] {
+  private getDIDKeys(didId: string): DidKeyEntryModel[] | ManagementKeyEntryModel[] {
     if (this.requestKeyType == RequestKeyType.DIDKey) {
       return this.allDIDsPublicInfo[didId].didDocument.didKey;
     }
@@ -307,23 +307,23 @@ export class SignerComponent implements OnInit {
                 ? this.didIdsWithDIDKeys
                 : this.allDIDIds;
               this.selectedDIDId = this.availableDIDIds[0];
-              this.availableKeys = this.getKeys(this.selectedDIDId);
-              this.selectedKeyId = this.availableKeys[0].id;
+              this.availableDIDKeys = this.getDIDKeys(this.selectedDIDId);
+              this.selectedDIDKeyId = this.availableDIDKeys[0].id;
 
               const did = this.request.requestInfo.did;
               if (did) {
                 if (this.availableDIDIds.includes(did)) {
                   this.selectedDIDId = did;
-                  this.availableKeys = this.getKeys(this.selectedDIDId);
-                  this.selectedKeyId = this.availableKeys[0].id;
+                  this.availableDIDKeys = this.getDIDKeys(this.selectedDIDId);
+                  this.selectedDIDKeyId = this.availableDIDKeys[0].id;
                   this.didIdSpecified = true;
   
                   const selectedKeyAlias = this.request.requestInfo.keyIdentifier;
                   if (selectedKeyAlias) {
-                    const selectedKey = this.availableKeys.find(k => k.id.split('#')[1] == selectedKeyAlias);
+                    const selectedKey = this.availableDIDKeys.find(k => k.id.split('#')[1] == selectedKeyAlias);
                     if (selectedKey) {
-                      this.selectedKeyId = selectedKey.id;
-                      this.keySpecified = true;
+                      this.selectedDIDKeyId = selectedKey.id;
+                      this.didKeySpecified = true;
                     } else {
                       const keyType = this.requestKeyType == RequestKeyType.DIDKey
                         ? 'Signing Key'
@@ -418,14 +418,14 @@ export class SignerComponent implements OnInit {
     this.outputAddress = undefined;
     this.txMetadata = undefined;
     this.selectedDIDId = undefined;
-    this.selectedKeyId = undefined;
+    this.selectedDIDKeyId = undefined;
     this.availableDIDIds = undefined;
-    this.availableKeys = undefined;
+    this.availableDIDKeys = undefined;
     this.selectedFactomAddress = undefined;
     this.availableFactomAddresses = undefined;
     this.availableFactomAddressesPublicInfo = undefined;
     this.factomAddressSpecified = false;
-    this.keySpecified = false;
+    this.didKeySpecified = false;
     this.didIdSpecified = false;
   }
 }
