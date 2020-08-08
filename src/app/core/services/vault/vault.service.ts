@@ -395,6 +395,7 @@ export class VaultService {
         chrome.storage.local.get(['fctAddresses', 'etherLinkAddresses', 'ecAddresses'], function(addressesState) {
           if (type === FactomAddressType.FCT) {
             if (addressesState.fctAddresses) {
+              addressesState.fctAddresses = addressesState.fctAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
               addressesState.fctAddresses.push({[publicAddress]: nickname});
             } else {
               addressesState.fctAddresses = [{[publicAddress]: nickname}];
@@ -404,12 +405,14 @@ export class VaultService {
             const ethereumAddress = convertECDSAPublicKeyToEthereumAddress(publicAddress);
 
             if (addressesState.etherLinkAddresses) {
+              addressesState.etherLinkAddresses = addressesState.etherLinkAddresses.filter(addressObj => addressObj.etherLinkAddress !== etherLinkAddress);
               addressesState.etherLinkAddresses.push({etherLinkAddress, ethereumAddress, nickname});
             } else {
               addressesState.etherLinkAddresses = [{etherLinkAddress, ethereumAddress, nickname}];
             }
           } else if (type === FactomAddressType.EC) {
             if (addressesState.ecAddresses) {
+              addressesState.ecAddresses = addressesState.ecAddresses.filter(addressObj => Object.keys(addressObj)[0] !== publicAddress);
               addressesState.ecAddresses.push({[publicAddress]: nickname});
             } else {
               addressesState.ecAddresses = [{[publicAddress]: nickname}];
@@ -524,6 +527,7 @@ export class VaultService {
 
         chrome.storage.local.get(['blockSigningKeys'], function(state) {
           if (state.blockSigningKeys) {
+            state.blockSigningKeys = state.blockSigningKeys.filter(keyObj => Object.keys(keyObj)[0] !== publicKey);
             state.blockSigningKeys.push({[publicKey]: nickname});
           } else {
             state.blockSigningKeys = [{[publicKey]: nickname}];
