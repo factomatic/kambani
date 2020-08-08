@@ -43,11 +43,13 @@ export class SignerComponent implements OnInit {
   public allDIDsPublicInfo = {};
   public fctAddressesPublicInfo = {};
   public ecAddressesPublicInfo = {};
+  public blockSigningKeysPublicInfo = {};
   public allDIDIds: string[] = [];
   public didIdsWithDIDKeys: string[] = [];
   public availableDIDIds: string[] = [];
   public fctAddresses: string[] = [];
   public ecAddresses: string[] = [];
+  public blockSigningKeys: string[] = [];
   public availableFactomAddresses: string[] = [];
   public availableFactomAddressesPublicInfo = {};
   public availableDIDKeys: any[];
@@ -57,6 +59,8 @@ export class SignerComponent implements OnInit {
   public didKeySpecified: boolean;
   public selectedFactomAddress: string;
   public factomAddressSpecified: boolean;
+  public selectedKey: string;
+  public keySpecified: boolean;
   public minifyAddress = minifyAddress;
 
   constructor(
@@ -87,6 +91,10 @@ export class SignerComponent implements OnInit {
     this.selectedFactomAddress = selectedFactomAddress;
   }
 
+  onSelectKeyChange(selectedKey: string) {
+    this.selectedKey = selectedKey;
+  }
+
   signData() {
     let dialogMessage = 'Enter your vault password to sign the ';
     dialogMessage += this.requestType == RequestType.Data
@@ -105,9 +113,14 @@ export class SignerComponent implements OnInit {
               ? data
               : JSON.stringify(data);
 
-            const signingKeyOrAddress = this.selectedDIDKeyId
-              ? this.availableDIDKeys.find(dk => dk.id == this.selectedDIDKeyId)
-              : this.selectedFactomAddress;
+            let signingKeyOrAddress;
+            if ([RequestKeyType.ManagementKey, RequestKeyType.DIDKey].includes(this.requestKeyType as RequestKeyType)) {
+              signingKeyOrAddress = this.availableDIDKeys.find(dk => dk.id == this.selectedDIDKeyId);
+            } else if ([RequestKeyType.FCT, RequestKeyType.EC].includes(this.requestKeyType as RequestKeyType)) {
+              signingKeyOrAddress = this.selectedFactomAddress;
+            } else {
+              signingKeyOrAddress = this.selectedKey;
+            }
 
             this.signDataRequest(dataToSign, signingKeyOrAddress, vaultPassword);
           } else {
@@ -266,6 +279,8 @@ export class SignerComponent implements OnInit {
     this.fctAddresses = Object.keys(this.fctAddressesPublicInfo);
     this.ecAddressesPublicInfo = this.vaultService.getECAddressesPublicInfo();
     this.ecAddresses = Object.keys(this.ecAddressesPublicInfo);
+    this.blockSigningKeysPublicInfo = this.vaultService.getBlockSigningKeysPublicInfo();
+    this.blockSigningKeys = Object.keys(this.blockSigningKeysPublicInfo);
   }
 
   private getDIDIds() {
@@ -369,6 +384,19 @@ export class SignerComponent implements OnInit {
                 return;
               }
             }
+          } else if (this.requestKeyType == RequestKeyType.BlockSigningKey && this.blockSigningKeys.length > 0) {
+            this.selectedKey = this.blockSigningKeys[0];
+            const selectedKey = this.request.requestInfo.keyIdentifier;
+
+            if (selectedKey) {
+              if (this.blockSigningKeys.includes(selectedKey)) {
+                this.selectedKey = selectedKey;
+                this.keySpecified = true;
+              } else {
+                this.cancelSigning('The Block Signing key requested for signing does not exist!');
+                return;
+              }
+            }
           }
 
           if (this.requestType == RequestType.Data) {
@@ -422,10 +450,12 @@ export class SignerComponent implements OnInit {
     this.availableDIDIds = undefined;
     this.availableDIDKeys = undefined;
     this.selectedFactomAddress = undefined;
+    this.selectedKey = undefined;
     this.availableFactomAddresses = undefined;
     this.availableFactomAddressesPublicInfo = undefined;
     this.factomAddressSpecified = false;
     this.didKeySpecified = false;
     this.didIdSpecified = false;
+    this.keySpecified = false;
   }
 }

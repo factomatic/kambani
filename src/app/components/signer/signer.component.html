@@ -82,8 +82,19 @@
                 <p class="text-warning text-center">You need to import or generate an {{requestKeyType.toUpperCase()}} address in order to sign the data.</p>
               </div>
             </div>
+            <div *ngIf="requestKeyType == RequestKeyType.BlockSigningKey">
+              <div *ngIf="selectedKey">
+                <label for="selectKey">Choose Block Signing key to sign with:</label>
+                <select class="form-control" id="selectKey" [disabled]="keySpecified" (ngModelChange)="onSelectKeyChange($event)" [ngModel]="selectedKey">
+                  <option [value]="key" *ngFor="let key of blockSigningKeys">{{blockSigningKeysPublicInfo[key]}}</option>
+                </select>
+              </div>
+              <div *ngIf="!selectedKey" class="center mt-5">
+                <p class="text-warning text-center">You need to import a Block Signing key in order to sign the data.</p>
+              </div>
+            </div>
             <div class="row justify-content-center mt-4">
-              <button class="btn btn-success mr-1" (click)="signData()" *ngIf="selectedDIDKeyId || selectedFactomAddress">
+              <button class="btn btn-success mr-1" (click)="signData()" *ngIf="selectedDIDKeyId || selectedFactomAddress || selectedKey">
                 Sign {{requestType == RequestType.Data ? 'Data' : 'Transaction'}}
               </button>
               <button class="btn btn-info ml-1 mr-1" (click)="skipSigning()" *ngIf="pendingRequestsCount > 1">Skip</button>
