@@ -22,6 +22,7 @@ const DID_KEY_TYPE = 'didKey';
 const MANAGEMENT_KEY_TYPE = 'managementKey';
 const FCT_KEY_TYPE = 'fct';
 const EC_KEY_TYPE = 'ec';
+const BLOCK_SIGNING_KEY_TYPE = 'blockSigningKey';
 const BURN_TX_TYPE = 'burn';
 const CONVERSION_TX_TYPE = 'conversion';
 const TRANSFER_TX_TYPE = 'transfer';
@@ -257,7 +258,7 @@ function isValidRequest (requestContent) {
       return false;
     }
     
-    const keyTypes = [DID_KEY_TYPE, MANAGEMENT_KEY_TYPE, FCT_KEY_TYPE, EC_KEY_TYPE];
+    const keyTypes = [DID_KEY_TYPE, MANAGEMENT_KEY_TYPE, FCT_KEY_TYPE, EC_KEY_TYPE, BLOCK_SIGNING_KEY_TYPE];
     if (!keyTypes.includes(keyType)) {
       return false;
     }
@@ -271,10 +272,8 @@ function isValidRequest (requestContent) {
         if (keyIdentifier.substring(0, 2) !== 'EC') {
           return false;
         }
-      } else {
-        if (did == undefined) {
-          return false;
-        }
+      } else if (did == undefined && keyType !== BLOCK_SIGNING_KEY_TYPE) {
+        return false;
       }
     }
 
