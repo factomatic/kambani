@@ -39,6 +39,9 @@
           <button type="submit" class="btn btn-primary mt-5 shadow-none" v-on:click="signWithDID">
             Submit DID Signed Vote
           </button>
+          <button type="submit" class="btn btn-primary mt-5 shadow-none" v-on:click="signWithBlockSigningKey">
+            Submit BlockSigningKey Signed Vote
+          </button>
         </div>
       </fieldset>
       <div class="mt-4 d-flex justify-content-center" v-if="voteSignature">
