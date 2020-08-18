@@ -47,4 +47,8 @@ export class PrivateSecretModalComponent {
     element.classList.add('clicked');
     setTimeout(() => {element.classList.remove('clicked')},2000);
   }
+
+  minifyHex(key: string) {
+    return '0x' + key.slice(0, 30) + '...' + key.slice(-16);
+  }
 }

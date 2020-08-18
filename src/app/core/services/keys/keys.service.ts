@@ -68,7 +68,7 @@ export class KeysService {
   getPublicKeyFromPrivate(signatureType: SignatureType, privateKey: Buffer): string {
     if (signatureType == SignatureType.EdDSA) {
       const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
-      return base58.encode(Buffer.from(keyPair.publicKey));
+      return Buffer.from(keyPair.publicKey).toString('hex');
     }
   }
 
