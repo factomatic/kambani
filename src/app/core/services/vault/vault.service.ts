@@ -1,6 +1,6 @@
 import * as encryptor from 'browser-passworder';
 import { defer, Observable } from 'rxjs';
-import { Injectable } from '@angular/core';
+import { Injectable, Output, EventEmitter } from '@angular/core';
 import LocalStorageStore from 'obs-store/lib/localStorage';
 
 import { BackupResultModel } from '../../models/backup-result.model';
@@ -11,6 +11,7 @@ import { DidKeyModel } from '../../models/did-key.model';
 import { environment } from 'src/environments/environment';
 import { FactomAddressType } from '../../enums/factom-address-type';
 import { KeyType } from '../../enums/key-type';
+import { LockState } from '../../enums/lock-state';
 import { ManagementKeyEntryModel } from '../../interfaces/management-key-entry';
 import { ManagementKeyModel } from '../../models/management-key.model';
 import { RestoreResultModel } from '../../models/restore-result.model';
@@ -23,6 +24,7 @@ export class VaultService {
   private localStorageStore: LocalStorageStore;
   private supportedLocalStorageVersions = ['1.0', '1.1'];
   private defaultWhitelistedDomains = ['https://factomatic.io', 'https://pegnet.exchange'];
+  @Output() lockChange: EventEmitter<LockState> = new EventEmitter();
 
   constructor() {
     this.localStorageStore = new LocalStorageStore({ storageKey: environment.storageKey });
@@ -248,6 +250,34 @@ export class VaultService {
   removeVault(): void {
     localStorage.removeItem(environment.storageKey);
     chrome.storage.local.clear();
+  }
+
+  savePassword(vaultPassword: string) {
+    return defer(async () => {
+      try {
+        const state = this.localStorageStore.getState();
+        if (vaultPassword) {
+          await encryptor.decrypt(vaultPassword, state.vault);
+        }
+
+        const newState = Object.assign({}, state, {
+          password: vaultPassword
+        });
+
+        this.localStorageStore.putState(newState);
+
+        let actionMessage = LockState.Unlocked;
+        if (!vaultPassword) {
+          actionMessage = LockState.Locked;
+        }
+
+        this.lockChange.emit(actionMessage);
+
+        return new ResultModel(true, `The vault was ${actionMessage} successfully`);
+      } catch {
+        return new ResultModel(false, 'Incorrect vault password');
+      }
+    });
   }
 
   canDecryptVault(vaultPassword: string): Observable<ResultModel> {
@@ -639,6 +669,10 @@ export class VaultService {
 
   getVault(): string {
     return this.localStorageStore.getState().vault;
+  }
+
+  getVaultPassword(): string {
+    return this.localStorageStore.getState().password;
   }
 
   getAllDIDsPublicInfo() {
