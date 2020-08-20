@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { RemoveVaultDialogComponent } from '../dialogs/remove-vault/remove-vault.dialog.component';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
+import { LockActionType } from 'src/app/core/enums/lock-action-type';
+import { LockState } from 'src/app/core/enums/lock-state';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
+import { RemoveVaultDialogComponent } from '../dialogs/remove-vault/remove-vault.dialog.component';
 import { SigningService } from 'src/app/core/services/signing/signing.service';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 
@@ -15,6 +17,7 @@ import { VaultService } from 'src/app/core/services/vault/vault.service';
 export class NavbarComponent implements OnInit {
   public pendingRequestsCount = 0;
   public openMobileNav: boolean;
+  public lockAction: LockActionType;
 
   constructor(
     private dialogsService: DialogsService,
@@ -23,7 +26,6 @@ export class NavbarComponent implements OnInit {
     private vaultService: VaultService) { }
 
   ngOnInit() {
-
     chrome.browserAction && chrome.browserAction.getBadgeText({}, (result) => {
       this.pendingRequestsCount = parseInt(result, 10);
     });
@@ -31,6 +33,16 @@ export class NavbarComponent implements OnInit {
     this.signingService.change.subscribe(pendingRequestsCount => {
       this.pendingRequestsCount = pendingRequestsCount;
     });
+
+    this.vaultService.lockChange.subscribe((lockState: LockState) => {
+      this.lockAction = lockState === LockState.Unlocked
+        ? LockActionType.Lock
+        : LockActionType.Unlock;
+    });
+
+    this.lockAction = this.vaultService.getVaultPassword()
+      ? LockActionType.Lock
+      : LockActionType.Unlock;
   }
 
   toggleNavigation() {

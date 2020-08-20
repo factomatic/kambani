@@ -37,6 +37,9 @@
           <a class="nav-link" [ngClass]="{'active': checkIsActive('/vault/backup')}" routerLink="/vault/backup">Backup</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" [ngClass]="{'active': checkIsActive('/vault/lock')}" routerLink="/vault/lock">{{lockAction}} Vault</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" (click)="removeVault()">Remove Vault</a>
         </li>
       </ul>
