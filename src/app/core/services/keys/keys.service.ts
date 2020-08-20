@@ -65,6 +65,13 @@ export class KeysService {
     this.store.dispatch(new createDIDActions.AddDIDKey(didKey));
   }
 
+  getPublicKeyFromPrivate(signatureType: SignatureType, privateKey: Buffer): string {
+    if (signatureType == SignatureType.EdDSA) {
+      const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
+      return Buffer.from(keyPair.publicKey).toString('hex');
+    }
+  }
+
   private generateEdDSAKeyPair(): KeyPairModel {
     const seed = nacl.randomBytes(32);
     const keyPair = nacl.sign.keyPair.fromSeed(seed);

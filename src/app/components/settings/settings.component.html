@@ -35,7 +35,7 @@
                         <div class="list-group list-group-horizontal" *ngIf="i % 2 == 0">
                           <a class="list-group-item list-group-item-action waves-light" mdbWavesEffect *ngFor="let domain of fctAddressesRequestWhitelistedDomains.slice(i, i+2)">
                             {{domain}}
-                            <i class="fas fa-times float-right mt-1" (click)="removeDomain('FCT', domain)"></i>
+                            <i class="fas fa-times float-right mt-1" (click)="removeDomain(factomAddressType.FCT, domain)"></i>
                           </a>
                         </div>
                       </div>
@@ -59,7 +59,7 @@
                         <div class="list-group list-group-horizontal" *ngIf="i % 2 == 0">
                           <a class="list-group-item list-group-item-action waves-light" mdbWavesEffect *ngFor="let domain of ecAddressesRequestWhitelistedDomains.slice(i, i+2)">
                             {{domain}}
-                            <i class="fas fa-times float-right mt-1" (click)="removeDomain('EC', domain)"></i>
+                            <i class="fas fa-times float-right mt-1" (click)="removeDomain(factomAddressType.EC, domain)"></i>
                           </a>
                         </div>
                       </div>
@@ -83,11 +83,35 @@
                         <div class="list-group list-group-horizontal" *ngIf="i % 2 == 0">
                           <a class="list-group-item list-group-item-action waves-light" mdbWavesEffect *ngFor="let domain of etherLinkAddressesRequestWhitelistedDomains.slice(i, i+2)">
                             {{domain}}
-                            <i class="fas fa-times float-right mt-1" (click)="removeDomain('EtherLink', domain)"></i>
+                            <i class="fas fa-times float-right mt-1" (click)="removeDomain(factomAddressType.EtherLink, domain)"></i>
                           </a>
                         </div>
                       </div>
                       <div *ngIf="etherLinkAddressesRequestWhitelistedDomains.length == 0">
+                        <p class="text-center text-secondary">You have not whitelisted any domains yet</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <div class="card">
+                  <div class="card-header collapsed" (click)="blockSigningKeyRequestExpanded = !blockSigningKeyRequestExpanded" id="blockSigningKeyHeading" data-toggle="collapse" data-target="#blockSigningKeyCollapse" aria-expanded="true" aria-controls="blockSigningKeyCollapse">
+                    Block Signing Keys
+                    <i class="fas float-right mt-1" [ngClass]="{'fa-angle-double-down': !blockSigningKeyRequestExpanded, 'fa-angle-double-up': blockSigningKeyRequestExpanded}"></i>
+                  </div>
+            
+                  <div id="blockSigningKeyCollapse" class="collapse show" aria-labelledby="blockSigningKeyHeading">
+                    <div class="card-body">
+                      <div *ngFor="let el of blockSigningKeysRequestWhitelistedDomains; let i=index">
+                        <div class="list-group list-group-horizontal" *ngIf="i % 2 == 0">
+                          <a class="list-group-item list-group-item-action waves-light" mdbWavesEffect *ngFor="let domain of blockSigningKeysRequestWhitelistedDomains.slice(i, i+2)">
+                            {{domain}}
+                            <i class="fas fa-times float-right mt-1" (click)="removeDomain(keyType.BlockSigningKey, domain)"></i>
+                          </a>
+                        </div>
+                      </div>
+                      <div *ngIf="blockSigningKeysRequestWhitelistedDomains.length == 0">
                         <p class="text-center text-secondary">You have not whitelisted any domains yet</p>
                       </div>
                     </div>

@@ -96,6 +96,7 @@ a {
   }
 }
 .copy-address {
+  position: relative;
   margin-left: 15px;
   cursor: pointer;
   &::before {

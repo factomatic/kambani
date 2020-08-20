@@ -7,6 +7,8 @@ import { ToastrService } from 'ngx-toastr';
 
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import CustomValidators from 'src/app/core/utils/customValidators';
+import { FactomAddressType } from 'src/app/core/enums/factom-address-type';
+import { KeyType } from 'src/app/core/enums/key-type';
 import { ResultModel } from 'src/app/core/models/result.model';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 import { RemoveConfirmModalComponent } from '../modals/remove-confirm-modal/remove-confirm-modal.component';
@@ -17,14 +19,18 @@ import { RemoveConfirmModalComponent } from '../modals/remove-confirm-modal/remo
   styleUrls: ['./settings.component.scss']
 })
 export class SettingsComponent implements OnInit {
+  public factomAddressType = FactomAddressType;
+  public keyType = KeyType;
   public selectedTab: string = 'domains';
   public changePasswordForm;
   public fctAddressesRequestWhitelistedDomains: [];
   public ecAddressesRequestWhitelistedDomains: [];
   public etherLinkAddressesRequestWhitelistedDomains: [];
+  public blockSigningKeysRequestWhitelistedDomains: [];
   public fctRequestExpanded: boolean = true;
   public ecRequestExpanded: boolean = true;
   public etherLinkRequestExpanded: boolean = true;
+  public blockSigningKeyRequestExpanded: boolean = true;
 
   constructor(
     private fb: FormBuilder,
@@ -105,6 +111,7 @@ export class SettingsComponent implements OnInit {
     this.fctAddressesRequestWhitelistedDomains = this.vaultService.getFCTAddressesRequestWhitelistedDomains();
     this.ecAddressesRequestWhitelistedDomains = this.vaultService.getECAddressesRequestWhitelistedDomains();
     this.etherLinkAddressesRequestWhitelistedDomains = this.vaultService.getEtherLinkAddressesRequestWhitelistedDomains();
+    this.blockSigningKeysRequestWhitelistedDomains = this.vaultService.getBlockSigningKeysRequestWhitelistedDomains();
   }
 
   get oldPassword () {

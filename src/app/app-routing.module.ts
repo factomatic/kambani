@@ -31,6 +31,7 @@ const routes: Routes = [
     { path: 'create-service', component: ServiceFormComponent },
   ] },
   { path: 'factom', loadChildren: './components/factom-addresses/factom-addresses.module#FactomAddressesModule' },
+  { path: 'keys', loadChildren: './components/keys/keys.module#KeysModule' },
   { path: 'approve', component: ApprovalRequestsComponent, canActivate: [VaultGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [VaultGuard] },
   { path: '**', component: HomeComponent, canActivate: [VaultGuard] }

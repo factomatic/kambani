@@ -11,16 +11,17 @@ $mainColor: #2F5BE7;
         font-size: 12px;
         border-top: 0px;
         border-bottom-width: 1px;
+        vertical-align: middle;
       }
     }
     tbody {
       tr {
+        td {
+          vertical-align: middle;
+        }
         td:first-child {
           span {
-            width: 165px;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
             display: inline-block;
             font-weight: 700;
           }
@@ -46,15 +47,14 @@ $mainColor: #2F5BE7;
           }
         }
       }
+      .public-key {
+        font-family: monospace, monospace;
+        font-size: 14px;
+      }
     }
   }
   .table-striped tbody tr:nth-of-type(odd) {
     background-color: #fdfdfd;
-  }
-  .did-link {
-    color: #333;
-    font-family: monospace, monospace;
-    font-size: 16px;
   }
 }
 .paginator {
@@ -85,111 +85,18 @@ $mainColor: #2F5BE7;
 a {
   cursor: pointer;
 }
-.formScreen {
-  width: 90%;
-  height: 100%;
-  max-width: 400px;
-  position: fixed;
-  top: 0;
-  right: -480px;
-  z-index: 99;
-  transition: right 0.3s ease;
-
-  .closeForm {
-    position: absolute;
-    left: 0px;
-    width: 80px;
-    height: 80px;
-    background: #fff;
-    display: block;
-    top: 50%;
-    margin: -40px 0px 0px -80px;
-    z-index: 1;
-    -webkit-border-top-left-radius: 10px;
-    -webkit-border-bottom-left-radius: 10px;
-    -moz-border-radius-topleft: 10px;
-    -moz-border-radius-bottomleft: 10px;
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    &::before {
-      content: "";
-      display: block;
-      width: 40px;
-      height: 40px;
-      background: url("/assets/next-page.svg");
-      background-size: 40px 40px;
-      margin: 20px 20px;
-    }
-  }
-  @media only screen and (max-width: 768px){
-    max-width: calc(100% - 40px);
-    .closeForm {
-      width: 40px;
-      height: 40px;
-      margin-left: -40px;
-      &::before {
-        width: 30px;
-        height: 30px;
-        background-size: 30px 30px;
-        margin: 5px;
-      }
-    }
-  }
-  .formContent {
-    position: absolute;
-    background: #fff;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    .scrollArea {
-      padding: 15px;
-      h1 {
-        font-size: 16px !important;
-        text-transform: uppercase;
-        font-weight: 600;
-        /* text-align: center; */
-        border-bottom: 3px solid #fbfbfb;
-        padding-bottom: 8px;
-      }
-      height: 100%;
-      overflow-y: scroll;
-      padding-bottom: 70px;
-
-    }
-  }
-  &::before {
-    content: "";
-    display: block;
-    background: rgba(0,0,0, 0.7);
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 100%;
-    height: 100%;
-    transition: right 0.3s ease;
-  }
-  &.active {
-    right: 0;
-    &::before {
-      right: 0;
+.info-tables {
+  margin: 20px 0px;
+  .nav-link {
+    color: $mainColor;
+    &.active {
+      background: $mainColor;
+      color: #fff;
     }
   }
 }
-.header-search {
-  width: 300px;
-  input {
-    width: calc(300px - 43px);
-    float: left;
-    height: 40px;
-  }
-  button {
-    float: right;
-  }
-}
-.copy-didid {
+.copy-key {
   position: relative;
-  bottom: 5px;
   margin-left: 15px;
   cursor: pointer;
   &::before {

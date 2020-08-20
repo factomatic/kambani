@@ -12,75 +12,9 @@ window.addEventListener('SigningRequest', (event) => {
   );
 });
 
-window.addEventListener('GetFCTAddresses', (event) => {
-  chrome.storage.local.get(['fctAddressesRequestWhitelistedDomains', 'fctAddresses'], function(result) {
-    if (result.fctAddresses === undefined) {
-      /*
-        Return { success: false } if fctAddresses property in chrome storage is undefined.
-        This should happen only if there is no vault created by the user.
-      */
-      window.dispatchEvent(new CustomEvent('FCTAddresses', { detail: { success: false } }));
-    } else {
-      let fctAddressesEvent = new CustomEvent('FCTAddresses', {
-        detail: { success: true, fctAddresses: result.fctAddresses }
-      });
-  
-      const requestOrigin = event.target.origin;
-      const whitelistedDomains = result.fctAddressesRequestWhitelistedDomains;
-      if (whitelistedDomains !== undefined && whitelistedDomains.includes(requestOrigin)) {
-        window.dispatchEvent(fctAddressesEvent);
-        addAddressesChangesListener('fctAddresses', 'FCTAddressesChanged');
-      } else {
-        chrome.runtime.sendMessage({type: 'receiveApprovalRequest', requestType: 'FCT', from: requestOrigin},
-          function(response) {
-            if (response.success) {
-              window.dispatchEvent(fctAddressesEvent);
-              addAddressesChangesListener('fctAddresses', 'FCTAddressesChanged');
-            } else {
-              fctAddressesEvent = new CustomEvent('FCTAddresses', {detail: response});
-              window.dispatchEvent(fctAddressesEvent);
-            }
-          }
-        );
-      }
-    }
-  });
-});
-
-window.addEventListener('GetECAddresses', (event) => {
-  chrome.storage.local.get(['ecAddressesRequestWhitelistedDomains', 'ecAddresses'], function(result) {
-    if (result.ecAddresses === undefined) {
-      /*
-        Return { success: false } if ecAddresses property in chrome storage is undefined.
-        This should happen only if there is no vault created by the user.
-      */
-      window.dispatchEvent(new CustomEvent('ECAddresses', { detail: { success: false } }));
-    } else {
-      let ecAddressesEvent = new CustomEvent('ECAddresses', {
-        detail: { success: true, ecAddresses: result.ecAddresses }
-      });
-  
-      const requestOrigin = event.target.origin;
-      const whitelistedDomains = result.ecAddressesRequestWhitelistedDomains;
-      if (whitelistedDomains !== undefined && whitelistedDomains.includes(requestOrigin)) {
-        window.dispatchEvent(ecAddressesEvent);
-        addAddressesChangesListener('ecAddresses', 'ECAddressesChanged');
-      } else {
-        chrome.runtime.sendMessage({type: 'receiveApprovalRequest', requestType: 'EC', from: requestOrigin},
-          function(response) {
-            if (response.success) {
-              window.dispatchEvent(ecAddressesEvent);
-              addAddressesChangesListener('ecAddresses', 'ECAddressesChanged');
-            } else {
-              ecAddressesEvent = new CustomEvent('ECAddresses', {detail: response});
-              window.dispatchEvent(ecAddressesEvent);
-            }
-          }
-        );
-      }
-    }
-  });
-});
+registerKeysOrAddressesEventListener('GetFCTAddresses', 'FCTAddresses', 'FCT', 'fctAddressesRequestWhitelistedDomains', 'fctAddresses', 'FCTAddressesChanged');
+registerKeysOrAddressesEventListener('GetECAddresses', 'ECAddresses', 'EC', 'ecAddressesRequestWhitelistedDomains', 'ecAddresses', 'ECAddressesChanged');
+registerKeysOrAddressesEventListener('GetBlockSigningKeys', 'BlockSigningKeys', 'BlockSigningKey', 'blockSigningKeysRequestWhitelistedDomains', 'blockSigningKeys', 'BlockSigningKeysChanged');
 
 window.addEventListener('GetPegnetAddresses', (event) => {
   chrome.storage.local.get([
@@ -127,6 +61,43 @@ window.addEventListener('GetPegnetAddresses', (event) => {
     }
   });
 });
+
+function registerKeysOrAddressesEventListener(eventName, responseEventName, requestType, whitelistedDomainsPropertyName, keysOrAddressesPropertyName, changedEventName) {
+  window.addEventListener(eventName, (event) => {
+    chrome.storage.local.get([whitelistedDomainsPropertyName, keysOrAddressesPropertyName], function(result) {
+      if (result[keysOrAddressesPropertyName] === undefined) {
+        /*
+          Return { success: false } if the property in chrome storage is undefined.
+          This should happen only if there is no vault created by the user.
+        */
+        window.dispatchEvent(new CustomEvent(responseEventName, { detail: { success: false } }));
+      } else {
+        let responseEvent = new CustomEvent(responseEventName, {
+          detail: { success: true, [keysOrAddressesPropertyName]: result[keysOrAddressesPropertyName] }
+        });
+    
+        const requestOrigin = event.target.origin;
+        const whitelistedDomains = result[whitelistedDomainsPropertyName];
+        if (whitelistedDomains !== undefined && whitelistedDomains.includes(requestOrigin)) {
+          window.dispatchEvent(responseEvent);
+          addAddressesChangesListener(keysOrAddressesPropertyName, changedEventName);
+        } else {
+          chrome.runtime.sendMessage({type: 'receiveApprovalRequest', requestType: requestType, from: requestOrigin},
+            function(response) {
+              if (response.success) {
+                window.dispatchEvent(responseEvent);
+                addAddressesChangesListener(keysOrAddressesPropertyName, changedEventName);
+              } else {
+                responseEvent = new CustomEvent(responseEventName, {detail: response});
+                window.dispatchEvent(responseEvent);
+              }
+            }
+          );
+        }
+      }
+    });
+  });
+}
 
 function addAddressesChangesListener(addressType, eventName) {
   chrome.storage.onChanged.addListener(function(changes) {

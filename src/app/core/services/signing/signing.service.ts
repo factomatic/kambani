@@ -40,7 +40,6 @@ export class SigningService {
         const vault = this.vaultService.getVault();
         const decryptedVault = await encryptor.decrypt(vaultPassword, vault);
         const dataToSign = Buffer.from(sha256.update(data).digest());
-        let privateKey;
         let signatureType;
         let publicKey;
         let signature;
@@ -53,7 +52,7 @@ export class SigningService {
             ? decryptedVault[didId].didKeys
             : decryptedVault[didId].managementKeys;
 
-          privateKey = keys[signingKeyAlias];
+          const privateKey = keys[signingKeyAlias];
           publicKey = signingKeyOrAddress.publicKeyBase58
             ? Buffer.from(base58.decode(signingKeyOrAddress.publicKeyBase58))
             : Buffer.from(convertPemToBinary(signingKeyOrAddress.publicKeyPem));
@@ -65,22 +64,25 @@ export class SigningService {
             signatureType = RSA_SIGNING_ALGO_NAME;
           }
 
-        } else {
-          // This is a signature with an FCT, EC or EtherLink key. Signatures
-          // with FCT & EC are EdDSA. Signatures with EtherLink are ECDSA.
-          if (signingKeyOrAddress.startsWith('Fs') || signingKeyOrAddress.startsWith('Es')) {
-            const privateKey = addressToKey(decryptedVault[signingKeyOrAddress]);
-            const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
-            publicKey = Buffer.from(keyPair.publicKey);
-            signatureType = SignatureType.EdDSA;
-            signature = Buffer.from(nacl.sign.detached(dataToSign, keyPair.secretKey));
-          } else {
+        } else if (requestKeyType == RequestKeyType.EtherLink) {
             const curve = elliptic.ec('secp256k1');
             const keyPair = curve.keyFromPrivate(decryptedVault[signingKeyOrAddress]);
-            publicKey = Buffer.concat([Buffer.from('04', 'hex'), Buffer.from(keyPair.getPublic('buffer'))])
+            publicKey = Buffer.concat([Buffer.from('04', 'hex'), Buffer.from(keyPair.getPublic('buffer'))]);
             signatureType = SignatureType.ECDSA;
-            signature = keyPair.sign(dataToSign).toDER();
+            signature = keyPair.sign(dataToSign).toDER();   
+        } else {
+          // This is a signature with an FCT, EC or BlockSigning key.
+          let privateKey;
+          if (requestKeyType == RequestKeyType.FCT || requestKeyType == RequestKeyType.EC) {
+            privateKey = addressToKey(decryptedVault[signingKeyOrAddress]);
+          } else {
+            privateKey = Buffer.from(decryptedVault[signingKeyOrAddress], 'hex');
           }
+
+          const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
+          publicKey = Buffer.from(keyPair.publicKey);
+          signatureType = SignatureType.EdDSA;
+          signature = Buffer.from(nacl.sign.detached(dataToSign, keyPair.secretKey));
         }
 
         this.vaultService.incrementSignedRequests();

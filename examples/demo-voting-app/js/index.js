@@ -42,6 +42,25 @@ new Vue({
     });
 
     /*
+      Listens for a response after dispatching a GetBlockSigningKeys event
+    */
+    window.addEventListener("BlockSigningKeys", event => {
+      console.log(event.detail);
+      if (event.detail.success) {
+        console.log(event.detail.blockSigningKeys);
+      } else {
+        console.log("GetBlockSigningKeys request not approved");
+      }
+    });
+
+    /*
+      Listens for a response after dispatching a GetPegnetAddresses event
+    */
+    window.addEventListener("PegnetAddresses", event => {
+      console.log(event.detail);
+    });
+
+    /*
       Listens for changes to the FCT addresses and updates them
     */
     window.addEventListener("FCTAddressesChanged", event => {
@@ -88,13 +107,34 @@ new Vue({
     });
 
     /*
-      Dispatches GetFCTAddresses and GetECAddresses events in order to obtain all addresses stored in the extension
+      Listens for changes to the EtherLink addresses
+    */
+    window.addEventListener("EtherLinkAddressesChanged", event => {
+      console.log(event.detail);
+    });
+
+    /*
+      Listens for changes to the Block Signing keys
+    */
+    window.addEventListener("BlockSigningKeysChanged", event => {
+      console.log(event.detail);
+    });
+
+    /*
+      Dispatches GetFCTAddresses, GetECAddresses, GetPegnetAddresses and GetBlockSigningKeys events
+      in order to obtain all addresses and keys stored in the extension
     */
     const fctAddressesEvent = new CustomEvent("GetFCTAddresses");
     window.dispatchEvent(fctAddressesEvent);
 
     const ecAddressesEvent = new CustomEvent("GetECAddresses");
     window.dispatchEvent(ecAddressesEvent);
+
+    const pegAddressesEvent = new CustomEvent("GetPegnetAddresses");
+    window.dispatchEvent(pegAddressesEvent);
+
+    const blockSigningKeysEvent = new CustomEvent("GetBlockSigningKeys");
+    window.dispatchEvent(blockSigningKeysEvent);
   },
   data: {
     selected: "Leo Messi",
@@ -243,6 +283,44 @@ new Vue({
 
       const event = new CustomEvent("SigningRequest", {
         detail: didRequestWithoutSpecifiedDID
+      });
+      
+      window.dispatchEvent(event);
+    },
+    signWithBlockSigningKey: function () {
+      this.voteSignature = undefined;
+
+      const blockSigningKeyRequestWithoutSpecifiedKey = {
+        requestId: 24,
+        requestType: "data",
+        requestInfo: {
+          keyType: "blockSigningKey",
+          data: {
+            purpose: "Ballon D'or Voting",
+            winner: this.selected
+          }
+        }
+      };
+
+      /*
+        Before dispatching this request please put for keyIdentifier a valid Block Signing key
+        which you have imported in your Kambani extension
+      */
+      const blockSigningKeyRequestWithSpecifiedKey = {
+        requestId: 25,
+        requestType: "data",
+        requestInfo: {
+          keyType: "blockSigningKey",
+          data: {
+            purpose: "Ballon D'or Voting",
+            winner: this.selected
+          },
+          keyIdentifier: "4zvwRjXUKGfvwnParsHAS3HuSVzV5cA4McphgmoCtajS"
+        }
+      };
+
+      const event = new CustomEvent("SigningRequest", {
+        detail: blockSigningKeyRequestWithoutSpecifiedKey
       });
       
       window.dispatchEvent(event);

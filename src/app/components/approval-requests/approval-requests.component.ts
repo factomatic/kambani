@@ -56,9 +56,18 @@ export class ApprovalRequestsComponent implements OnInit {
           const request = response.approvalRequest;
           this.type = request.type;
           this.from = request.from;
-          this.displayName = this.type === 'Pegnet'
-            ? 'FCT and EtherLink'
-            : this.type;
+
+          switch (this.type) {
+            case 'Pegnet':
+              this.displayName = 'FCT and EtherLink addresses';
+              break;
+            case 'BlockSigningKey':
+              this.displayName = 'Block Signing keys';
+              break;
+            default:
+              this.displayName = this.type + ' addresses'
+              break;
+          }
         } else {
           this.router.navigate(['home']);
         }

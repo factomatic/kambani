@@ -1,0 +1,30 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h4 class="modal-title">View Secret Key</h4>
+  </div>
+  <div class="modal-body mt-3">
+    <p *ngIf="!isEtherLinkAddress">
+      {{isKey ? 'Public Key' : 'Public Address'}}
+      <a (click)="copy(publicKeyOrAddress, copyPublAddrButtonRef)" class="copy-address" #copyPublAddrButtonRef data-toggle="tooltip" data-placement="top" title="{{publicElCopyTitle}}"><i class="far fa-copy"></i></a>
+      <span class="address">{{isKey ? minifyHex(publicKeyOrAddress) : publicKeyOrAddress}}</span>
+    </p>
+    <p *ngIf="isEtherLinkAddress">
+      Public EtherLink Address
+      <a (click)="copy(convertToEtherLinkAddress(publicKeyOrAddress), copyPublEtherLinkAddrButtonRef)" class="copy-address" #copyPublEtherLinkAddrButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy EtherLink address"><i class="far fa-copy"></i></a>
+      <span class="address">{{convertToEtherLinkAddress(publicKeyOrAddress)}}</span>
+    </p>
+    <p *ngIf="isEtherLinkAddress">
+      Public Ethereum Address
+      <a (click)="copy(convertToEthereumAddress(publicKeyOrAddress), copyPublEthereumAddrButtonRef)" class="copy-address" #copyPublEthereumAddrButtonRef data-toggle="tooltip" data-placement="top" title="Click to copy Ethereum address"><i class="far fa-copy"></i></a>
+      <span class="address">{{convertToEthereumAddress(publicKeyOrAddress)}}</span>
+    </p>
+    <p>
+      Secret Key
+      <a (click)="copy(privateKeyOrAddress, copyPrivAddrButtonRef)" class="copy-address" #copyPrivAddrButtonRef data-toggle="tooltip" data-placement="top" title="{{privateElCopyTitle}}"><i class="far fa-copy"></i></a>
+      <span class="address">{{isEtherLinkAddress || isKey ? minifyHex(privateKeyOrAddress) : privateKeyOrAddress}}</span>
+    </p>
+  </div>
+  <div class="modal-footer justify-content-center mt-2">
+    <button type="button" class="btn-primary mr-3" mdbBtn color="primary" mdbWavesEffect data-dismiss="modal" (click)="activeModal.dismiss('Cross click')">Close</button>
+  </div>
+</div>

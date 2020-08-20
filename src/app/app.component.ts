@@ -45,6 +45,10 @@ export class AppComponent implements OnInit {
           this.zone.run(() => {
             this.router.navigate(['/factom/addresses/manage']);
           });
+        } else if (checkRequestsResponse.manageKeysRequested) {
+          this.zone.run(() => {
+            this.router.navigate(['/keys/manage']);
+          });
         } else if (checkRequestsResponse.approvalRequests) {
           this.zone.run(() => {
             this.router.navigate(['approve']);
