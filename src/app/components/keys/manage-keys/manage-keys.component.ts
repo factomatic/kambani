@@ -10,7 +10,7 @@ import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { KeyType } from 'src/app/core/enums/key-type';
 import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
 import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
-import { PrivateSecretModalComponent } from '../../modals/private-secret-modal/private-secret-modal.component';
+import { PrivateKeyAddressModalComponent } from '../../modals/private-key-address-modal/private-key-address-modal.component';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
@@ -86,7 +86,7 @@ export class ManageKeysComponent extends BaseComponent implements OnInit {
             .subscribe(result => {
               this.spinner.hide();
               if (result.success && result.message) {
-                const confirmRef = this.modalService.open(PrivateSecretModalComponent);
+                const confirmRef = this.modalService.open(PrivateKeyAddressModalComponent);
                 confirmRef.componentInstance.publicKeyOrAddress = publicKey;
                 confirmRef.componentInstance.privateKeyOrAddress = result.message;
                 confirmRef.componentInstance.isKey = true;

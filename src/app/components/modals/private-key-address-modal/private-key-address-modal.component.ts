@@ -6,11 +6,11 @@ import {
 } from 'src/app/core/utils/helpers';
 
 @Component({
-  selector: 'app-private-secret-modal',
-  templateUrl: './private-secret-modal.component.html',
-  styleUrls: ['./private-secret-modal.component.scss']
+  selector: 'app-private-key-address-modal',
+  templateUrl: './private-key-address-modal.component.html',
+  styleUrls: ['./private-key-address-modal.component.scss']
 })
-export class PrivateSecretModalComponent {
+export class PrivateKeyAddressModalComponent {
   @Input() public publicKeyOrAddress: string;
   @Input() public privateKeyOrAddress: string;
   @Input() public isKey: boolean = false;
