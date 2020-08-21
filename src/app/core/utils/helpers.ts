@@ -3,6 +3,11 @@ import * as keccak256 from 'keccak256';
 import * as elliptic from 'elliptic';
 import { sha256 } from 'js-sha256';
 
+import { DialogsService } from '../services/dialogs/dialogs.service';
+import { ModalSizeTypes } from '../enums/modal-size-types';
+import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
+import { VaultService } from '../services/vault/vault.service';
+
 function minifyPublicKey(publicKey: string) {
   if (publicKey.length > 40) {
     publicKey = publicKey.substring(0, 30) + '...' + publicKey.substring(publicKey.length - 10);
@@ -192,6 +197,26 @@ function generateRandomEtherLinkKeyPair() {
   }
 }
 
+function accessOrModifyVault(
+  that: any,
+  vaultService: VaultService,
+  dialogsService: DialogsService,
+  dialogMessage: string,
+  func: any,
+  ...args: any[]) {
+    const vaultPassword = vaultService.getVaultPassword();
+    if (vaultPassword) {
+      func(that, vaultPassword, ...args);
+    } else {
+      dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
+        .subscribe((vaultPassword: string) => {
+          if (vaultPassword) {
+            func(that, vaultPassword, ...args);
+          }
+        });
+    }
+}
+
 export {
   minifyPublicKey,
   minifyDid,
@@ -208,5 +233,6 @@ export {
   generateBackupFileName,
   convertECDSAPublicKeyToEtherLinkAddress,
   convertECDSAPublicKeyToEthereumAddress,
-  generateRandomEtherLinkKeyPair
+  generateRandomEtherLinkKeyPair,
+  accessOrModifyVault
 };
