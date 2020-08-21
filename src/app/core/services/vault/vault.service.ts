@@ -303,6 +303,10 @@ export class VaultService {
           vault: encryptedVault
         });
 
+        if (newState.password) {
+          newState.password = newPassword;
+        }
+
         this.localStorageStore.putState(newState);
 
         return new ResultModel(true, 'Password was changed successfully');
