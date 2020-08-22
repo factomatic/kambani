@@ -7,17 +7,15 @@ import { Subscription } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
 import * as updateDIDActions from 'src/app/core/store/update-did/update-did.actions';
+import { accessOrModifyVault, downloadFile, minifyPublicKey, minifyDid } from 'src/app/core/utils/helpers';
 import { AppState } from 'src/app/core/store/app.state';
 import { BackupResultModel } from 'src/app/core/models/backup-result.model';
 import { BaseComponent } from 'src/app/components/base.component';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { DidKeyModel } from 'src/app/core/models/did-key.model';
 import { DIDService } from 'src/app/core/services/did/did.service';
-import { downloadFile, minifyPublicKey, minifyDid } from 'src/app/core/utils/helpers';
 import { EntryType } from 'src/app/core/enums/entry-type';
 import { ManagementKeyModel } from 'src/app/core/models/management-key.model';
-import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
-import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
 import { PurposeType } from 'src/app/core/enums/purpose-type';
 import { RemoveConfirmModalComponent } from 'src/app/components/modals/remove-confirm-modal/remove-confirm-modal.component';
 import { ResultModel } from 'src/app/core/models/result.model';
@@ -117,55 +115,16 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
       const signingKeyId = `${this.didId}#${signingKey.alias}`;
       const dialogMessage = 'Enter your vault password to sign the entry and update any key(s)';
 
-      this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
-        .subscribe((vaultPassword: string) => {
-          if (vaultPassword) {
-            this.spinner.show();
-            this.signingService
-              .signDIDEntry(signingKeyId, signingKey.type as SignatureType, entry, EntryType.UpdateDIDEntry, vaultPassword)
-              .subscribe((result: SignatureResultModel) => {
-                if (result.success) {
-                  this.didService
-                    .recordEntryOnChain(
-                      EntryType.UpdateDIDEntry,
-                      entry,
-                      signingKeyId,
-                      result.signatureBase64)
-                    .subscribe((recordResult: any) => {
-                      if (recordResult.error) {
-                        this.spinner.hide();
-                        this.toastr.error(recordResult.message);
-                      } else {
-                        this.vaultService
-                          .saveDIDChangesToVault(
-                            this.didId,
-                            entry as UpdateEntryDocument,
-                            this.managementKeys,
-                            this.didKeys,
-                            vaultPassword)
-                          .subscribe((result: ResultModel) => {
-                            this.spinner.hide();
-
-                            if (result.success) {
-                              this.store.dispatch(new updateDIDActions.CompleteDIDUpdate(this.didId));
-                              this.toastr.success('Identity updated successfully');
-                              this.router.navigate([SharedRoutes.ManageDids]);
-                            } else {
-                              /**
-                              * this should never happen
-                              */
-                              this.toastr.error('A problem occurred! Please, try again');
-                            }
-                          });
-                      }        
-                    });
-                } else {
-                  this.spinner.hide();
-                  this.toastr.error(result.message);
-                }
-              });
-          }
-      });
+      accessOrModifyVault(
+        this,
+        this.vaultService,
+        this.dialogsService,
+        dialogMessage,
+        this.updateDID,
+        entry,
+        signingKey,
+        signingKeyId
+      );
     }
   }
 
@@ -216,23 +175,7 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
 
   backupDid(didId: string) {
     const dialogMessage = 'Enter your vault password to open the vault and encrypt your Identity';
-
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
-      .subscribe((vaultPassword: string) => {
-        if (vaultPassword) {
-          this.vaultService
-            .backupSingleDIDFromVault(didId, vaultPassword)
-            .subscribe((result: BackupResultModel) => {
-              if (result.success) {
-                const date = new Date();
-                const didBackupFile = this.postProcessDidBackupFile(result.backup, didId);
-                downloadFile(didBackupFile, `paper-did-UTC--${date.toISOString()}.txt`);
-              } else {
-                this.toastr.error(result.message);
-              }
-            });
-        }
-      });
+    accessOrModifyVault(this, this.vaultService, this.dialogsService, dialogMessage, this.backupSingleDIDFromVault, didId);
   }
 
   removeDid(didId: string) {
@@ -241,52 +184,128 @@ export class PreviewDidComponent extends BaseComponent implements OnInit, OnDest
     const deactivateEntry = "";
     const dialogMessage = 'Enter your vault password to sign the entry and delete the Identity';
 
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
-      .subscribe((vaultPassword: string) => {
-        if (vaultPassword) {
-          this.spinner.show();
-          this.signingService
-            .signDIDEntry(signingKeyId, signingKey.type as SignatureType, deactivateEntry, EntryType.DeactivateDIDEntry, vaultPassword)
-            .subscribe((result: SignatureResultModel) => {
-              if (result.success) {
-                this.didService
-                  .recordEntryOnChain(
-                    EntryType.DeactivateDIDEntry,
-                    deactivateEntry,
-                    signingKeyId,
-                    result.signatureBase64)
-                  .subscribe((recordResult: any) => {
-                    if (recordResult.error) {
-                      this.spinner.hide();
-                      this.toastr.error(recordResult.message);
-                    } else {
-                      this.vaultService
-                        .removeDIDFromVault(
-                          didId,
-                          vaultPassword)
-                        .subscribe((result: ResultModel) => {
-                          this.spinner.hide();
+    accessOrModifyVault(
+      this,
+      this.vaultService,
+      this.dialogsService,
+      dialogMessage,
+      this.deactivateAndRemoveDID,
+      didId,
+      signingKeyId,
+      signingKey.type,
+      deactivateEntry
+    );
+  }
 
-                          if (result.success) {
-                            this.store.dispatch(new updateDIDActions.CompleteDIDUpdate(didId));
-                            this.toastr.success(result.message);
-                            this.router.navigate([SharedRoutes.ManageDids]);
-                          } else {
-                            /**
-                            * this should never happen
-                            */
-                            this.toastr.error('A problem occurred! Please, try again');
-                          }
-                        });
-                    }        
-                  });
+  private updateDID(that: any, vaultPassword: string, entry: UpdateEntryDocument, signingKey: ManagementKeyModel, signingKeyId: string) {
+    that.spinner.show();
+    that.signingService
+      .signDIDEntry(signingKeyId, signingKey.type as SignatureType, entry, EntryType.UpdateDIDEntry, vaultPassword)
+      .subscribe((result: SignatureResultModel) => {
+        if (result.success) {
+          that.didService
+            .recordEntryOnChain(
+              EntryType.UpdateDIDEntry,
+              entry,
+              signingKeyId,
+              result.signatureBase64)
+            .subscribe((recordResult: any) => {
+              if (recordResult.error) {
+                that.spinner.hide();
+                that.toastr.error(recordResult.message);
               } else {
-                this.spinner.hide();
-                this.toastr.error(result.message);
-              }
+                that.vaultService
+                  .saveDIDChangesToVault(
+                    that.didId,
+                    entry as UpdateEntryDocument,
+                    that.managementKeys,
+                    that.didKeys,
+                    vaultPassword)
+                  .subscribe((result: ResultModel) => {
+                    that.spinner.hide();
+
+                    if (result.success) {
+                      that.store.dispatch(new updateDIDActions.CompleteDIDUpdate(that.didId));
+                      that.toastr.success('Identity updated successfully');
+                      that.router.navigate([SharedRoutes.ManageDids]);
+                    } else {
+                      /**
+                      * this should never happen
+                      */
+                      that.toastr.error('A problem occurred! Please, try again');
+                    }
+                  });
+              }        
             });
+        } else {
+          that.spinner.hide();
+          that.toastr.error(result.message);
         }
       });
+  }
+
+  private backupSingleDIDFromVault(that: any, vaultPassword: string, didId: string) {
+    that.vaultService
+      .backupSingleDIDFromVault(didId, vaultPassword)
+      .subscribe((result: BackupResultModel) => {
+        if (result.success) {
+          const date = new Date();
+          const didBackupFile = that.postProcessDidBackupFile(result.backup, didId);
+          downloadFile(didBackupFile, `paper-did-UTC--${date.toISOString()}.txt`);
+        } else {
+          that.toastr.error(result.message);
+        }
+      });
+  }
+
+  private deactivateAndRemoveDID(
+    that: any,
+    vaultPassword: string,
+    didId: string,
+    signingKeyId: string,
+    signingKeyType: SignatureType,
+    deactivateEntry: string) {
+      that.spinner.show();
+      that.signingService
+        .signDIDEntry(signingKeyId, signingKeyType, deactivateEntry, EntryType.DeactivateDIDEntry, vaultPassword)
+        .subscribe((result: SignatureResultModel) => {
+          if (result.success) {
+            that.didService
+              .recordEntryOnChain(
+                EntryType.DeactivateDIDEntry,
+                deactivateEntry,
+                signingKeyId,
+                result.signatureBase64)
+              .subscribe((recordResult: any) => {
+                if (recordResult.error) {
+                  that.spinner.hide();
+                  that.toastr.error(recordResult.message);
+                } else {
+                  that.vaultService
+                    .removeDIDFromVault(
+                      didId,
+                      vaultPassword)
+                    .subscribe((result: ResultModel) => {
+                      that.spinner.hide();
+  
+                      if (result.success) {
+                        that.store.dispatch(new updateDIDActions.CompleteDIDUpdate(didId));
+                        that.toastr.success(result.message);
+                        that.router.navigate([SharedRoutes.ManageDids]);
+                      } else {
+                        /**
+                        * this should never happen
+                        */
+                        that.toastr.error('A problem occurred! Please, try again');
+                      }
+                    });
+                }        
+              });
+          } else {
+            that.spinner.hide();
+            that.toastr.error(result.message);
+          }
+        });
   }
 
   private postProcessDidBackupFile(encryptedFile: string, didId: string) {

@@ -5,6 +5,7 @@ import { Store, select } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
+import { accessOrModifyVault } from 'src/app/core/utils/helpers';
 import { ActionType } from 'src/app/core/enums/action-type';
 import { AppState } from 'src/app/core/store/app.state';
 import { BaseComponent } from 'src/app/components/base.component';
@@ -16,8 +17,6 @@ import { DIDService } from 'src/app/core/services/did/did.service';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { EntryType } from 'src/app/core/enums/entry-type';
 import { ManagementKeyModel } from 'src/app/core/models/management-key.model';
-import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
-import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
 import { ResultModel } from 'src/app/core/models/result.model';
 import { SharedRoutes } from 'src/app/core/enums/shared-routes';
 import { UpdateEntryDocument } from 'src/app/core/interfaces/update-entry-document';
@@ -70,56 +69,54 @@ export class SummaryComponent extends BaseComponent implements OnInit {
 
   recordOnChain() {
     const dialogMessage = 'Enter your vault password to save your Digital Identity';
-
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
-      .subscribe((vaultPassword: string) => {
-        if (vaultPassword) {
-          this.spinner.show();
-          this.vaultService
-            .canDecryptVault(vaultPassword)
-            .subscribe((result: ResultModel) => {
-              if (result.success) {
-                this.didService
-                  .recordEntryOnChain(EntryType.CreateDIDEntry, this.entry)
-                  .subscribe((recordResult: any) => {
-                    if (recordResult.error) {
-                      this.spinner.hide();
-                      this.toastr.error(recordResult.message);
-                    } else {
-                      this.vaultService
-                        .saveDIDToVault(
-                          this.didId,
-                          this.entry as DIDDocument,
-                          this.managementKeys,
-                          this.didKeys,
-                          vaultPassword)
-                        .subscribe((result: ResultModel) => {
-                          this.spinner.hide();
-
-                          if (result.success) {
-                            this.store.dispatch(new ClearCreateDIDState());
-                            this.store.dispatch(new CloseFormScreen());
-                            this.toastr.success('You have successfully created a new Digital Identity');
-                          } else {
-                            /**
-                            * this should never happen
-                            */
-                            this.toastr.error('A problem occurred! Please, try to create a new Digital Identity');
-                            this.router.navigate([SharedRoutes.ManageDids]);
-                          }
-                        });
-                    }
-                  });
-              } else {
-                this.spinner.hide();
-                this.toastr.error(result.message);
-              }
-            });
-        }
-    });
+    accessOrModifyVault(this, this.vaultService, this.dialogsService, dialogMessage, this.recordAndSaveToVault);
   }
 
   goToPrevious() {
     this.workflowService.moveToPreviousStep();
+  }
+
+  private recordAndSaveToVault(that: any, vaultPassword: string) {
+    that.spinner.show();
+    that.vaultService
+      .canDecryptVault(vaultPassword)
+      .subscribe((result: ResultModel) => {
+        if (result.success) {
+          that.didService
+            .recordEntryOnChain(EntryType.CreateDIDEntry, that.entry)
+            .subscribe((recordResult: any) => {
+              if (recordResult.error) {
+                that.spinner.hide();
+                that.toastr.error(recordResult.message);
+              } else {
+                that.vaultService
+                  .saveDIDToVault(
+                    that.didId,
+                    that.entry as DIDDocument,
+                    that.managementKeys,
+                    that.didKeys,
+                    vaultPassword)
+                  .subscribe((result: ResultModel) => {
+                    that.spinner.hide();
+
+                    if (result.success) {
+                      that.store.dispatch(new ClearCreateDIDState());
+                      that.store.dispatch(new CloseFormScreen());
+                      that.toastr.success('You have successfully created a new Digital Identity');
+                    } else {
+                      /**
+                      * this should never happen
+                      */
+                      that.toastr.error('A problem occurred! Please, try to create a new Digital Identity');
+                      that.router.navigate([SharedRoutes.ManageDids]);
+                    }
+                  });
+              }
+            });
+        } else {
+          that.spinner.hide();
+          that.toastr.error(result.message);
+        }
+      });
   }
 }

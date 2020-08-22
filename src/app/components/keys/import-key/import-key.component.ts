@@ -5,11 +5,10 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
+import { accessOrModifyVault } from 'src/app/core/utils/helpers';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { KeyType } from 'src/app/core/enums/key-type';
 import { KeysService } from 'src/app/core/services/keys/keys.service';
-import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
-import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 import { SignatureType } from 'src/app/core/enums/signature-type';
 
@@ -63,30 +62,7 @@ export class ImportKeyComponent implements OnInit {
     let publicKey = this.keysService.getPublicKeyFromPrivate(SignatureType.EdDSA, Buffer.from(privateKey, 'hex'));
 
     const dialogMessage = 'Enter your vault password to import the key';
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
-      .subscribe((vaultPassword: string) => {
-        if (vaultPassword) {
-          this.spinner.show();
-          this.vaultService
-            .importKey(
-              this.type.value,
-              publicKey,
-              privateKey,
-              vaultPassword,
-              this.nickname.value)
-            .subscribe(result => {
-              this.spinner.hide();
-              if (result.success) {
-                this.toastr.success(result.message);
-                this.router.navigate(['keys/manage']);
-              } else {
-                this.toastr.error(result.message);
-              }
-            });
-
-          this.createPrivateKeyForm();
-        }
-      });
+    accessOrModifyVault(this, this.vaultService, this.dialogsService, dialogMessage, this.importKey, publicKey, privateKey);
   }
 
   goBack() {
@@ -103,6 +79,28 @@ export class ImportKeyComponent implements OnInit {
 
   get privateKey () {
     return this.privateKeyForm.get('privateKey');
+  }
+
+  private importKey(that: any, vaultPassword: string, publicKey: string, privateKey: string) {
+    that.spinner.show();
+    that.vaultService
+      .importKey(
+        that.type.value,
+        publicKey,
+        privateKey,
+        vaultPassword,
+        that.nickname.value)
+      .subscribe(result => {
+        that.spinner.hide();
+        if (result.success) {
+          that.toastr.success(result.message);
+          that.router.navigate(['keys/manage']);
+        } else {
+          that.toastr.error(result.message);
+        }
+      });
+
+    that.createPrivateKeyForm();
   }
 
   private isValidPrivateBlockSigningKey(privateKey: string) {

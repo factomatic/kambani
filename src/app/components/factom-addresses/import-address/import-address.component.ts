@@ -7,10 +7,9 @@ import { ToastrService } from 'ngx-toastr';
 import * as elliptic from 'elliptic';
 import { isValidPrivateFctAddress, isValidPrivateEcAddress, getPublicAddress } from 'factom';
 
+import { accessOrModifyVault } from 'src/app/core/utils/helpers';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { FactomAddressType } from 'src/app/core/enums/factom-address-type';
-import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
-import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
 import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
@@ -83,30 +82,7 @@ export class ImportAddressComponent implements OnInit {
     }
 
     const dialogMessage = 'Enter your vault password to import the address';
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
-      .subscribe((vaultPassword: string) => {
-        if (vaultPassword) {
-          this.spinner.show();
-          this.vaultService
-            .importFactomAddress(
-              this.type.value,
-              publicAddress,
-              this.privateAddress.value,
-              vaultPassword,
-              this.nickname.value)
-            .subscribe(result => {
-              this.spinner.hide();
-              if (result.success) {
-                this.toastr.success(result.message);
-                this.router.navigate(['factom/addresses/manage'], { queryParams: { page: this.type.value } });
-              } else {
-                this.toastr.error(result.message);
-              }
-            });
-
-          this.createPrivateAddressForm();
-        }
-      });
+    accessOrModifyVault(this, this.vaultService, this.dialogsService, dialogMessage, this.importFactomAddress, publicAddress);
   }
 
   goBack() {
@@ -123,6 +99,28 @@ export class ImportAddressComponent implements OnInit {
 
   get privateAddress () {
     return this.privateAddressForm.get('privateAddress');
+  }
+
+  private importFactomAddress(that: any, vaultPassword: string, publicAddress: string) {
+    that.spinner.show();
+    that.vaultService
+      .importFactomAddress(
+        that.type.value,
+        publicAddress,
+        that.privateAddress.value,
+        vaultPassword,
+        that.nickname.value)
+      .subscribe(result => {
+        that.spinner.hide();
+        if (result.success) {
+          that.toastr.success(result.message);
+          that.router.navigate(['factom/addresses/manage'], { queryParams: { page: that.type.value } });
+        } else {
+          that.toastr.error(result.message);
+        }
+      });
+
+    that.createPrivateAddressForm();
   }
 
   private isValidPrivateEtherLinkAddress(address: string) {

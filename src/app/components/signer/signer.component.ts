@@ -4,13 +4,11 @@ import { ToastrService } from 'ngx-toastr';
 import { Transaction } from 'factom';
 import { sha512 } from 'factom/src/util.js';
 
+import { accessOrModifyVault, minifyAddress } from 'src/app/core/utils/helpers';
 import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
 import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
 import { DidKeyEntryModel } from 'src/app/core/interfaces/did-key-entry';
 import { ManagementKeyEntryModel } from 'src/app/core/interfaces/management-key-entry';
-import { minifyAddress } from 'src/app/core/utils/helpers';
-import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
-import { PasswordDialogComponent } from 'src/app/components/dialogs/password/password.dialog.component';
 import { RequestKeyType } from 'src/app/core/enums/request-key-type';
 import { RequestType } from 'src/app/core/enums/request-type';
 import { ResultModel } from 'src/app/core/models/result.model';
@@ -95,39 +93,13 @@ export class SignerComponent implements OnInit {
     this.selectedKey = selectedKey;
   }
 
-  signData() {
+  sign() {
     let dialogMessage = 'Enter your vault password to sign the ';
     dialogMessage += this.requestType == RequestType.Data
       ? 'data'
       : 'transaction';
 
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
-      .subscribe((vaultPassword: string) => {
-        if (vaultPassword) {
-          this.spinner.show();
-
-          if (this.requestType == RequestType.Data) {
-            const data = this.request.requestInfo.data;
-
-            const dataToSign = typeof data == "string"
-              ? data
-              : JSON.stringify(data);
-
-            let signingKeyOrAddress;
-            if ([RequestKeyType.ManagementKey, RequestKeyType.DIDKey].includes(this.requestKeyType as RequestKeyType)) {
-              signingKeyOrAddress = this.availableDIDKeys.find(dk => dk.id == this.selectedDIDKeyId);
-            } else if ([RequestKeyType.FCT, RequestKeyType.EC].includes(this.requestKeyType as RequestKeyType)) {
-              signingKeyOrAddress = this.selectedFactomAddress;
-            } else {
-              signingKeyOrAddress = this.selectedKey;
-            }
-
-            this.signDataRequest(dataToSign, signingKeyOrAddress, vaultPassword);
-          } else {
-            this.signPegNetRequest(this.selectedFactomAddress, vaultPassword);
-          }    
-        }
-      });
+    accessOrModifyVault(this, this.vaultService, this.dialogsService, dialogMessage, this.signRequest);
   }
 
   cancelSigning(message?: string) {
@@ -150,6 +122,31 @@ export class SignerComponent implements OnInit {
 
   toHumanReadable(amount: number) {
     return amount / Math.pow(10, 8);
+  }
+
+  private signRequest(that: any, vaultPassword: string) {
+    that.spinner.show();
+
+    if (that.requestType == RequestType.Data) {
+      const data = that.request.requestInfo.data;
+
+      const dataToSign = typeof data == "string"
+        ? data
+        : JSON.stringify(data);
+
+      let signingKeyOrAddress;
+      if ([RequestKeyType.ManagementKey, RequestKeyType.DIDKey].includes(that.requestKeyType as RequestKeyType)) {
+        signingKeyOrAddress = that.availableDIDKeys.find(dk => dk.id == that.selectedDIDKeyId);
+      } else if ([RequestKeyType.FCT, RequestKeyType.EC].includes(that.requestKeyType as RequestKeyType)) {
+        signingKeyOrAddress = that.selectedFactomAddress;
+      } else {
+        signingKeyOrAddress = that.selectedKey;
+      }
+
+      that.signDataRequest(dataToSign, signingKeyOrAddress, vaultPassword);
+    } else {
+      that.signPegNetRequest(that.selectedFactomAddress, vaultPassword);
+    }
   }
 
   private signDataRequest(dataToSign: string, signingKeyOrAddress: any, vaultPassword: string) {

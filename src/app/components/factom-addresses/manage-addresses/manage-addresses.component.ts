@@ -6,20 +6,19 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { generateRandomFctAddress, generateRandomEcAddress } from 'factom';
 
-import { BaseComponent } from '../../base.component';
-import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
-import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
-import { FactomAddressType } from 'src/app/core/enums/factom-address-type';
-import { ModalSizeTypes } from 'src/app/core/enums/modal-size-types';
-import { PasswordDialogComponent } from '../../dialogs/password/password.dialog.component';
-import { PrivateKeyAddressModalComponent } from '../../modals/private-key-address-modal/private-key-address-modal.component';
-import { VaultService } from 'src/app/core/services/vault/vault.service';
 import {
+  accessOrModifyVault,
   convertECDSAPublicKeyToEthereumAddress,
   convertECDSAPublicKeyToEtherLinkAddress,
   generateRandomEtherLinkKeyPair,
   minifyAddress
 } from 'src/app/core/utils/helpers';
+import { BaseComponent } from '../../base.component';
+import { ChromeMessageType } from 'src/app/core/enums/chrome-message-type';
+import { DialogsService } from 'src/app/core/services/dialogs/dialogs.service';
+import { FactomAddressType } from 'src/app/core/enums/factom-address-type';
+import { PrivateKeyAddressModalComponent } from '../../modals/private-key-address-modal/private-key-address-modal.component';
+import { VaultService } from 'src/app/core/services/vault/vault.service';
 
 @Component({
   selector: 'app-manage-addresses',
@@ -124,74 +123,17 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     })(this.selectedAddressType);
 
     const dialogMessage = `Enter your vault password to import the generated ${this.selectedAddressType} address`;
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
-      .subscribe((vaultPassword: string) => {
-        if (vaultPassword) {
-          this.spinner.show();
-          this.vaultService
-            .importFactomAddress(
-              this.selectedAddressType,
-              addressPair.public,
-              addressPair.private,
-              vaultPassword)
-            .subscribe(result => {
-              this.spinner.hide();
-              if (result.success) {
-                this.toastr.success(result.message);
-                this.getAddressesInfo();
-              } else {
-                this.toastr.error(result.message);
-              }
-            });
-        }
-      });
+    accessOrModifyVault(this, this.vaultService, this.dialogsService, dialogMessage, this.importFactomAddress, addressPair);
   }
 
   viewPrivateAddress(publicAddress: string) {
     const dialogMessage = 'Enter your vault password to view the secret key';
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.Medium, dialogMessage)
-      .subscribe((vaultPassword: string) => {
-        if (vaultPassword) {
-          this.spinner.show();
-          this.vaultService
-            .getPrivateKeyOrAddress(publicAddress, vaultPassword)
-            .subscribe(result => {
-              this.spinner.hide();
-              if (result.success && result.message) {
-                const confirmRef = this.modalService.open(PrivateKeyAddressModalComponent);
-                confirmRef.componentInstance.publicKeyOrAddress = publicAddress;
-                confirmRef.componentInstance.privateKeyOrAddress = result.message;
-                confirmRef.componentInstance.isEtherLinkAddress = publicAddress.length == 128;
-                confirmRef.result
-                  .then((result) => {})
-                  .catch((error) => {});
-              } else if (!result.success) {
-                this.toastr.error(result.message);
-              }
-            });
-        }
-      });
+    accessOrModifyVault(this, this.vaultService, this.dialogsService, dialogMessage, this.displayPrivateAddress, publicAddress);
   }
 
   removeAddress(publicAddress: string, type: FactomAddressType) {
     const dialogMessage = '<b>Warning! Any funds that you have in this address will be irrevocably lost, if you have not backed up your private key</b>. If you want to continue, enter your vault password to remove the FCT/EC address';
-    this.dialogsService.open(PasswordDialogComponent, ModalSizeTypes.ExtraExtraLarge, dialogMessage)
-      .subscribe((vaultPassword: string) => {
-        if (vaultPassword) {
-          this.spinner.show();
-          this.vaultService
-            .removeFactomAddress(publicAddress, type, vaultPassword)
-            .subscribe(result => {
-              this.spinner.hide();
-              if (result.success) {
-                this.toastr.success(result.message);
-                this.getAddressesInfo();
-              } else {
-                this.toastr.error(result.message);
-              }
-            });
-        }
-      });
+    accessOrModifyVault(this, this.vaultService, this.dialogsService, dialogMessage, this.removeFactomAddress, publicAddress, type);
   }
 
   copyAddress(address: string, element) {
@@ -250,4 +192,57 @@ export class ManageAddressesComponent extends BaseComponent implements OnInit {
     }
   }
 
+  private importFactomAddress(that: any, vaultPassword: string, addressPair: any) {
+    that.spinner.show();
+    that.vaultService
+      .importFactomAddress(
+        that.selectedAddressType,
+        addressPair.public,
+        addressPair.private,
+        vaultPassword)
+      .subscribe(result => {
+        that.spinner.hide();
+        if (result.success) {
+          that.toastr.success(result.message);
+          that.getAddressesInfo();
+        } else {
+          that.toastr.error(result.message);
+        }
+      });
+  }
+
+  private displayPrivateAddress(that: any, vaultPassword: string, publicAddress: string) {
+    that.spinner.show();
+    that.vaultService
+      .getPrivateKeyOrAddress(publicAddress, vaultPassword)
+      .subscribe(result => {
+        that.spinner.hide();
+        if (result.success && result.message) {
+          const confirmRef = that.modalService.open(PrivateKeyAddressModalComponent);
+          confirmRef.componentInstance.publicKeyOrAddress = publicAddress;
+          confirmRef.componentInstance.privateKeyOrAddress = result.message;
+          confirmRef.componentInstance.isEtherLinkAddress = publicAddress.length == 128;
+          confirmRef.result
+            .then((result) => {})
+            .catch((error) => {});
+        } else if (!result.success) {
+          that.toastr.error(result.message);
+        }
+      });
+  }
+
+  private removeFactomAddress(that: any, vaultPassword: string, publicAddress: string, type: FactomAddressType) {
+    that.spinner.show();
+    that.vaultService
+      .removeFactomAddress(publicAddress, type, vaultPassword)
+      .subscribe(result => {
+        that.spinner.hide();
+        if (result.success) {
+          that.toastr.success(result.message);
+          that.getAddressesInfo();
+        } else {
+          that.toastr.error(result.message);
+        }
+      });
+  }
 }
