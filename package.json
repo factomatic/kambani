@@ -47,7 +47,7 @@
     "ngx-spinner": "7.0.0",
     "ngx-toastr": "9.1.2",
     "node-forge": "0.8.5",
-    "obs-store": "3.0.2",
+    "obs-store": "4.0.3",
     "popper.js": "1.14.7",
     "rxjs": "~6.3.3",
     "tslib": "^1.10.0",
